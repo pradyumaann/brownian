@@ -27,7 +27,7 @@ The product rules in AGENTS.md (information only, every number sourced, interpre
 CSS custom properties from `design/brownian.css`. `data-theme="night"` is the brand default and `"paper"` is light. With no `data-theme`, the system colour scheme decides.
 
 - **Grounds:** `--ground`, `--surface`, `--surface-raised`. Separate them with `--hairline` / `--hairline-strong`, never shadows. No nested cards.
-- **Plot window:** charts always sit in `.bw-plot` (`--plot`), which stays dark in both themes.
+- **Plot window:** charts sit in `.bw-plot` (`--plot`), which follows the theme: a dark window in Night, a light panel in Paper. Every data colour (`--plot-gain`, `--plot-loss`, `--spec-*`, `--tide-*`, `--cat-*`, `--plot-dawn`) has a Night and a Paper value, so a chart always matches the page it sits on. The masthead is the one exception and stays dark.
 - **Text:** `--ink`, `--ink-muted`, `--ink-faint` (sources, ticks, `n/a`). Inside plots, use `--plot-ink`, `--plot-muted` and `--plot-grid`.
 - **Accent:** `--dawn` (needle, active band, now-dot, the one primary button fill). Use `--dawn-ink` for dawn as text and `--on-dawn` for text on a dawn fill. The focus ring is 2px solid `--focus` with a 2px offset.
 - **Direction:** `--gain` (teal) and `--loss` (ember) for text; `--plot-gain` and `--plot-loss` in plots.

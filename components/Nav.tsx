@@ -3,10 +3,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export const GROUPS: [string, string][][] = [
-  [["/", "Markets, overnight"], ["/portfolio/", "Portfolio Lens"]],
-  [["/wander/", "Wander Index"], ["/flows/", "Flow Map"], ["/india/", "India Markets"], ["/global/", "Global Cues"]],
-  [["/macro/", "Macro Watch"], ["/earnings/", "Earnings Radar"], ["/developing/", "Developing"]],
-  [["/learn/", "Jargon Buster"]],
+  [["/", "Markets, Overnight"], ["/wander/", "Wander Index"], ["/flows/", "Flow Map"], ["/macro/", "Macro Watch"]],
+  [["/portfolio/", "Portfolio Lens"], ["/india/", "India Markets"], ["/global/", "Global Cues"]],
+  [["/earnings/", "Earnings Radar"], ["/developing/", "Developing"], ["/learn/", "Jargon Buster"]],
 ];
 
 const norm = (p: string) => (p.endsWith("/") ? p : p + "/");

@@ -39,7 +39,7 @@ Research-based and transparent, not a tips app. Every number shows its source; w
 ## Capabilities and Constraints
 
 Confirmed features and names:
-- Markets, overnight: the daily overview (the front page; renamed from “Brief”, 14 Nov 2026)
+- Markets, Overnight: the daily overview (the front page; renamed from “Brief”, 14 Nov 2026)
 - Wander Index: Brownian's own name (14 Nov 2026; was “Mood Index”) for its sentiment index, 0–100, eight equal-weighted components each ranked against its own five-year history, with visible methods and papers; shown beside Macro pressure (0–100, from the brief's seven indicators); plus risk readings (turbulence, fragility, global spillover, liquidity stress). Name not yet cleared: check docs/name-clearance.md before relying on it.
 - Flow Map: FII/DII flows and sector rotation
 - Portfolio Lens: impact on the user's holding types, plus a watchlist
@@ -69,7 +69,7 @@ Open decisions: parsing the morning brief into the daily record; account model; 
 - Previous working name: Antelux (retired).
 - Design language (14 Nov 2026): data as landscape on a dark canvas: ridgelines, unit-strand flows, a segmented-ring Wander Index, hairline structure, Onest / JetBrains Mono (no italic accent words), a night theme by default with a paper (light) theme, and dawn as the single accent. Rules in design/DESIGN.md; derived from the founder's web-design reference board.
 - Voice: calm, plain, evidence-first. Explains rather than hypes. Says when data is missing or conflicting.
-- Brand name appears on flagship features only (Markets, overnight; Ask Brownian); other features use plain market language Indian investors already use.
+- Brand name appears on flagship features only (Markets, Overnight; Ask Brownian); other features use plain market language Indian investors already use.
 - Clearance (14 Nov 2026): see docs/name-clearance.md. brownian.ai and brownian.com are owned by others; no USPTO conflict in classes 36/42; IP India and handles still to confirm manually.
 
 ## Evidence on Hand

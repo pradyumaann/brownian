@@ -54,7 +54,7 @@ npm run history:verify   # coverage, consistency, NSE vs Yahoo cross-check, impl
 
 | Feature | Route | What it does |
 |---|---|---|
-| Markets, overnight | `/` | The day in under a minute: Wander Index, macro pressure, your holdings, six key numbers, takeaways, the next 7 days |
+| Markets, Overnight | `/` | The day in under a minute: Wander Index, macro pressure, your holdings, six key numbers, takeaways, the next 7 days |
 | Portfolio Lens | `/portfolio` | Impact of today's news on the user's holding types, plus a watchlist |
 | Wander Index | `/wander` | 0–100 sentiment index from 6 components with visible formulas and research, kept separate from macro pressure |
 | Flow Map | `/flows` | FII/DII flows and sector rotation |

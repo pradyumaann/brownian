@@ -31,10 +31,10 @@ export default function MarketsOvernight() {
   return (
     <>
       <header className="vh is-brief">
-        <h1>Markets, <S>overnight</S>.</h1>
+        <h1>Markets, <S>Overnight</S>.</h1>
         <div>
           <p className="lede"><Rich r={B.lede} /></p>
-          <p className="bw-source vh-f">Markets, overnight · {B.dateShort}</p>
+          <p className="bw-source vh-f">Markets, Overnight · {B.dateShort}</p>
         </div>
       </header>
 
@@ -55,7 +55,7 @@ export default function MarketsOvernight() {
         <KpiCell k={B.kpis.usdinr} />
       </div>
 
-      <Section title={<>What happened, and why it <S>matters</S></>} meta={`${B.session} session and overnight, in plain English`} ix="01 · Markets, overnight">
+      <Section title={<>What happened, and why it <S>matters</S></>} meta={`${B.session} session and overnight, in plain English`} ix="01 · Markets, Overnight">
         <div className="takes">
           {B.takeaways.map((t) => (
             <article key={t.h} className="take">

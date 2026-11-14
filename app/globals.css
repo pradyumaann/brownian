@@ -393,3 +393,13 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
 
 /* Masthead bars on a phone: the drawing is scaled to about half size, so its labels are set larger to stay readable */
 @media (max-width: 620px) { .mast-val { font-size: 25px; } .mast-day { font-size: 19px; } }
+
+/* The masthead is always a dark window (the Brownian Header design), whatever the theme */
+.mast { --plot: #050607; --plot-ink: #ece9e2; --plot-muted: #8c9097; --plot-grid: #ffffff14; --cat-1: #3fd8c6; --spec-2: #9a2b8c; --spec-3: #df4662; --spec-4: #f7823b; --spec-5: #fbc34c; }
+/* Segment meters sit on the page, not in a plot: on the light theme their glow is a soft halo, not a bloom */
+:root[data-theme="paper"] .segmeter i.is-lit { box-shadow: 0 0 6px 0 color-mix(in srgb, currentColor 40%, transparent); }
+@media (prefers-color-scheme: light) { :root:not([data-theme="night"]) .segmeter i.is-lit { box-shadow: 0 0 6px 0 color-mix(in srgb, currentColor 40%, transparent); } }
+
+/* On a light plot a glow only smudges thin marks, so the terrain's bars stay crisp */
+:root[data-theme="paper"] .terrain g { filter: none; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="night"]) .terrain g { filter: none; } }

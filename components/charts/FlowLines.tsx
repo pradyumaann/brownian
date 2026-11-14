@@ -65,18 +65,26 @@ export function FlowLines({ dates, lines, notes = [], label }: { dates: string[]
         {lines.map((s) => st.map(({ d, i }, k) => (s.values[i] == null || !["03", "06", "09", "12"].includes(d.slice(5, 7)) ? null : (
           <circle key={s.name + d} cx={X(k)} cy={Y(s.values[i]!)} r={phone ? 2.5 : 3.2} className="bw-station pop" stroke={`var(--cat-${s.cat})`} />
         ))))}
-        {notes.slice(0, 3).map((nt, ni) => {
-          const k = nearest(nt.i), v = lines[nt.line].values[nt.i]!, x = X(k), y = Y(lines[nt.line].values[st[k].i]!);
-          const up = ni % 2 === 0 ? y > t + 70 : false, ly = up ? y - 40 : y + 44, tw = nt.text.length * 6 + 20, bx = Math.min(Math.max(x - tw / 2, l), W - r - tw);
-          return (
-            <g key={nt.text}>
-              <line x1={x} x2={x} y1={y} y2={up ? ly + 11 : ly - 11} stroke={`var(--cat-${lines[nt.line].cat})`} strokeWidth={1.25} />
-              <circle cx={x} cy={y} r={5} className="bw-station" stroke={`var(--cat-${lines[nt.line].cat})`} tabIndex={0} data-tip-v={crore(v)} data-tip-l={nt.text} />
-              <rect x={bx} y={ly - 11} width={tw} height={22} rx={11} className="bw-pill-box" stroke={`var(--cat-${lines[nt.line].cat})`} />
-              <text x={bx + tw / 2} y={ly + 4} textAnchor="middle" className="bw-pill-text">{nt.text}</text>
-            </g>
-          );
-        })}
+        {(() => {
+          // Each note takes the first clear spot: above the line, below it, then further out. A spot is clear when it
+          // stays inside the plot and does not touch a pill already placed.
+          const placed: { x0: number; x1: number; y0: number; y1: number }[] = [];
+          return notes.slice(0, 3).map((nt) => {
+            const k = nearest(nt.i), v = lines[nt.line].values[nt.i]!, x = X(k), y = Y(lines[nt.line].values[st[k].i]!);
+            const tw = nt.text.length * 6 + 20, bx = Math.min(Math.max(x - tw / 2, l), W - r - tw);
+            const ly = [-40, 44, -76, 80].map((d) => y + d).find((c) => c - 11 > t && c + 11 < H - b - 8 && !placed.some((q) => bx < q.x1 + 6 && bx + tw > q.x0 - 6 && c - 11 < q.y1 + 6 && c + 11 > q.y0 - 6)) ?? y - 40;
+            placed.push({ x0: bx, x1: bx + tw, y0: ly - 11, y1: ly + 11 });
+            const up = ly < y;
+            return (
+              <g key={nt.text}>
+                <line x1={x} x2={x} y1={y} y2={up ? ly + 11 : ly - 11} stroke={`var(--cat-${lines[nt.line].cat})`} strokeWidth={1.25} />
+                <circle cx={x} cy={y} r={5} className="bw-station" stroke={`var(--cat-${lines[nt.line].cat})`} tabIndex={0} data-tip-v={crore(v)} data-tip-l={nt.text} />
+                <rect x={bx} y={ly - 11} width={tw} height={22} rx={11} className="bw-pill-box" stroke={`var(--cat-${lines[nt.line].cat})`} />
+                <text x={bx + tw / 2} y={ly + 4} textAnchor="middle" className="bw-pill-text">{nt.text}</text>
+              </g>
+            );
+          });
+        })()}
         {ends.map((e) => (
           <g key={e.k}>
             <circle cx={X(e.j)} cy={Y(e.v)} r={6} className="bw-station" stroke={`var(--cat-${lines[e.k].cat})`} tabIndex={0}

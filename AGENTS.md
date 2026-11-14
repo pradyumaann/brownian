@@ -36,7 +36,7 @@ All UI follows `design/DESIGN.md` (imported by `CLAUDE.md`). The app imports `de
 ## How the app is built
 
 - **Stack:** Next.js 16 (App Router, TypeScript), `output: "export"`: every route is prerendered to static HTML in `out/`. Pages are server components; only interactive pieces (charts, sheet, nav, theme, Portfolio Lens) are client components.
-- **Routes:** `/` Markets, overnight, `/portfolio`, `/wander`, `/flows`, `/india`, `/global`, `/macro`, `/earnings`, `/developing`, `/learn`. Nav order and grouping: `GROUPS` in `components/Nav.tsx`.
+- **Routes:** `/` Markets, Overnight, `/portfolio`, `/wander`, `/flows`, `/india`, `/global`, `/macro`, `/earnings`, `/developing`, `/learn`. Nav order and grouping: `GROUPS` in `components/Nav.tsx` (core four first: Markets, Overnight; Wander Index; Flow Map; Macro Watch).
 - **Data:** `data/<date>.ts` holds the day (`Brief` in `data/types.ts`); `data/index.ts` picks the one to render. Text with inline tags uses the `Rich` segment type. Tones are `gain | loss | mixed | info | plain`.
 - **History store:** `data/history/*.csv`, refreshed with `npm run history` (fetches only what is missing) and checked with `npm run history:verify`. Sources: NSE archive files for index closes (D1), cash-market bhavcopy (D2) and F&O bhavcopy (D3); NSDL for daily and fortnightly sector FPI flows (D4); Yahoo Finance for overseas markets (D5). A missing day stays missing; nothing is interpolated. `lib/history.ts` reads the store at build time and must never be imported by a client component. Raw bhavcopies are cached in `.cache/` (git-ignored).
 - **Wander Index:** eight components in `lib/mood.ts`, each scored as the percentile of the day's reading among its own previous five years (at least 250 sessions, no look-ahead), then averaged; a component without enough history is left out and named. Banded 0–25 extreme fear, 25–45 fear, 45–55 neutral, 55–75 greed, 75–100 extreme greed. It is read as of `B.sessionDate`. Client-safe pieces (bands, quadrant names, `fillWith`) are in `lib/bands.ts`; copy that mentions the score uses `{score}`, `{band}`, `{press}` placeholders, never a hardcoded number.
@@ -49,11 +49,13 @@ All UI follows `design/DESIGN.md` (imported by `CLAUDE.md`). The app imports `de
 
 - **Readout:** any mark with `data-tip-v` (value, shown bold) and `data-tip-l` (label) gets the shared tooltip (`Brownian.readout()`, installed once by `components/Readout.tsx`) on hover, tap and keyboard focus. Give interactive marks `tabindex="0"`.
 - **Charts:** helper charts go through `usePlot` (redraws on container resize); React-drawn SVG charts use `useWidth`. Both sit in `.bw-plot`.
-- **Motion:** one moment per view. A chart's first draw gets `.rise`: bars grow from their zero line, the needle sweeps; `CountUp` counts the score. All of it sits inside `@media (prefers-reduced-motion: no-preference)`. Marks are visible at rest.
+- **Motion:** one entrance per chart, played when it first scrolls into view (`components/charts/rise.ts` adds `.rise`; `usePlot` and `useWidth` call it): lines draw, strands draw link by link, the ring lights segment by segment, terrain rows rise. Quiet loops: the masthead plus marks and the `.bw-now` dot. Everything sits inside `@media (prefers-reduced-motion: no-preference)`; marks are fully drawn at rest. Give any new line `pathLength={1}` and a `--d` delay to have it draw.
+- **Theme switch:** `components/ThemeToggle.tsx` is a light/dark `role="switch"`; it starts on the system setting and stores `bw:theme` (`night` | `paper`) on the device.
+- **Names:** the sentiment index is the **Wander Index** (route `/wander`); the front page is **Markets, Overnight**. Third-party products keep their real names (CNN's Fear & Greed, Tickertape's Market Mood Index).
 - **Colour meaning:** price changes are coloured by sign (`<Change>` / `toneOf()`: teal up, ember down, with ▲/▼). Impact on India is written out in words ("Headwind for India"), not implied by colour.
 - **Phone:** wide tables use `<DataTable stack>` and stack into cards under 620px; charts must fit 400px without sideways scroll.
 - **Design rules from the review:** no small uppercase label (eyebrow/kicker) above a heading; put the context line under the heading as `.meta`. No nested cards. Body text ≥ 4.5:1 contrast in both themes.
-- **Design language rules:** charts sit in a dark `.bw-plot` window in both themes; ▲/▼ plus a sign on every change; one `dawn` highlight and one primary button per view; every chart redraws to its container (`Brownian.fit`). See `design/DESIGN.md`.
+- **Design language rules:** charts sit in a `.bw-plot` window that follows the theme (dark in Night, light in Paper, each with its own data colours, so a chart always matches its page); ▲/▼ plus a sign on every change; one `dawn` highlight and one primary button per view; every chart redraws to its container (`Brownian.fit`). See `design/DESIGN.md`.
 
 ## Verify every change
 
