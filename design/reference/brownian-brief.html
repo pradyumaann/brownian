@@ -1,0 +1,196 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Brownian Brief — reference</title>
+<link rel="stylesheet" href="../brownian.css">
+<script src="../brownian-charts.js"></script>
+<style>
+  .page { max-width: 1200px; margin: 0 auto; padding: 0 var(--space-12) var(--space-16); }
+  .bar { display:flex; justify-content:space-between; align-items:center; gap: var(--space-4); min-height: 64px; border-bottom: 1px solid var(--hairline); flex-wrap: wrap; }
+  .bar .mark { font: 600 18px/1 var(--font-sans); letter-spacing: -0.02em; }
+  .bar .st { display:flex; gap: var(--space-4); align-items:center; flex-wrap: wrap; font: 400 12px var(--font-mono); color: var(--ink-faint); }
+  .bar .st .live { color: var(--dawn-ink); }
+  .dawn { padding: var(--space-16) 0 var(--space-8); display:grid; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); gap: var(--space-12); align-items: end; }
+  .dawn h1 { margin: 0; font: 600 72px/0.95 var(--font-sans); letter-spacing: -0.035em; }
+  .dawn h1 .bw-serif { font-size: 1.08em; color: var(--dawn-ink); }
+  .dawn .lede { margin: 0; font: 400 15px/1.6 var(--font-sans); color: var(--ink-muted); max-width: 64ch; }
+  .dawn .lede b { color: var(--ink); font-weight: 500; }
+  .hero { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); border-top: 1px solid var(--hairline-strong); border-bottom: 1px solid var(--hairline); }
+  .hero > div { padding: var(--space-6) var(--space-6) var(--space-6) 0; min-width: 0; }
+  .hero > div + div { padding-left: var(--space-6); border-left: 1px solid var(--hairline); }
+  .hero .v { font: 600 44px/1 var(--font-sans); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; margin: var(--space-3) 0 var(--space-2); white-space: nowrap; }
+  .hero .v small { font-size: .45em; color: var(--ink-muted); font-weight: 500; letter-spacing: -0.01em; }
+  .hero .d { font: 500 13px/1.45 var(--font-mono); }
+  .hero .d span.w { font-family: var(--font-sans); font-weight: 400; color: var(--ink-muted); }
+  section { padding-top: var(--space-16); }
+  .sh h2 { margin: 0; font: 500 36px/1.05 var(--font-sans); letter-spacing: -0.025em; }
+  .sh h2 .bw-serif { font-size: 1.08em; }
+  .sh .bw-meta { display:flex; justify-content:space-between; gap: var(--space-4); flex-wrap: wrap; margin: var(--space-3) 0 var(--space-4); }
+  .sh .ix { font-family: var(--font-mono); color: var(--ink-faint); }
+  .sh hr { margin-bottom: var(--space-8); }
+  .two { display:grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); gap: var(--space-8); align-items: start; }
+  .pair { display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: var(--space-6); }
+  .note { font: 400 14px/1.6 var(--font-sans); color: var(--ink-muted); }
+  .note p { margin: 0 0 var(--space-3); }
+  .note b { color: var(--ink); font-weight: 500; }
+  .bw-num { color: var(--ink); }
+  .cap { font: 500 15px/1.3 var(--font-sans); margin: 0 0 var(--space-3); }
+  .bw-plot.pad { padding: var(--space-2) 0; }
+  .comp { width:100%; border-collapse: collapse; }
+  .comp td { padding: 7px 0; border-bottom: 1px solid var(--hairline); font: 400 13px/1.4 var(--font-sans); color: var(--ink-muted); }
+  .comp td.v { text-align:right; font-family: var(--font-mono); color: var(--ink); }
+  .score { display:flex; align-items: baseline; gap: var(--space-3); margin-bottom: var(--space-4); }
+  .score .n { font: 600 72px/0.9 var(--font-sans); letter-spacing: -0.035em; }
+  .score .w { font: 400 32px/1 var(--font-serif); font-style: italic; color: var(--dawn-ink); }
+  .macro { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: var(--space-4); margin-top: var(--space-6); }
+  .macro > div { border-top: 1px solid var(--hairline); padding-top: var(--space-3); min-width: 0; }
+  .macro .v { font: 500 20px/1.2 var(--font-mono); margin-top: 4px; }
+  ol.st { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--hairline-strong); }
+  ol.st li { display: grid; grid-template-columns: 84px minmax(0,1fr) auto; gap: var(--space-4); padding: var(--space-3) 0; border-bottom: 1px solid var(--hairline); align-items: baseline; }
+  ol.st .t { font: 500 15px/1.4 var(--font-sans); } ol.st .m { font: 400 13px/1.45 var(--font-sans); color: var(--ink-muted); margin-top: 2px; }
+  ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align:right; white-space: nowrap; }
+  .new { color: var(--dawn-ink); } .ongoing { color: var(--ink-muted); }
+  .actions { margin-top: var(--space-8); display:flex; gap: var(--space-3); flex-wrap: wrap; }
+  footer { margin-top: var(--space-16); padding-top: var(--space-4); border-top: 1px solid var(--hairline); display:flex; justify-content:space-between; gap: var(--space-4); flex-wrap: wrap; }
+  @media (max-width: 900px) {
+    .page { padding: 0 var(--space-4) var(--space-12); }
+    .dawn { grid-template-columns: 1fr; gap: var(--space-6); padding-top: var(--space-12); }
+    .dawn h1 { font-size: 44px; }
+    .hero { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .hero > div:nth-child(3) { padding-left: 0; border-left: 0; }
+    .hero > div:nth-child(n+3) { border-top: 1px solid var(--hairline); }
+    .hero .v { font-size: 32px; }
+    .two, .pair { grid-template-columns: 1fr; }
+    .macro { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .sh h2 { font-size: 28px; }
+    ol.st li { grid-template-columns: 1fr; gap: 4px; } ol.st .v { text-align: left; }
+  }
+</style></head>
+<body>
+<div class="page">
+  <div class="bar">
+    <span class="mark">Brownian</span>
+    <div class="st"><span>Fri 13 Nov 2026</span><span class="live">● Brief 07:52 IST</span><span>Open 09:15 · Close 15:30</span></div>
+  </div>
+
+  <div class="dawn">
+    <h1>Markets, <span class="bw-serif">overnight</span>.</h1>
+    <p class="lede"><b>A flat-to-soft open is signalled.</b> GIFT Nifty last traded at 25,279 against Nifty's 25,299.35 close<button class="bw-src">S8</button>. Overnight turned risk-off: the US 10-year closed at 5.10% and Brent settled 3.30% higher at $95.82 after attacks on Saudi energy sites<button class="bw-src">S11</button><button class="bw-src">S12</button>. <b>FII buying is still the anchor</b>, while DIIs sold for a 9th straight session<button class="bw-src">S5</button>.</p>
+  </div>
+
+  <div class="hero">
+    <div><div class="bw-label">GIFT Nifty, 02:44 IST</div><div class="v">25,279<button class="bw-src">S8</button></div><div class="d bw-loss">▼ −20 pts <span class="w">vs Nifty close</span></div></div>
+    <div><div class="bw-label">Mood Index</div><div class="v" id="mood-v"></div><div class="d"><span class="w" id="mood-w"></span></div></div>
+    <div><div class="bw-label">FII net, cash, Thu</div><div class="v">+₹7,831<small> cr</small><button class="bw-src">S5</button></div><div class="d bw-gain">▲ ₹73,566 cr <span class="w">Nov to date</span></div></div>
+    <div><div class="bw-label">USD/INR, provisional</div><div class="v">94.04<button class="bw-src">S6</button></div><div class="d bw-gain">▲ +0.35% <span class="w">rupee weaker</span></div></div>
+  </div>
+
+  <section>
+    <div class="sh"><h2>The market's <span class="bw-serif">mood</span></h2>
+      <p class="bw-meta"><span>Six equal-weighted components, Thu 12 Nov session</span><span class="ix">01 · Mood Index</span></p><hr class="bw-rule"></div>
+    <div class="two">
+      <div><div class="bw-plot" id="dialbox"><svg id="dial" role="img"></svg></div>
+        <p class="bw-disclaimer">Interpretation, not a forecast.</p></div>
+      <div>
+        <div class="score"><span class="n" id="mood-n"></span><span class="w" id="mood-b"></span></div>
+        <table class="comp" id="comp"></table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sh"><h2>Where money <span class="bw-serif">moved</span></h2>
+      <p class="bw-meta"><span>FII and DII provisional net flows, cash market<button class="bw-src">S1</button><button class="bw-src">S5</button></span><span class="ix">02 · Flow Map</span></p><hr class="bw-rule"></div>
+    <div class="pair">
+      <div><p class="cap">Thursday, 12 Nov</p><div class="bw-plot pad" id="f1box"><svg id="f1" role="img" aria-label="FII net +7,830.60 crore, DII net −6,331.17 crore on 12 November"></svg></div></div>
+      <div><p class="cap">November to date</p><div class="bw-plot pad" id="f2box"><svg id="f2" role="img" aria-label="FII net +73,566 crore, DII net −46,835 crore in November to date"></svg></div></div>
+    </div>
+    <p class="note" style="margin-top:var(--space-4)">HDFC Sky puts November's FII buying at $6.43bn, the strongest since September 2024<button class="bw-src">S1</button>.</p>
+  </section>
+
+  <section>
+    <div class="sh"><h2>Sector <span class="bw-serif">strength</span></h2>
+      <p class="bw-meta"><span>NSE sectoral indices, Thu 12 Nov · one-day change<button class="bw-src">S1</button><button class="bw-src">S2</button><button class="bw-src">S3</button></span><span class="ix">03 · India Markets</span></p><hr class="bw-rule"></div>
+    <div class="two">
+      <div class="bw-plot pad" id="secbox"><svg id="sec" role="img" aria-label="NSE sector changes on 12 November 2026"></svg></div>
+      <div class="note">
+        <p><b>Financials led</b>; autos and FMCG lagged<button class="bw-src">S5</button>.</p>
+        <p><b>Realty +4.50%</b> had no specific catalyst in the sources. HDFC Sky's close report gave +3.7%<button class="bw-src">S1</button>.</p>
+        <p><b>Auto</b> ended an 8-session winning streak on profit-taking.</p>
+        <p><b>Oil &amp; Gas</b>: sources differ, −0.50% to −0.76%. Financial Services and Healthcare: n/a.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sh"><h2>Global <span class="bw-serif">cues</span></h2>
+      <p class="bw-meta"><span>S&amp;P 500 sectors and cross-asset, Thu 12 Nov close<button class="bw-src">S11</button></span><span class="ix">04 · Global Cues</span></p><hr class="bw-rule"></div>
+    <div class="bw-plot pad" id="usbox"><svg id="us" role="img" aria-label="S&P 500 top and bottom three sectors on 12 November"></svg></div>
+    <p class="bw-source" style="margin-top:8px">Top three and bottom three sectors only; the others: n/a in the brief</p>
+    <div class="macro">
+      <div><div class="bw-label">US 10-year</div><div class="v">5.10%</div></div>
+      <div><div class="bw-label">Brent</div><div class="v">$95.82 <span class="bw-gain" style="font-size:13px">▲ +3.30%</span></div></div>
+      <div><div class="bw-label">Dollar index</div><div class="v">103.19</div></div>
+      <div><div class="bw-label">Gold</div><div class="v">$3,885.30 <span class="bw-loss" style="font-size:13px">▼ −2.88%</span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sh"><h2>Still <span class="bw-serif">developing</span></h2>
+      <p class="bw-meta"><span>Stories carried across sessions</span><span class="ix">05 · Developing</span></p><hr class="bw-rule"></div>
+    <ol class="st">
+      <li><span><span class="bw-chip ongoing">Ongoing</span></span><div><div class="t">Record FII return, day 9 of November</div><div class="m">Watch whether 5% US yields slow it.</div></div><span class="v bw-gain">▲ +₹73,566 cr<button class="bw-src">S1</button><button class="bw-src">S5</button></span></li>
+      <li><span><span class="bw-chip ongoing">Ongoing</span></span><div><div class="t">US rate-hike repricing</div><div class="m">A December hike is fully priced; US October PPI is due at 19:00 IST.</div></div><span class="v">2Y 4.88% · 10Y 5.10%<button class="bw-src">S11</button></span></li>
+      <li><span><span class="bw-chip new">New</span></span><div><div class="t">Nvidia leadership change</div><div class="m">Huang resigned; Kress is interim CEO; results on 17 Nov as planned.</div></div><span class="v bw-loss">▼ NVDA −4.34%<button class="bw-src">S11</button><button class="bw-src">S12</button></span></li>
+      <li><span><span class="bw-chip ongoing">Ongoing</span></span><div><div class="t">Middle East and oil</div><div class="m">Brent went from about $91.88 in Indian hours to $95.82 at settlement.</div></div><span class="v">Brent $95.82<button class="bw-src">S7</button><button class="bw-src">S11</button><button class="bw-src">S12</button></span></li>
+    </ol>
+    <div class="actions"><button class="bw-btn bw-btn-dawn">Read the full Brief <span class="bw-btn-dot">→</span></button><button class="bw-btn">See all 20 sources <span class="bw-btn-dot">→</span></button></div>
+  </section>
+
+  <footer><span class="bw-disclaimer">For information only; not investment advice.</span><span class="bw-source">Built from the Pre-Market Brief of Fri 13 Nov 2026, prepared 07:52 IST</span></footer>
+</div>
+<script>
+  // Mood Index: component values from the brief, scored with the prototype's published formulas. Copy is templated from the result.
+  var C = [
+    { name: 'Volatility · India VIX 16.61', src: ['S1', 'S4'], s: 50 - (16.61 - 16) / 12 * 50 },
+    { name: 'Breadth · 55.9% advancing', src: ['S1'], s: 2377 / (2377 + 1878) * 100 },
+    { name: 'Momentum · ≈ +10% in Nov', src: ['S2'], s: 50 + 50 * Math.tanh(10 / 8) },
+    { name: 'Foreign flows · +₹73,566 cr', src: ['S1', 'S5'], s: 50 + 50 * Math.tanh(73566 / 75000) },
+    { name: 'Safe haven · stocks over gold', src: ['S1', 'S9'], s: 50 + 50 * Math.tanh((0.18 + 1.29) / 2) },
+    { name: 'Global risk · US VIX 18.70', src: ['S11'], s: 50 - (18.70 - 18) / 17 * 50 }
+  ];
+  var B = [{ from: 0, to: 25, name: 'Extreme fear' }, { from: 25, to: 45, name: 'Fear' }, { from: 45, to: 55, name: 'Neutral' }, { from: 55, to: 75, name: 'Greed' }, { from: 75, to: 100.01, name: 'Extreme greed' }];
+  var score = C.reduce(function (a, c) { return a + c.s; }, 0) / C.length;
+  var band = B.filter(function (b) { return score >= b.from && score < b.to; })[0].name;
+  ['mood-v', 'mood-n'].forEach(function (id) { document.getElementById(id).textContent = Math.round(score); });
+  document.getElementById('mood-w').textContent = band + ' · interpretation, not a forecast';
+  document.getElementById('mood-b').textContent = band;
+  var t = document.getElementById('comp');
+  C.forEach(function (c) {
+    var tr = t.insertRow(), a = tr.insertCell(), v = tr.insertCell();
+    a.textContent = c.name; c.src.forEach(function (x) { var b = document.createElement('button'); b.className = 'bw-src'; b.textContent = x; a.appendChild(b); });
+    v.className = 'v'; v.textContent = c.s.toFixed(0);
+  });
+  var dial = document.getElementById('dial');
+  dial.setAttribute('aria-label', 'Mood Index ' + Math.round(score) + ', ' + band);
+  Brownian.fit(document.getElementById('dialbox'), function (w) {
+    Brownian.dial(dial, { score: score, bands: B, components: C.map(function (c) { return { name: c.name, score: c.s }; }), width: w, height: Math.round(w * 0.6) });
+  });
+  var cr = function (v) { return Brownian.fmt.crore(v); };
+  Brownian.fit(document.getElementById('f1box'), function (w) {
+    Brownian.diverge(document.getElementById('f1'), { rows: [{ label: 'FII', value: 7830.60 }, { label: 'DII', value: -6331.17 }], width: w, labelWidth: 56, valueWidth: 112, rowH: 34, format: cr });
+  });
+  Brownian.fit(document.getElementById('f2box'), function (w) {
+    Brownian.diverge(document.getElementById('f2'), { rows: [{ label: 'FII', value: 73566 }, { label: 'DII', value: -46835 }], width: w, labelWidth: 56, valueWidth: 112, rowH: 34, format: cr });
+  });
+  var sectors = [['Realty', 4.50], ['Media', 2.46], ['PSU Bank', 1.51], ['Bank', 1.20], ['Private Bank', 0.87], ['Consumer Durables', 0.35], ['Metal', -0.11], ['Pharma', -0.35], ['IT', -0.41], ['Energy', -0.6], ['FMCG', -0.74], ['Auto', -1.02], ['Financial Services', null]];
+  Brownian.fit(document.getElementById('secbox'), function (w) {
+    Brownian.diverge(document.getElementById('sec'), { rows: sectors.map(function (r) { return { label: r[0], value: r[1] }; }), width: w, labelWidth: w < 480 ? 112 : 132, valueWidth: 84 });
+  });
+  var us = [['Energy', 1.51], ['Utilities', -0.02], ['Technology', -0.34], ['Industrials', -0.89], ['Communication Services', -0.96], ['Materials', -1.28]];
+  Brownian.fit(document.getElementById('usbox'), function (w) {
+    Brownian.diverge(document.getElementById('us'), { rows: us.map(function (r) { return { label: r[0], value: r[1] }; }), width: w, labelWidth: w < 480 ? 140 : 170, valueWidth: 84 });
+  });
+  Brownian.readout();
+</script>
+</body>
+</html>

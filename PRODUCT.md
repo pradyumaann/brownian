@@ -65,6 +65,7 @@ Open decisions: final web framework; data pipeline for daily ingestion and histo
 
 - Name: Brownian (domain intent: brownian.ai). From Brownian motion, the physics behind the random-walk model of prices: random day to day, with an upward drift over time. The name is a self-aware nod that single-day moves are noise, which is the product's own message. Tagline: "Markets wander. You don't have to."
 - Previous working name: Antelux (retired).
+- Design language (14 Nov 2026): data as landscape on a dark canvas: ridgelines, unit-strand flows, an instrument-dial Mood Index, hairline structure, Onest / Instrument Serif italic / JetBrains Mono, a night theme by default with a paper (light) theme, and dawn as the single accent. Rules in design/DESIGN.md; derived from the founder's web-design reference board.
 - Voice: calm, plain, evidence-first. Explains rather than hypes. Says when data is missing or conflicting.
 - Brand name appears on flagship features only (Brownian Brief, Ask Brownian); other features use plain market language Indian investors already use.
 - Clearance (14 Nov 2026): see docs/name-clearance.md. brownian.ai and brownian.com are owned by others; no USPTO conflict in classes 36/42; IP India and handles still to confirm manually.
