@@ -303,3 +303,16 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
   .bw-table.st td[data-l]:nth-child(n+3)::before { content: attr(data-l); display: block; font: 500 11px/1.3 var(--font-sans); color: var(--ink-faint); margin-bottom: 1px; }
   .sheet-in { padding: var(--space-4) var(--space-4) calc(var(--space-6) + env(safe-area-inset-bottom, 0px)); }
 }
+
+/* Hyper Charts marks outside the plot window (server-rendered, no script) */
+.segmeter { display: flex; gap: 3px; height: 14px; align-items: stretch; margin: var(--space-3) 0 var(--space-1); }
+.segmeter i { flex: 1 1 0; min-width: 0; border-radius: 3px; background: var(--hairline); }
+.segmeter i.is-lit { background: currentColor; box-shadow: 0 0 10px 0 currentColor; }
+.minibars { display: block; width: 100%; max-width: 280px; height: 44px; overflow: visible; margin-top: var(--space-3); }
+.minibars rect { transition: opacity .2s; }
+.minibars .is-gain { fill: var(--gain); filter: drop-shadow(0 0 3px var(--gain)); }
+.minibars .is-loss { fill: var(--loss); filter: drop-shadow(0 0 3px var(--loss)); }
+.minibars .is-level { fill: var(--ink-faint); }
+.minibars .is-now { fill: var(--dawn-ink); filter: drop-shadow(0 0 3px var(--dawn)); }
+.minibars:hover rect:not(:hover) { opacity: var(--opacity-dim); }
+.hero .segmeter { max-width: 220px; }

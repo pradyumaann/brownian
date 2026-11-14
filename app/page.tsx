@@ -10,6 +10,7 @@ import { Term } from "@/components/Term";
 import { Change } from "@/components/Change";
 import { Diverge } from "@/components/charts/Diverge";
 import { Dial } from "@/components/charts/Dial";
+import { SegMeter } from "@/components/charts/Mini";
 import { band, comps, pressureHigh, pressureName, quad, score, scoreRaw, scored } from "@/lib/mood";
 import type { Kpi } from "@/data/types";
 
@@ -42,6 +43,7 @@ export default function Brief() {
         <div>
           <div className="bw-label"><Link href="/mood/">Mood Index</Link></div>
           <div className="v"><CountUp to={score} /></div>
+          <SegMeter score={scoreRaw} label={`Mood Index ${score} of 100, ${band}`} />
           <div className="d"><span className="w">{band} · interpretation, not a forecast</span></div>
         </div>
         <KpiCell k={B.kpis.fii} />

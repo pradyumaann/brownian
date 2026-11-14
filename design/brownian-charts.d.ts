@@ -13,11 +13,13 @@ export interface DialOpts {
 
 export interface StrandNode { id: string; label: string; cat?: string }
 export interface StrandOpts {
-  columns: StrandNode[][]; links: { source: string; target: string; value: number }[]; unit: number;
+  columns: StrandNode[][]; links: { source: string; target: string; value: number; color?: string }[]; unit: number;
   width?: number; height?: number; labelWidth?: number; gap?: number; format?: (v: number) => string; colorBy?: "source" | "target"; seed?: number;
 }
 
 declare const Brownian: {
+  glow(svg: SVGSVGElement, sd?: number): string;
+  grad(svg: SVGSVGElement, stops: [number, string, number?][], x2?: number, y2?: number, units?: string): string;
   css(name: string): string;
   ramp(name: "spec" | "tide", t: number): string;
   fmt: {

@@ -14,12 +14,17 @@ export function TimeLine({ points, bands = [], label: aria, unit = "", decimals 
   const { ref, w } = useWidth<HTMLDivElement>();
   const W = w || 640, H = W < 480 ? 220 : 260, l = W < 480 ? 74 : 92, r = 16, t = 14, b = 30;
   const n = points.length, X = (i: number) => l + (i / Math.max(1, n - 1)) * (W - l - r), Y = (v: number) => t + (1 - v / 100) * (H - t - b);
-  let d = "", pen = false;
+  // The line and the area beneath it: one run per unbroken stretch of data, so gaps stay gaps.
+  let d = "", area = "", pen = false, runStart = 0;
   points.forEach((p, i) => {
-    if (p.value == null) { pen = false; return; }
+    if (p.value == null) { if (pen) area += `L${X(i - 1).toFixed(1)} ${Y(0)}L${X(runStart).toFixed(1)} ${Y(0)}Z`; pen = false; return; }
+    if (!pen) { runStart = i; area += `M${X(i).toFixed(1)} ${Y(0)}`; }
     d += `${pen ? "L" : "M"}${X(i).toFixed(1)} ${Y(p.value).toFixed(1)}`;
+    area += `L${X(i).toFixed(1)} ${Y(p.value).toFixed(1)}`;
     pen = true;
   });
+  if (pen) area += `L${X(points.length - 1).toFixed(1)} ${Y(0)}L${X(runStart).toFixed(1)} ${Y(0)}Z`;
+  const gid = `tl-${aria.replace(/[^a-z]/gi, "").slice(0, 24)}`;
   const lastI = points.findLastIndex((p) => p.value != null), last = points[lastI];
   // One tick at the first session of each year; quarters too when the window is short.
   const ticks = points.map((p, i) => ({ p, i })).filter(({ p, i }) => i > 0 && (p.date.slice(0, 4) !== points[i - 1].date.slice(0, 4) || (n < 400 && p.date.slice(5, 7) !== points[i - 1].date.slice(5, 7) && ["01", "04", "07", "10"].includes(p.date.slice(5, 7)))));
@@ -47,7 +52,21 @@ export function TimeLine({ points, bands = [], label: aria, unit = "", decimals 
           </g>
         ))}
         <line x1={l} x2={W - r} y1={H - b} y2={H - b} className="bw-grid" />
-        <path d={d} className="bw-spark" style={{ stroke: "var(--plot-ink)", strokeWidth: 1.25 }} />
+        <defs>
+          {/* Colour encodes the value: the spec ramp runs from 0 (violet) at the floor to 100 (light gold) at the top. */}
+          <linearGradient id={`${gid}-line`} gradientUnits="userSpaceOnUse" x1="0" y1={Y(0)} x2="0" y2={Y(100)}>
+            {[1, 2, 3, 4, 5, 6].map((k, i) => <stop key={k} offset={i / 5} style={{ stopColor: `var(--spec-${k})` }} />)}
+          </linearGradient>
+          <linearGradient id={`${gid}-area`} gradientUnits="userSpaceOnUse" x1="0" y1={Y(100)} x2="0" y2={Y(0)}>
+            <stop offset="0" style={{ stopColor: "var(--spec-5)", stopOpacity: 0.32 }} />
+            <stop offset="1" style={{ stopColor: "var(--spec-1)", stopOpacity: 0 }} />
+          </linearGradient>
+          <filter id={`${gid}-glow`} x="-5%" y="-20%" width="110%" height="140%">
+            <feGaussianBlur stdDeviation="2.4" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+        <path d={area} fill={`url(#${gid}-area)`} />
+        <path d={d} fill="none" stroke={`url(#${gid}-line)`} strokeWidth={1.75} strokeLinejoin="round" filter={`url(#${gid}-glow)`} />
         {points.map((p, i) => (p.value == null || i % step ? null : (
           <rect key={p.date} x={X(i) - (W - l - r) / n * step / 2} y={t} width={Math.max(1, (W - l - r) / n * step)} height={H - t - b}
             fill="transparent" data-tip-v={fmt(p.value)} data-tip-l={label(p.date)} />

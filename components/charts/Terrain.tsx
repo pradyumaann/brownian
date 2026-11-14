@@ -14,7 +14,7 @@ export function Terrain({ sectors, labels, z, label }: { sectors: string[]; labe
   const W = w || 720, phone = W < 480;
   const ns = sectors.length, nt = labels.length;
   const all = z.flat().filter((v): v is number => v != null), lo = Math.min(...all), hi = Math.max(...all), max = Math.max(Math.abs(lo), Math.abs(hi)) || 1;
-  const left = 8, right = phone ? 92 : 132, b = phone ? 5 : 10, c = phone ? 14 : 22, zh = phone ? 80 : 130;
+  const left = phone ? 14 : 12, right = phone ? 92 : 132, b = phone ? 5 : 11, c = phone ? 14 : 22, zh = phone ? 80 : 140;
   const a = (W - left - right - (ns - 1) * b) / Math.max(1, nt - 1);
   const top = 20 + zh, floorFront = top + (ns - 1) * c, H = floorFront + zh + 40;
   const P = (t: number, s: number) => [left + t * a + s * b, floorFront - s * c];
@@ -26,11 +26,16 @@ export function Terrain({ sectors, labels, z, label }: { sectors: string[]; labe
   return (
     <div className="bw-plot" ref={ref}>
       <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" className="terrain" aria-label={label}>
+        <defs>
+          <filter id="terrain-glow" x="-50%" y="-20%" width="200%" height="140%">
+            <feGaussianBlur stdDeviation={phone ? 1.6 : 2.4} result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
         {/* floor: one hairline per sector row, plus the front and back edges of the time axis */}
         {sectors.map((_, s) => { const [x1, y1] = P(0, s), [x2, y2] = P(nt - 1, s); return <line key={s} x1={x1} y1={y1} x2={x2} y2={y2} className="bw-grid" />; })}
         {[0, nt - 1].map((t) => { const [x1, y1] = P(t, 0), [x2, y2] = P(t, ns - 1); return <line key={t} x1={x1} y1={y1} x2={x2} y2={y2} className="bw-grid" />; })}
         {ramp && [...sectors.keys()].reverse().map((s) => (
-          <g key={s} data-row={sectors[s]}>
+          <g key={s} data-row={sectors[s]} filter="url(#terrain-glow)">
             {z[s].map((v, t) => {
               if (v == null || v === 0) return null;
               const [x, y] = P(t, s), up = v > 0;

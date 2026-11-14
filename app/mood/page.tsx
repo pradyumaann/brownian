@@ -6,6 +6,7 @@ import { S, Section, ViewHead } from "@/components/Section";
 import { Src } from "@/components/Src";
 import { Term } from "@/components/Term";
 import { Dial } from "@/components/charts/Dial";
+import { SegMeter } from "@/components/charts/Mini";
 import { Quadrant } from "@/components/charts/Quadrant";
 import { TimeLine } from "@/components/charts/TimeLine";
 import { BANDS, METHOD, MISSING, asOf, band, bandOf, comps, moodSeries, pressure, pressureHigh, pressureName, pressureTone, quad, score, scoreRaw, scored } from "@/lib/mood";
@@ -72,10 +73,7 @@ export default function Mood() {
                 </div>
                 {c.available && (
                   <div>
-                    <div className="track" role="img" aria-label={`${c.name} scores ${Math.round(c.score)} of 100, ${bandOf(c.score).name}`}>
-                      {[25, 45, 55, 75].map((e) => <b key={e} style={{ left: `${e}%` }} />)}
-                      <i style={{ left: `${c.score}%` }} />
-                    </div>
+                    <SegMeter score={c.score} label={`${c.name} scores ${Math.round(c.score)} of 100, ${bandOf(c.score).name}`} />
                     <div className="scale"><span>0 · Extreme fear</span><span>50</span><span>Extreme greed · 100</span></div>
                   </div>
                 )}

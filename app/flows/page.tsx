@@ -8,6 +8,7 @@ import { Src } from "@/components/Src";
 import { Term } from "@/components/Term";
 import { Diverge } from "@/components/charts/Diverge";
 import { FlowLines } from "@/components/charts/FlowLines";
+import { MiniBars } from "@/components/charts/Mini";
 import { Strands } from "@/components/charts/Strands";
 import { Terrain } from "@/components/charts/Terrain";
 import { strandShape, terrainShape } from "@/lib/sectorFlows";
@@ -87,6 +88,7 @@ export default function Flows() {
         <div className="three after-plot">
           <div className="take">
             <h3>{ctx.streak} {ctx.streak === 1 ? "day" : "days"} of {ctx.streakSide}</h3>
+            <MiniBars signed values={daily.slice(-20).map((r) => r.equity)} dates={daily.slice(-20).map((r) => r.date)} fmt={(v) => crore(v)} label={`FPI net equity flow, last 20 reporting days: ${daily.slice(-20).map((r) => crore(r.equity)).join(", ")}`} />
             <p>The current run of FPI net {ctx.streakSide} in equity. Over the last 20 reporting days FPIs net {(ctx.sum20 ?? 0) >= 0 ? "bought" : "sold"} {crore(Math.abs(ctx.sum20 ?? 0), false)}{ctx.sum20Pct != null ? `, more than in ${Math.round(ctx.sum20Pct)}% of 20-day spells in the previous three years` : ""}.</p>
           </div>
           <div className="take">

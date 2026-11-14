@@ -4,66 +4,85 @@ import { useWidth } from "./usePlot";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const day = (d: string) => `${Number(d.slice(8))} ${MONTHS[Number(d.slice(5, 7)) - 1]} ${d.slice(0, 4)}`;
+const month = (d: string) => `${MONTHS[Number(d.slice(5, 7)) - 1]} ${d.slice(0, 4)}`;
 
 export interface Line { name: string; cat: number; values: (number | null)[] }
 export interface Note { i: number; line: number; text: string }
 
-/** Cumulative flows as lines on one ₹ scale, each named at its end; up to three notes on leader lines.
- *  Hover or tap any day for every line's value; the line ends are keyboard-reachable. */
+/** Cumulative flows drawn as a metro map, after the Intel "Internet of Things" inspiration. Each line is sampled at
+ *  month ends (stations) and runs between them only horizontally or at 45°, so the vertical distance between two
+ *  stations is the month's net flow, exactly to scale. Notes sit in pill labels on leader lines (three at most).
+ *  Hover or tap any month for every line's value; stations at line ends are keyboard-reachable. */
 export function FlowLines({ dates, lines, notes = [], label }: { dates: string[]; lines: Line[]; notes?: Note[]; label: string }) {
   const { ref, w } = useWidth<HTMLDivElement>();
-  const W = w || 720, H = W < 480 ? 280 : 340, l = 12, r = W < 480 ? 96 : 132, t = 20, b = 30;
-  const all = lines.flatMap((s) => s.values.filter((v): v is number => v != null));
+  const W = w || 720, phone = W < 480, H = phone ? 340 : 420, l = phone ? 8 : 12, r = phone ? 104 : 148, t = 26, b = 34;
+  // Month-end stations: the last reporting day of each month.
+  const st = dates.map((d, i) => ({ d, i })).filter(({ d, i }) => i === dates.length - 1 || dates[i + 1].slice(0, 7) !== d.slice(0, 7));
+  const all = lines.flatMap((s) => st.map(({ i }) => s.values[i]).filter((v): v is number => v != null));
   const lo = Math.min(0, ...all), hi = Math.max(0, ...all), span = hi - lo || 1;
-  const n = dates.length, X = (i: number) => l + (i / Math.max(1, n - 1)) * (W - l - r), Y = (v: number) => t + ((hi - v) / span) * (H - t - b);
-  // Gridlines at round ₹ steps (1, 2 or 5 × 10^k crore).
+  const n = st.length, X = (k: number) => l + (k / Math.max(1, n - 1)) * (W - l - r), Y = (v: number) => t + ((hi - v) / span) * (H - t - b);
   const raw = span / 4, mag = 10 ** Math.floor(Math.log10(raw)), step = [1, 2, 5, 10].map((m) => m * mag).find((s) => s >= raw)!;
   const grid: number[] = [];
   for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) grid.push(v);
-  const years = dates.map((d, i) => ({ d, i })).filter(({ d, i }) => i > 0 && d.slice(0, 4) !== dates[i - 1].slice(0, 4));
-  const ends = lines.map((s, k) => { const i = s.values.findLastIndex((v) => v != null); return { k, i, v: s.values[i]!, y: Y(s.values[i]!) }; }).sort((a, c) => a.y - c.y);
-  for (let k = 1; k < ends.length; k++) if (ends[k].y - ends[k - 1].y < 28) ends[k].y = ends[k - 1].y + 28; // keep end labels apart
-  const cols = Math.max(1, Math.ceil(n / 300));
+  // Metro routing between stations: level first, then 45°, then straight down or up for any remainder.
+  const route = (pts: [number, number][]) => pts.map(([x, y], k) => {
+    if (!k) return `M${x.toFixed(1)} ${y.toFixed(1)}`;
+    const [px, py] = pts[k - 1], dx = x - px, dy = y - py, dd = Math.min(Math.abs(dy), dx);
+    return `H${(x - dd).toFixed(1)}L${x.toFixed(1)} ${(py + Math.sign(dy) * dd).toFixed(1)}V${y.toFixed(1)}`;
+  }).join("");
+  const ends = lines.map((s, k) => { const j = st.findLastIndex(({ i }) => s.values[i] != null); const v = s.values[st[j].i]!; return { k, j, v, y: Y(v) }; }).sort((a, c) => a.y - c.y);
+  for (let k = 1; k < ends.length; k++) if (ends[k].y - ends[k - 1].y < 30) ends[k].y = ends[k - 1].y + 30;
+  const years = st.map(({ d }, k) => ({ d, k })).filter(({ d, k }) => k > 0 && d.slice(0, 4) !== st[k - 1].d.slice(0, 4));
+  const quarters = st.map(({ d }, k) => ({ d, k })).filter(({ d }) => ["03", "06", "09", "12"].includes(d.slice(5, 7)));
+  const nearest = (i: number) => { let best = 0; st.forEach((s, k) => { if (Math.abs(s.i - i) < Math.abs(st[best].i - i)) best = k; }); return best; };
   return (
     <div className="bw-plot" ref={ref}>
       <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img"
-        aria-label={`${label}. ${lines.map((s) => { const i = s.values.findLastIndex((v) => v != null); return `${s.name} ${crore(s.values[i]!)} by ${day(dates[i])}`; }).join("; ")}.`}>
+        aria-label={`${label}. ${lines.map((s) => { const j = s.values.findLastIndex((v) => v != null); return `${s.name} ${crore(s.values[j]!)} by ${day(dates[j])}`; }).join("; ")}.`}>
+        <defs>
+          <filter id="metro-glow" x="-10%" y="-30%" width="120%" height="160%">
+            <feGaussianBlur stdDeviation="2.6" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+        {quarters.map(({ d, k }) => <line key={d} x1={X(k)} x2={X(k)} y1={t} y2={H - b} className="bw-grid" />)}
         {grid.map((v) => (
           <g key={v}>
             <line x1={l} x2={W - r} y1={Y(v)} y2={Y(v)} className={v === 0 ? "bw-base" : "bw-grid"} />
-            <text x={l + 2} y={Y(v) - 4} className="bw-tick">{v === 0 ? "0" : crore(v).replace(" cr", "")}</text>
+            <text x={l + 2} y={Y(v) - 5} className="bw-tick">{v === 0 ? "0" : crore(v)}</text>
           </g>
         ))}
-        {years.map(({ d, i }) => (
-          <g key={d}>
-            <line x1={X(i)} x2={X(i)} y1={H - b} y2={H - b + 4} className="bw-tickline" />
-            <text x={X(i)} y={H - 10} textAnchor="middle" className="bw-tick">{d.slice(0, 4)}</text>
-          </g>
+        {years.map(({ d, k }) => (
+          <text key={d} x={X(k)} y={H - 12} textAnchor="middle" className="bw-label">{d.slice(0, 4)}</text>
         ))}
-        {dates.map((d, i) => (i % cols ? null : (
-          <rect key={d} x={X(i) - ((W - l - r) / n) * cols / 2} y={t} width={Math.max(1, ((W - l - r) / n) * cols)} height={H - t - b} fill="transparent"
-            data-tip-v={day(d)} data-tip-l={lines.map((s) => `${s.name} ${s.values[i] == null ? "n/a" : crore(s.values[i]!)}`).join(" · ")} />
-        )))}
+        {st.map(({ d, i }, k) => (
+          <rect key={d} x={X(k) - (W - l - r) / n / 2} y={t} width={(W - l - r) / n} height={H - t - b} fill="transparent"
+            data-tip-v={month(d)} data-tip-l={lines.map((s) => `${s.name} ${s.values[i] == null ? "n/a" : crore(s.values[i]!)}`).join(" · ")} />
+        ))}
         {lines.map((s) => {
-          let d = "", pen = false;
-          s.values.forEach((v, i) => { if (v == null) { pen = false; return; } d += `${pen ? "L" : "M"}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`; pen = true; });
-          return <path key={s.name} d={d} fill="none" stroke={`var(--cat-${s.cat})`} strokeWidth={1.5} strokeLinejoin="round" />;
+          const pts = st.map(({ i }, k) => (s.values[i] == null ? null : ([X(k), Y(s.values[i]!)] as [number, number]))).filter((p): p is [number, number] => !!p);
+          return <path key={s.name} d={route(pts)} className="bw-glowline" stroke={`var(--cat-${s.cat})`} filter="url(#metro-glow)" style={{ strokeWidth: phone ? 2.2 : 3 }} />;
         })}
-        {notes.slice(0, 3).map((nt) => {
-          const v = lines[nt.line].values[nt.i]!, x = X(nt.i), y = Y(v), up = y > t + 60, ly = up ? y - 34 : y + 38;
+        {lines.map((s) => st.map(({ d, i }, k) => (s.values[i] == null || !["03", "06", "09", "12"].includes(d.slice(5, 7)) ? null : (
+          <circle key={s.name + d} cx={X(k)} cy={Y(s.values[i]!)} r={phone ? 2.5 : 3.2} className="bw-station" stroke={`var(--cat-${s.cat})`} />
+        ))))}
+        {notes.slice(0, 3).map((nt, ni) => {
+          const k = nearest(nt.i), v = lines[nt.line].values[nt.i]!, x = X(k), y = Y(lines[nt.line].values[st[k].i]!);
+          const up = ni % 2 === 0 ? y > t + 70 : false, ly = up ? y - 40 : y + 44, tw = nt.text.length * 6 + 20, bx = Math.min(Math.max(x - tw / 2, l), W - r - tw);
           return (
             <g key={nt.text}>
-              <line x1={x} x2={x} y1={y} y2={ly + (up ? 6 : -14)} className="bw-leader" />
-              <circle cx={x} cy={y} r={2.5} fill={`var(--cat-${lines[nt.line].cat})`} />
-              <text x={Math.min(Math.max(x, l + 60), W - r - 60)} y={ly} textAnchor="middle" className="bw-label">{nt.text}</text>
+              <line x1={x} x2={x} y1={y} y2={up ? ly + 11 : ly - 11} stroke={`var(--cat-${lines[nt.line].cat})`} strokeWidth={1.25} />
+              <circle cx={x} cy={y} r={5} className="bw-station" stroke={`var(--cat-${lines[nt.line].cat})`} tabIndex={0} data-tip-v={crore(v)} data-tip-l={nt.text} />
+              <rect x={bx} y={ly - 11} width={tw} height={22} rx={11} className="bw-pill-box" stroke={`var(--cat-${lines[nt.line].cat})`} />
+              <text x={bx + tw / 2} y={ly + 4} textAnchor="middle" className="bw-pill-text">{nt.text}</text>
             </g>
           );
         })}
         {ends.map((e) => (
           <g key={e.k}>
-            <circle cx={X(e.i)} cy={Y(e.v)} r={3} fill={`var(--cat-${lines[e.k].cat})`} tabIndex={0} data-tip-v={crore(e.v)} data-tip-l={`${lines[e.k].name}, cumulative to ${day(dates[e.i])}`} />
-            <text x={X(e.i) + 8} y={e.y - 2} className="bw-label">{lines[e.k].name}</text>
-            <text x={X(e.i) + 8} y={e.y + 11} className="bw-tick">{crore(e.v)}</text>
+            <circle cx={X(e.j)} cy={Y(e.v)} r={6} className="bw-station" stroke={`var(--cat-${lines[e.k].cat})`} tabIndex={0}
+              data-tip-v={crore(e.v)} data-tip-l={`${lines[e.k].name}, cumulative to ${day(st[e.j].d)}`} />
+            <text x={X(e.j) + 12} y={e.y - 2} className="bw-label" style={{ fontWeight: 600 }}>{lines[e.k].name}</text>
+            <text x={X(e.j) + 12} y={e.y + 12} className="bw-tick">{crore(e.v)}</text>
           </g>
         ))}
       </svg>
