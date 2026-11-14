@@ -330,8 +330,9 @@
     }
     o.bands.forEach(function (b) {
       if (b.from > 0) { var a = pt(b.from, R + 4), c = pt(b.from, r0 - 6); el('line', { x1: a[0], y1: a[1], x2: c[0], y2: c[1], 'class': 'bw-tickline is-edge' }, svg); }
-      var mid = (b.from + Math.min(100, b.to)) / 2, p = pt(mid, R + 16);
-      text(svg, p[0], p[1] + 3, b.name, 'bw-band' + (o.score >= b.from && o.score < b.to ? ' is-on' : ''), mid < 40 ? 'end' : mid > 60 ? 'start' : 'middle');
+      var mid = (b.from + Math.min(100, b.to)) / 2, end = b.from === 0 ? 0 : b.to >= 100 ? 100 : null;
+      var p = end == null ? pt(mid, R + 16) : [pt(end, R - thick / 2)[0], cy + 22];
+      text(svg, p[0], end == null ? p[1] + 3 : p[1], b.name, 'bw-band' + (o.score >= b.from && o.score < b.to ? ' is-on' : ''), end != null ? 'middle' : mid < 40 ? 'end' : mid > 60 ? 'start' : 'middle');
     });
     [0, 50, 100].forEach(function (v) { var p = pt(v, r0 - 14); text(svg, p[0], p[1] + 3, String(v), 'bw-tick', v < 50 ? 'start' : v > 50 ? 'end' : 'middle'); });
     var trackR = r0 * 0.62;

@@ -5,7 +5,7 @@
   --ground: #07080a;
   --surface: #0e1013;
   --surface-raised: #16191d;
-  --plot: #050607;
+  --plot: #07080a;
   --hairline: #ffffff1f;
   --hairline-strong: #ffffff3d;
   --ink: #f3f1ec;
@@ -56,7 +56,7 @@
   --gain: #0b6f64;
   --loss: #b8361a;
   --focus: #8a4b00;
-  --plot: #f6f4ef;
+  --plot: #e9e6df;
   --plot-ink: #15171a;
   --plot-muted: #5a5d63;
   --plot-grid: #00000017;
@@ -97,7 +97,7 @@
     --gain: #0b6f64;
     --loss: #b8361a;
     --focus: #8a4b00;
-    --plot: #f6f4ef;
+    --plot: #e9e6df;
     --plot-ink: #15171a;
     --plot-muted: #5a5d63;
     --plot-grid: #00000017;

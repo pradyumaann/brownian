@@ -39,8 +39,8 @@ export function strandShape() {
   };
   const left = group(sold).map((x, i) => ({ id: "L" + i, label: x.sector, value: -x.net, cat: "cat-3" }));
   const right = group(bought).map((x, i) => ({ id: "R" + i, label: x.sector, value: x.net }));
-  if (m.total > 0) left.push({ id: "NEW", label: "New money from abroad", value: m.total, cat: "cat-2" });
-  else if (m.total < 0) right.push({ id: "OUT", label: "Taken out of India", value: -m.total });
+  if (m.total > 0) left.push({ id: "NEW", label: "Net inflow", value: m.total, cat: "cat-2" });
+  else if (m.total < 0) right.push({ id: "OUT", label: "Net outflow", value: -m.total });
   const sideTotal = left.reduce((s, x) => s + x.value, 0);
   const unit = [100, 200, 250, 500, 1000, 2000, 2500, 5000].find((u) => sideTotal / u <= 160) ?? 10000;
   return { ...m, left, right, unit };

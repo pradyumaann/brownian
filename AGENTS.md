@@ -55,12 +55,12 @@ All UI follows `design/DESIGN.md` (imported by `CLAUDE.md`). The app imports `de
 - **Colour meaning:** price changes are coloured by sign (`<Change>` / `toneOf()`: teal up, ember down, with ▲/▼). Impact on India is written out in words ("Headwind for India"), not implied by colour.
 - **Phone:** wide tables use `<DataTable stack>` and stack into cards under 620px; charts must fit 400px without sideways scroll.
 - **Design rules from the review:** no small uppercase label (eyebrow/kicker) above a heading; put the context line under the heading as `.meta`. No nested cards. Body text ≥ 4.5:1 contrast in both themes.
-- **Design language rules:** charts sit in a `.bw-plot` window that follows the theme (dark in Night, light in Paper, each with its own data colours, so a chart always matches its page); ▲/▼ plus a sign on every change; one `dawn` highlight and one primary button per view; every chart redraws to its container (`Brownian.fit`). See `design/DESIGN.md`.
+- **Design language rules:** charts sit in a `.bw-plot` window that is the page's own colour in both themes, with its own Night and Paper data colours); ▲/▼ plus a sign on every change; one `dawn` highlight and one primary button per view; every chart redraws to its container (`Brownian.fit`). See `design/DESIGN.md`.
 
 ## Verify every change
 
 1. `npm run history:verify` if you touched the history store or its importers, then `npm run typecheck` and `npm run build`.
-2. `npm run check`: every view at 1280px and 400px in night and paper; it fails on console errors, failed requests or horizontal page scroll, and saves full-page screenshots to look at. Check the views you touched in the screenshots.
+2. `npm run check:plots`: every chart panel is the page's colour and no mark or label sticks out of it, in both themes at 1280px and 400px. Then `npm run check`: every view at 1280px and 400px in night and paper; it fails on console errors, failed requests or horizontal page scroll, and saves full-page screenshots to look at. Check the views you touched in the screenshots.
 3. Tab through what you changed; the readout and the sheet must work from the keyboard (Esc closes the sheet and returns focus).
 4. If you changed `design/`, also open `design/reference/brownian-brief.html`.
 

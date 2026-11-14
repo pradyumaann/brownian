@@ -12,7 +12,7 @@ export function TimeLine({ points, bands = [], label: aria, unit = "", decimals 
   points: { date: string; value: number | null }[]; bands?: Band[]; label: string; unit?: string; decimals?: number;
 }) {
   const { ref, w } = useWidth<HTMLDivElement>();
-  const W = w || 640, H = W < 480 ? 220 : 260, l = W < 480 ? 74 : 92, r = 16, t = 14, b = 30;
+  const W = w || 640, H = W < 480 ? 220 : 260, l = 92, r = 16, t = 14, b = 30;
   const n = points.length, X = (i: number) => l + (i / Math.max(1, n - 1)) * (W - l - r), Y = (v: number) => t + (1 - v / 100) * (H - t - b);
   // The line and the area beneath it: one run per unbroken stretch of data, so gaps stay gaps.
   let d = "", area = "", pen = false, runStart = 0;
