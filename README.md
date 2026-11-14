@@ -58,4 +58,4 @@ Then go to `http://localhost:8000`. Views are hash routes: `#today`, `#money`, `
 4. **Ask Brownian.** An AI analyst users can question, answering only from cited sources.
 5. **Accounts.** Holdings and watchlist are device-only today.
 
-Name, domain (`brownian.ai`) and trademark clearance are not done yet.
+Name checks so far: [docs/name-clearance.md](docs/name-clearance.md). `brownian.ai` is owned by someone else; IP India and social handles still need a manual check.

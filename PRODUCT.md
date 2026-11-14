@@ -67,7 +67,7 @@ Open decisions: final web framework; data pipeline for daily ingestion and histo
 - Previous working name: Antelux (retired).
 - Voice: calm, plain, evidence-first. Explains rather than hypes. Says when data is missing or conflicting.
 - Brand name appears on flagship features only (Brownian Brief, Ask Brownian); other features use plain market language Indian investors already use.
-- Trademark, domain and handle clearance not yet done.
+- Clearance (14 Nov 2026): see docs/name-clearance.md. brownian.ai and brownian.com are owned by others; no USPTO conflict in classes 36/42; IP India and handles still to confirm manually.
 
 ## Evidence on Hand
 
