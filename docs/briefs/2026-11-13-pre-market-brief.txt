@@ -1,0 +1,149 @@
+PRE-MARKET BRIEF – Fri, 13 Nov 2026 (prepared 07:52 IST)
+Sessions covered: India Thu 12 Nov 2026; US/Europe/Japan Thu 12 Nov 2026. [S#] tags refer to the Sources list at the end.
+
+KEY TAKEAWAYS FOR TODAY
+- Flat-to-soft open signalled. GIFT Nifty last traded 25,279 (02:44 IST) vs Nifty's 25,299.35 close [S8]. Overnight turned risk-off: US 10Y closed at 5.10%, a December Fed hike is fully priced, and Brent settled +3.30% at $95.82 after Houthi attacks on Saudi energy sites [S11][S12]. That reverses the cheaper-oil tailwind India had on Thursday.
+- FII buying is still the anchor. FIIs net bought Rs 7,830.60 cr on Thu (Rs 73,566 cr Nov-to-date) while DIIs sold for a 9th straight session [S5]. Financials are leading; autos and FMCG are lagging.
+- Nvidia CEO Jensen Huang resigned. NVDA closed -4.34%; money rotated into AMD (+5.86%) and AVGO (+5.54%) [S11]. Watch: US October PPI today at 19:00 IST, and Nvidia results on 17 Nov. The rupee weakened to 94.04/$ [S6].
+
+SECTION 1 - INDIA (Thu 12 Nov 2026)
+
+1. HEADLINE INDICES
+- Nifty 50: 25,299.35, +0.18%
+- Sensex: 81,911.01, +0.04%
+- Nifty Bank: 61,518, +1.20% (one source reported +1.0%)
+- Nifty Midcap 100: 62,039, +0.85%
+- India VIX: 16.61, -5.38%
+- FII net (cash, provisional): +Rs 7,830.60 cr
+- DII net (cash, provisional): -Rs 6,331.17 cr
+What drove the day: a volatile pause after a roughly 10% November rally. Financials, FII inflows and softer crude during Indian hours supported the market; profit-taking and US yields near 5% capped gains. [S1][S2][S4][S5]
+
+2. SECTOR STRENGTH
+Top 3:
+- Realty +4.50% (HDFC Sky's close report gave +3.7%)
+- Media +2.46%
+- PSU Bank +1.51%
+Bottom 3:
+- Auto -1.02%
+- FMCG -0.74%
+- Oil & Gas -0.50% to -0.76% (sources differ)
+Others: Bank +1.20%, Private Bank +0.87%, Consumer Durables +0.35%, Metal -0.11%, Pharma -0.35%, IT -0.41%, Energy -0.6%. Financial Services and Healthcare: n/a. [S1][S2][S3]
+
+Analysis:
+- Realty: no specific catalyst in the sources. View: fits this week's broader-market buying; treat as a one-day spike until it follows through.
+- Media: no clear catalyst.
+- PSU Bank: Q2 earnings, asset quality and credit growth. View: multi-day trend; the index is up about 15% in a month [S2].
+- Auto: profit-taking ended an 8-session winning streak (M&M -1.9%, Maruti -1.2%, Motherson -2.3%). View: one-day pause within an uptrend.
+- FMCG: Nestle and HUL were the drags; no clear catalyst.
+- Oil & Gas: weak as crude fell during Indian hours. View: Brent's +3.3% overnight could reverse this for upstream names.
+
+3. BIG MOVERS (more than +/-2%)
+- HDFC Life +4.23%: October industry first-year premiums +26.2% YoY [S3]
+- Shriram Finance +3.58%: broad financials rally, no company-specific catalyst
+- Bajaj Finance +3.36%: launched a $1bn+ institutional share sale [S1]
+- SBI Life +2.97%: same premium data [S3]
+- SBI +2.38% (Upstox: +2.97%): PSU bank rally
+- Bajaj Finserv +2.28%: no clear catalyst
+- Samvardhana Motherson -2.27%: auto profit-taking
+- Nestle India -2.10%: no clear catalyst
+- HUL and ONGC: sources conflict, unverified
+Outside Nifty 100: Godrej Industries +11.9% to +13.0% (no clear catalyst); Page Industries -12.9% (after results); Paytm +7.3%; Kalyan Jewellers +7.1% [S1]
+ETFs: n/a.
+MCX (intraday as of 18:35 IST, not final closes) [S9]:
+- Gold: 137,910, -1.29%
+- Silver: 181,238, -1.78%
+- Crude: 8,074, -1.34%; quoted at 8,311 (+1.55%) by 23:54 IST [S19]
+- Natural gas and copper: n/a
+Bullion driver: dollar at a 19-month high and December Fed hike bets [S10]. COMEX gold then fell -2.88% overnight [S11].
+
+4. INR FOREX
+- USD/INR: 94.04 (provisional; previous close 93.71), +0.35%, INR weakening [S6]
+- EUR/INR, GBP/INR, JPY/INR, CNY/INR: n/a
+Drivers:
+- The dollar index was at 103.03 during Indian hours on hawkish Fed talk and December hike odds.
+- FII inflows offered support at lower levels.
+- No RBI intervention was reported for the day in the sources reviewed.
+- Overnight: DXY 103.19, EUR/USD 1.1054, GBP/USD 1.3232, USD/JPY 159.86 [S11].
+View: yields above 5% plus Brent near $96 is a weak mix for the INR. Sharekhan's expected range was 93.70 to 94.20.
+
+5. DEVELOPING STORIES
+1) Record FII return (ONGOING, day 9 of Nov): Rs 73,566 cr bought in Nov vs DII selling of Rs 46,835 cr; HDFC Sky puts it at $6.43bn, the strongest since Sep 2024 [S1][S5]. Watch whether 5% US yields slow it.
+2) US rate-hike repricing (ONGOING): 2Y 4.88%, 10Y 5.10%; December hike fully priced [S11]. Watch PPI and Fed speakers today.
+3) Nvidia leadership shock (NEW): Huang resigned; Kress is interim CEO; results 17 Nov as planned [S12]. Taiwan fell -2.63% [S11].
+4) Middle East and oil (ONGOING): Brent went from about $91.88 during Indian hours to $95.82 at settlement on Saudi attacks, Hormuz tanker blasts and Trump's Iran remarks [S7][S11][S12].
+5) MSCI India rebalance (NEW): Adani Green, Coforge, LIC and Meesho added; PI Industries removed [S1][S3]. Effective date: n/a.
+6) Financials capital raising (NEW): Bajaj Finance $1bn+ share sale; insurance premiums +26.2% YoY [S1][S3].
+
+6. AFTER-HOURS AND OVERNIGHT
+- GIFT Nifty: 25,279 at 02:44 IST, about 20 points below the spot close, implying a flat to slightly negative open [S8].
+- HAL Q2 FY27: net profit +16% YoY, revenue Rs 7,613 cr, margin slipped [S2].
+- Alkem Q2: net profit -14.37% to Rs 667 cr.
+- P&G Hygiene Q2: profit -6.7% to Rs 195.84 cr.
+- Tata Power: new CEO Sanjay Banga; Q2 profit about +49% (released during the session) [S1].
+- Block and bulk deals: n/a.
+
+SECTION 2 - GLOBAL SESSION WRAP (Thu 12 Nov 2026)
+
+1. INDICES
+- S&P 500: 7,592.40, -0.35% (Nvidia CEO exit; yields up)
+- Nasdaq Composite: 25,366.09, -0.39% (NVDA -4.34%)
+- Dow Jones: 52,297.09, -0.36% (Nvidia, Honeywell, Boeing)
+- Russell 2000: 2,799.06, -1.66% (yield spike)
+- STOXX 600: 664.01, +0.14% (record close)
+- FTSE 100: 10,863.56, +0.26% (UK Q3 GDP +0.7%)
+- DAX: 26,816.06, +0.57% (CappNotes: 26,771.88, +0.41%) (Siemens raised outlook)
+- Nikkei 225: 60,819.36, -0.70% (chip sell-off)
+Macro context [S11]:
+- US 10Y: 5.10%
+- DXY: 103.19
+- Brent: $95.82
+- Gold: $3,885.30 (-2.88%)
+- VIX: 18.70
+View: modest risk-off with poor breadth. Themes: a hawkish Fed repricing, an AI-leadership shock, and oil geopolitics. Europe's tech-light market outperformed.
+
+2. US SECTORS [S11]
+Top 3:
+- Energy +1.51%
+- Utilities -0.02%
+- Technology -0.34%
+Bottom 3:
+- Materials -1.28%
+- Communication Services -0.96%
+- Industrials -0.89%
+Analysis:
+- Energy: oil spike (VLO +3.1%, DVN +2.9%). View: event-driven.
+- Utilities: defensive hold.
+- Technology: NVDA losses offset by AMD, AVGO and ANET; rotation within the sector.
+- Materials: gold at a 13-month low; Corteva -24.3%. View: continuing trend.
+- Communication Services: no clear catalyst.
+- Industrials: airlines fell on fuel costs (UAL -6.0%, DAL -5.2%).
+
+3. US AFTER-HOURS
+- CSCO about +3%: record $18.5bn revenue, raised guidance, AI infrastructure outlook $9bn [S12]
+- CBRS: rose after hours (% n/a) on a Q3 beat and upbeat guidance [S11]
+- AMAT: about flat despite a record quarter and strong guidance
+- No mega-cap after-hours move above +/-1.5% was reported.
+
+SOURCES
+[S1] https://www.google.com/url?q=https://hdfcsky.com/news/market-close-report-today-november-12-2026-nifty-sensex-pause-the-party&source=gmail&ust=1794623204459000&sa=E
+[S2] https://www.google.com/url?q=https://upstox.com/news/market-news/stocks/market-wrap-nov-12-nifty-50-ends-at-25-229-sensex-flat-nifty-smallcap-100-outperforms-for-second-straight-session/article-203374/&source=gmail&ust=1794623204459000&sa=E
+[S3] https://www.google.com/url?q=https://hdfcsky.com/news/sectoral-snapshot-today-november-12-2026-financials-support-dalal-street-as-autos-retreat&source=gmail&ust=1794623204459000&sa=E
+[S4] https://www.google.com/url?q=https://www.investmentguruindia.com/newsdetail/market-round-up-12th-november-2026-by-motilal-oswal-wealth-management-ltd708573&source=gmail&ust=1794623204459000&sa=E
+[S5] https://www.google.com/url?q=https://tapetide.com/insight/reports/fii-dii-flows/2026-11&source=gmail&ust=1794623204459000&sa=E
+[S6] https://www.google.com/url?q=https://hdfcsky.com/news/rupee-falls-33-paise-to-close-at-94-04-against-us-dollar&source=gmail&ust=1794623204459000&sa=E
+[S7] https://www.google.com/url?q=https://hdfcsky.com/news/gift-nifty-signals-flat-open-for-sensex-nifty-on-friday-as-asia-falls-and-oil-eases&source=gmail&ust=1794623204459000&sa=E
+[S8] https://www.google.com/url?q=https://bazaarwatch.in/&source=gmail&ust=1794623204459000&sa=E
+[S9] https://www.google.com/url?q=https://mcxlive.org/&source=gmail&ust=1794623204459000&sa=E
+[S10] https://www.google.com/url?q=https://www.business-standard.com/markets/commodities/gold-silver-fall-as-expectations-of-december-rate-hike-strengthen-126111200351_1.html&source=gmail&ust=1794623204459000&sa=E
+[S11] https://www.google.com/url?q=https://cappnotes.substack.com/p/closing-look-thursday-november-12&source=gmail&ust=1794623204459000&sa=E
+[S12] https://www.google.com/url?q=https://rockandturner.substack.com/p/thur-nov-12-2026-the-market-today&source=gmail&ust=1794623204459000&sa=E
+[S13] https://www.google.com/url?q=https://www.investing.com/news/stock-market-news/us-stocks-lower-at-close-of-trade-dow-jones-industrial-average-down-036-5023324&source=gmail&ust=1794623204459000&sa=E
+[S14] https://www.google.com/url?q=https://finance.yahoo.com/markets/world-indices/articles/major-us-stock-indexes-fared-211731317.html&source=gmail&ust=1794623204459000&sa=E
+[S15] https://www.google.com/url?q=https://mlq.ai/news/european-stocks-close-higher-as-burberry-and-munich-re-outweigh-a-chip-selloff-after-nvidias-ceo-exit/&source=gmail&ust=1794623204459000&sa=E
+[S16] https://www.google.com/url?q=https://ph.investing.com/news/stock-market-news/european-shares-hit-record-highs-as-defensive-appeal-offsets-nvidia-shock-2693944&source=gmail&ust=1794623204459000&sa=E
+[S17] https://www.google.com/url?q=https://finance.yahoo.com/markets/stocks/articles/asian-stocks-fragile-nvidia-plummets-015524144.html&source=gmail&ust=1794623204459000&sa=E
+[S18] https://www.google.com/url?q=https://angelone.in/news/market-updates/top-gainers-and-losers-on-november-12-2026-hdfc-life-and-shriram-finance-gain-while-nestle-drops-over-2&source=gmail&ust=1794623204459000&sa=E
+[S19] https://www.google.com/url?q=https://dhan.co/commodity/crude-oil-options-summary/&source=gmail&ust=1794623204459000&sa=E
+[S20] https://www.google.com/url?q=https://tradingeconomics.com/united-states/stock-market&source=gmail&ust=1794623204459000&sa=E
+
+For information only; not investment advice. "n/a" = not verifiable from sources retrieved this morning.

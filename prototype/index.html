@@ -1,0 +1,1576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Brownian</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: app shell — sticky header with scrollable view tabs over one 1120px column; summary first on every view, detail below. */
+:root{
+  --bg:#F4F6FB; --surface:#FFFFFF; --surface-2:#ECF0F8; --ink:#131A2C; --muted:#586278; --line:#D8DEEA;
+  --accent:#3346B8; --accent-soft:#E2E6FA;
+  --up:#137A48; --up-soft:#DCF1E5; --down:#AE3328; --down-soft:#FAE3DF; --warn:#86550B; --warn-soft:#F8EDD6; --neutral:#8A93A8;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r:10px;
+  --night:#1B2150; --dawn:#F0A436; --shadow:rgba(19,26,44,.16); --on-night:#F2F4FB; --on-night-2:#AEB5D9;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0D1220; --surface:#151C2D; --surface-2:#1C2537; --ink:#E6EAF3; --muted:#9AA3B8; --line:#2A3448;
+  --accent:#93A1FF; --accent-soft:#232D55;
+  --up:#55C98F; --up-soft:#12301F; --down:#FF8173; --down-soft:#3B1D1A; --warn:#E6B45E; --warn-soft:#362A13; --neutral:#6B7590; --night:#2B3475; --dawn:#F5B24A; --shadow:rgba(0,0,0,.55); color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0D1220; --surface:#151C2D; --surface-2:#1C2537; --ink:#E6EAF3; --muted:#9AA3B8; --line:#2A3448;
+  --accent:#93A1FF; --accent-soft:#232D55;
+  --up:#55C98F; --up-soft:#12301F; --down:#FF8173; --down-soft:#3B1D1A; --warn:#E6B45E; --warn-soft:#362A13; --neutral:#6B7590; --night:#2B3475; --dawn:#F5B24A; --shadow:rgba(0,0,0,.55); color-scheme:dark }
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--night)}
+a{color:var(--accent)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h2{font-size:1.6rem;font-weight:700}
+h3{font-size:1.18rem;font-weight:700}
+h4{font-size:1.02rem;font-weight:700}
+p{margin:0}
+ul,ol{margin:0;padding-left:20px}
+li{margin-bottom:6px}
+.num{font-family:var(--f-data);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.muted{color:var(--muted)}
+.small{font-size:.86rem}
+.tiny{font-size:.78rem}
+.stack{display:grid;gap:10px;align-content:start}
+.stack-lg{display:grid;gap:16px;align-content:start}
+
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--night);border-bottom:1px solid color-mix(in srgb,var(--on-night) 10%,transparent)}
+header :focus-visible{outline-color:var(--dawn)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px 4px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px}
+.mark{width:34px;height:34px;border-radius:9px;background:color-mix(in srgb,var(--on-night) 9%,transparent);display:grid;place-items:center;flex:none}
+.wordmark{display:grid;line-height:1.1}
+.wordmark b{font-family:var(--f-display);font-size:1.2rem;font-weight:700;letter-spacing:-.01em;color:var(--on-night)}
+.wordmark .tag{font-size:.72rem;color:var(--on-night-2);letter-spacing:.02em}
+.greet{display:grid;gap:6px}
+.greet h1{font-size:clamp(1.6rem,3.6vw,2.2rem);font-weight:700}
+.greet p{max-width:68ch}
+.greet .row{gap:10px}
+.meta{display:block;font-size:.84rem;color:var(--muted);margin-top:3px}
+.vhead{display:grid;gap:4px}
+.vhead h1{font-size:clamp(1.6rem,3.6vw,2.2rem);font-weight:700}
+.vhead p{color:var(--muted);max-width:68ch}
+.dayline{position:relative;height:52px;margin-top:6px;max-width:620px}
+.dayline .rail,.dayline .lit{position:absolute;left:0;top:22px;height:2px;border-radius:2px}
+.dayline .rail{right:0;background:var(--line)}
+.dayline .lit{background:var(--dawn)}
+.dayline .tick{position:absolute;top:17px;width:2px;height:12px;background:var(--muted);transform:translateX(-50%)}
+.dayline .tl{position:absolute;top:33px;transform:translateX(-50%);font:500 .72rem var(--f-data);color:var(--muted);white-space:nowrap}
+.dayline .tl.up{top:0}
+.dayline .sun{position:absolute;top:16px;width:14px;height:14px;border-radius:50%;background:var(--dawn);transform:translateX(-50%);box-shadow:0 0 0 5px color-mix(in srgb,var(--dawn) 22%,transparent)}
+.chip.dawn{background:color-mix(in srgb,var(--dawn) 22%,var(--surface));color:var(--ink)}
+.src{appearance:none;border:0;background:var(--surface-2);color:var(--muted);font:500 .68rem var(--f-data);padding:1px 5px;border-radius:4px;cursor:pointer;vertical-align:1px;margin-left:4px}
+.src:hover{color:var(--accent)}
+.tag-int{font-size:.72rem;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 8px;white-space:nowrap}
+.holdrow{display:flex;flex-wrap:wrap;gap:8px}
+.holdrow a{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 12px;text-decoration:none;color:var(--ink);font-size:.86rem}
+.holdrow a:hover{border-color:var(--accent)}
+.tchart{display:grid;gap:12px}
+.trow{display:grid;grid-template-columns:200px minmax(0,1fr) 92px;gap:14px;align-items:center;font-size:.88rem}
+.trow .tt{position:relative;height:22px}
+.trow .tt::before{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;width:1px;background:var(--muted);opacity:.6}
+.trow .avg{position:absolute;top:5px;height:12px;border-radius:3px;opacity:.3}
+.trow .dot{position:absolute;top:4px;width:14px;height:14px;border-radius:50%;transform:translateX(-50%);border:2px solid var(--surface)}
+.trow .num{text-align:right}
+.wl-msg{margin-top:10px;font-size:.88rem}
+.wl-msg:empty{display:none}
+.linkbtn{appearance:none;border:0;background:none;color:var(--accent);font:inherit;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+#scrim{position:fixed;inset:0;z-index:19;background:color-mix(in srgb,var(--ink) 28%,transparent)}
+.skip{position:absolute;left:-9999px;top:8px}
+.skip:focus{left:max(16px,env(safe-area-inset-left,0px));z-index:30;background:var(--surface);color:var(--ink);padding:8px 12px;border-radius:8px;border:1px solid var(--line);font:600 .9rem var(--f-body)}
+::selection{background:color-mix(in srgb,var(--dawn) 40%,transparent);color:var(--ink)}
+html{scrollbar-color:var(--line) var(--bg)}
+input{caret-color:var(--accent)}
+input::placeholder{color:var(--muted);opacity:1}
+a{text-underline-offset:2px}
+.panel .callout{background:none;border-radius:0;padding:10px 0 0;border-top:1px dashed var(--line)}
+details.src-list summary{cursor:pointer;color:var(--ink);font-weight:600;margin-top:14px}
+.x svg{display:block}
+/* Interaction layer: one readout for every chart, focus = hover */
+#tip{position:fixed;z-index:25;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 11px;box-shadow:0 8px 24px var(--shadow);max-width:260px;font-size:.82rem;line-height:1.35}
+#tip b{display:block;font:600 1rem var(--f-data);font-variant-numeric:tabular-nums}
+#tip span{color:var(--muted)}
+svg text{pointer-events:none}
+[data-tip-v]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.crow{border-radius:6px;padding:3px 6px;margin:0 -6px;transition:opacity .2s,background .2s}
+.crow:hover,.crow:focus-visible{background:var(--surface-2)}
+.chart:hover .crow:not(:hover){opacity:.45}
+.crow:hover .b,.crow:focus-visible .b{filter:brightness(1.12)}
+.ht{transition:transform .25s cubic-bezier(.16,1,.3,1),box-shadow .25s,opacity .2s}
+.ht:hover,.ht:focus-visible{transform:translateY(-3px);box-shadow:0 8px 18px var(--shadow)}
+.heat:hover .ht:not(:hover){opacity:.5}
+.trow{transition:opacity .2s}
+.tchart:hover .trow:not(:hover){opacity:.4}
+.trow .dot::after{content:"";position:absolute;inset:-7px;border-radius:50%}
+.trow .dot:hover,.trow .dot:focus-visible{z-index:2;transform:translateX(-50%) scale(1.25)}
+.grow{transform-box:fill-box;transition:filter .2s}
+.gu{transform-origin:bottom} .gd{transform-origin:top}
+.grow:hover,.grow:focus-visible{filter:brightness(1.15)}
+.needle{transform-box:view-box;transform-origin:110px 110px}
+.gdot{transition:r .2s}
+.gdot:hover,.gdot:focus-visible{r:7}
+.pop,.mdot{transform-box:fill-box;transform-origin:center}
+.qd{transition:opacity .2s}
+.matrix:hover .qd:not(:hover){opacity:.55}
+.dayline .lit{transform-origin:left center}
+@media (prefers-reduced-motion:no-preference){
+  .rise .b,.rise .tugbar span,.rise .trow .avg,.rise .dayline .lit{animation:growx .9s cubic-bezier(.16,1,.3,1) backwards}
+  .rise .grow{animation:growy .9s cubic-bezier(.16,1,.3,1) backwards}
+  .rise .needle{animation:sweep 1.2s cubic-bezier(.16,1,.3,1) backwards}
+  .rise .trow .dot,.rise .comp .meter i{animation:slide 1s cubic-bezier(.16,1,.3,1) backwards}
+  .rise .dayline .sun{animation:sunrise 1.4s cubic-bezier(.16,1,.3,1) backwards}
+  .rise .gdot,.rise .pop,.rise .mdot{animation:pop .6s .35s cubic-bezier(.16,1,.3,1) backwards}
+  .rise .ht{animation:lift .6s cubic-bezier(.16,1,.3,1) backwards}
+  @keyframes growx{from{transform:scaleX(0)}}
+  @keyframes growy{from{transform:scaleY(0)}}
+  @keyframes sweep{from{transform:rotate(var(--sweep))}}
+  @keyframes slide{from{left:50%}}
+  @keyframes sunrise{from{left:var(--from,0%)}}
+  @keyframes pop{from{transform:scale(0)}}
+  @keyframes lift{from{transform:translateY(8px)}}
+}
+
+.datechip{font-size:.8rem;color:var(--on-night-2);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.datechip .num{color:var(--on-night)}
+.datechip .chip.plain{background:color-mix(in srgb,var(--on-night) 12%,transparent);color:var(--on-night)}
+nav{overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+.tabs{display:flex;gap:2px;min-width:max-content}
+.tab{color:var(--on-night-2);font:600 .86rem var(--f-body);padding:10px 9px;border-bottom:2px solid transparent;text-decoration:none;white-space:nowrap}
+.tab[aria-current="page"]{color:var(--on-night);border-bottom-color:var(--dawn)}
+.tabsep{flex:none;width:1px;margin:11px 5px;background:color-mix(in srgb,var(--on-night) 18%,transparent)}
+.tab:hover{color:var(--on-night)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+main{padding-block:24px 48px}
+.view{display:grid;gap:28px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;min-width:0}
+.sec-head{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.sec-head p{max-width:62ch}
+.callout{background:var(--surface-2);border-radius:8px;padding:12px 14px;font-size:.9rem}
+.callout b{color:var(--ink)}
+
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap;letter-spacing:.01em}
+.chip.up{background:var(--up-soft);color:var(--up)}
+.chip.down{background:var(--down-soft);color:var(--down)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.info{background:var(--accent-soft);color:var(--accent)}
+.chip.plain{background:var(--surface-2);color:var(--muted)}
+.up-t{color:var(--up)} .down-t{color:var(--down)} .warn-t{color:var(--warn)} .info-t{color:var(--accent)} .plain-t{color:var(--muted)}
+
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.g21{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px}
+
+/* gauges */
+.gauge{width:100%;max-width:280px;display:block}
+svg text{font-family:var(--f-body);fill:var(--muted)}
+.bignum{font-family:var(--f-display);font-size:clamp(2rem,4.6vw,2.8rem);font-weight:700;line-height:1}
+.moodline{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+
+.strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.tile{background:var(--surface);padding:14px 16px;display:grid;gap:2px;align-content:start}
+.tile .val{font-family:var(--f-data);font-size:1.18rem;font-weight:500}
+.tile .d{font-size:.8rem}
+
+.take{display:grid;gap:8px;align-content:start}
+.take .why{font-size:.88rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+
+.term{appearance:none;background:none;border:0;padding:2px 0;font:inherit;color:inherit;border-bottom:1px dotted var(--accent);cursor:help;text-align:left}
+.term:hover{color:var(--accent)}
+.eyebrow .term{text-transform:inherit;letter-spacing:inherit;font-weight:inherit}
+
+/* mood components */
+.comp{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px 20px;padding:16px 0;border-top:1px solid var(--line)}
+.comp:first-of-type{border-top:0;padding-top:4px}
+.comp .meter{height:8px;border-radius:4px;background:linear-gradient(90deg,var(--down),var(--neutral) 50%,var(--up));position:relative;margin:8px 0 4px}
+.comp .meter i{position:absolute;top:-4px;width:4px;height:16px;border-radius:2px;background:var(--ink);transform:translateX(-50%)}
+.comp .scale{display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted)}
+.kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 12px;font-size:.86rem}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0}
+.missing{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.missing div{border:1px dashed var(--line);border-radius:8px;padding:10px 12px;font-size:.86rem}
+.pressure{display:grid;gap:0}
+.prow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:10px 0;border-top:1px solid var(--line)}
+.prow:first-child{border-top:0}
+.prow .v{font-size:.84rem;color:var(--muted)}
+.prow .chip{grid-row:1/span 2;grid-column:2;align-self:center}
+.matrix{width:100%;max-width:420px;display:block;margin-inline:auto}
+
+/* flows */
+.chartbox{overflow-x:auto}
+.chartbox svg{display:block;width:100%;max-width:680px;height:auto;margin-inline:auto}
+.tug{display:grid;gap:14px}
+.tugrow{display:grid;gap:6px}
+.tugbar{position:relative;height:22px;background:var(--surface-2);border-radius:6px}
+.tugbar::after{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+.tugbar span{position:absolute;top:0;bottom:0}
+.tugbar .l{right:50%;background:var(--down);border-radius:6px 0 0 6px;transform-origin:right center}
+.tugbar .r{left:50%;background:var(--up);border-radius:0 6px 6px 0;transform-origin:left center}
+.tugvals{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font:500 .86rem var(--f-data)}
+.tuglabels{display:flex;justify-content:space-between;font-size:.8rem;gap:8px;flex-wrap:wrap}
+.heat{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px}
+.ht{border-radius:8px;padding:10px;display:grid;gap:2px;min-height:64px;align-content:space-between}
+.ht b{font-size:.8rem;font-weight:600}
+.ht .num{font-size:.95rem}
+.rot{display:grid;gap:12px}
+.rrow{display:grid;grid-template-columns:110px minmax(0,1fr) 44px minmax(0,1fr);gap:10px;align-items:center}
+.rrow .side{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+.rrow .side .chip{white-space:normal}
+.rrow .arrow{display:block;width:44px;height:16px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.78rem;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+/* money */
+.holdpick{display:flex;flex-wrap:wrap;gap:8px}
+.toggle{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 .85rem var(--f-body);padding:7px 12px;border-radius:999px;cursor:pointer}
+.toggle[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.impact{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.icard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px;align-content:start}
+.icard .top{display:flex;justify-content:space-between;gap:10px;align-items:start}
+.icard dl{margin:0;display:grid;gap:8px}
+.icard dt{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.icard dd{margin:0;font-size:.9rem}
+.empty{padding:22px;border:1px dashed var(--line);border-radius:var(--r);color:var(--muted);text-align:center}
+.wl-form{display:flex;gap:8px;flex-wrap:wrap}
+.wl-form input{flex:1 1 220px;min-width:0;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.btn{appearance:none;border:0;background:var(--accent);color:var(--surface);font:600 .88rem var(--f-body);padding:9px 16px;border-radius:8px;cursor:pointer}
+.btn.ghost{background:var(--surface-2);color:var(--ink)}
+.wl{display:grid;margin-top:14px}
+.wrow{display:grid;grid-template-columns:minmax(0,190px) 110px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line)}
+.wrow .nm{font-weight:600}
+.wrow .note{font-size:.88rem;color:var(--muted)}
+.x{appearance:none;border:0;background:none;color:var(--muted);cursor:pointer;font-size:1.1rem;line-height:1;padding:4px 8px;border-radius:6px}
+.x:hover{background:var(--surface-2);color:var(--ink)}
+
+/* tables */
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{text-align:left;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+td.r,th.r{text-align:right}
+td.nw{white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.wide{min-width:640px}
+
+.chart{display:grid;gap:6px}
+.crow{display:grid;grid-template-columns:118px minmax(0,1fr) 96px;gap:10px;align-items:center;font-size:.86rem}
+.track{position:relative;height:16px}
+.track::before{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--muted);opacity:.55}
+.b{position:absolute;top:2px;height:12px;border-radius:2px}
+.b.pos{background:var(--up);transform-origin:left center} .b.neg{background:var(--down);transform-origin:right center}
+.b.ext{transform-origin:right center;opacity:.45;background:repeating-linear-gradient(135deg,var(--down) 0 3px,transparent 3px 6px)}
+.crow .num{text-align:right}
+.axis{display:grid;grid-template-columns:118px minmax(0,1fr) 96px;gap:10px;font-size:.72rem;color:var(--muted)}
+.axis div:nth-child(2){display:flex;justify-content:space-between}
+
+.movers{display:grid}
+.mrow{display:grid;grid-template-columns:minmax(0,1.1fr) 130px minmax(0,1.7fr) auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:.9rem}
+.mrow:first-child{border-top:0}
+
+/* calendar */
+.timeline{display:grid}
+.ev{display:grid;grid-template-columns:140px 18px minmax(0,1fr);gap:14px;padding-bottom:18px}
+.ev .when{font-family:var(--f-data);font-size:.82rem;text-align:right;padding-top:1px}
+.ev .dot{position:relative}
+.ev .dot::before{content:"";position:absolute;left:5px;top:6px;width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.ev .dot::after{content:"";position:absolute;left:8.5px;top:18px;bottom:-18px;width:1px;background:var(--line)}
+.ev:last-child .dot::after{display:none}
+.ev.today .dot::before{background:var(--dawn);box-shadow:0 0 0 4px color-mix(in srgb,var(--dawn) 25%,transparent)}
+.ev .body{display:grid;gap:4px}
+.evh{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+.card{display:grid;gap:8px;align-content:start}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+
+.bullet{width:100%;display:block}
+
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -8px 28px var(--shadow);padding-block:16px calc(18px + env(safe-area-inset-bottom,0px))}
+#sheet .wrap{display:grid;gap:6px;max-width:720px}
+#sheet .shd{display:flex;justify-content:space-between;align-items:center;gap:10px}
+
+footer{border-top:1px solid var(--line);padding-block:22px 40px;font-size:.8rem;color:var(--muted)}
+footer ol{columns:2;column-gap:28px;padding-left:26px;margin:10px 0 0}
+footer li{break-inside:avoid;margin-bottom:4px}
+footer h4{margin-top:16px;color:var(--ink)}
+
+@media (max-width:900px){
+  .g2,.g21,.g3{grid-template-columns:minmax(0,1fr)}
+  .strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .comp{grid-template-columns:minmax(0,1fr)}
+  footer ol{columns:1}
+}
+@media (max-width:620px){
+  .wrow{grid-template-columns:minmax(0,1fr) auto auto}
+  .wrow .note{grid-column:1/-1;grid-row:2}
+  .mrow{grid-template-columns:minmax(0,1fr) auto}
+  .mrow .why{grid-column:1/-1}
+  .mrow .tag{grid-column:1/-1;justify-self:start}
+  .ev{grid-template-columns:18px minmax(0,1fr)}
+  .ev .when{grid-column:2;text-align:left;order:-1}
+  .ev .dot{grid-row:1/span 2;grid-column:1}
+  .crow,.axis{grid-template-columns:96px minmax(0,1fr) 82px}
+  .impact,.cards{grid-template-columns:minmax(0,1fr)}
+  .rrow{grid-template-columns:minmax(0,1fr)}
+  .rrow .arrow{transform:rotate(90deg);margin-left:8px}
+  .datechip{display:none}
+  nav{-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent);mask-image:linear-gradient(90deg,#000 80%,transparent)}
+  .tabs{padding-right:48px}
+  .trow{grid-template-columns:104px minmax(0,1fr) 74px;gap:10px;font-size:.82rem}
+  table.st.wide{min-width:0}
+  table.st tr:first-child{display:none}
+  table.st tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:10px 0;border-bottom:1px solid var(--line)}
+  table.st tr:last-child{border-bottom:0}
+  table.st td{border:0;padding:0}
+  table.st td:nth-child(n+3){grid-column:1/-1}
+  table.st td[data-l]:nth-child(n+3)::before{content:attr(data-l);display:block;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:1px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .view{animation:in .25s ease-out}
+  @keyframes in{from{transform:translateY(4px)}to{transform:none}}
+}
+</style>
+
+<button class="skip" id="skip" type="button">Skip to content</button>
+<header>
+  <div class="wrap bar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24"><polyline points="3,16 6,13 8,15 11,10 13,12.5 16,7.5 18,9.5 20.5,6" fill="none" stroke="var(--on-night)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20.5" cy="6" r="2.6" fill="var(--dawn)"/></svg></span>
+      <span class="wordmark"><b>Brownian</b><span class="tag">Markets wander. You don't have to.</span></span>
+    </div>
+    <div class="datechip"><span>Brief for <span class="num">Fri 13 Nov 2026</span></span><span class="chip plain">Prepared 07:52 IST</span></div>
+  </div>
+  <div class="wrap"><nav aria-label="Views"><div class="tabs" id="tabs"></div></nav></div>
+</header>
+
+<main class="wrap" id="main" tabindex="-1">
+
+<!-- ============ TODAY ============ -->
+<section class="view" id="v-today">
+  <div class="greet">
+    <h1 id="greet-h"></h1>
+    <p class="muted" id="greet-p"></p>
+    <div class="row"><span class="chip dawn" id="fresh"></span><span class="small muted">Brownian Brief, prepared 07:52 IST on Fri 13 Nov 2026</span></div>
+    <div class="dayline" id="dayline" aria-hidden="true"></div>
+  </div>
+  <div class="g2">
+    <div class="panel stack">
+      <span class="eyebrow">Mood Index · 6 measured components</span>
+      <div class="moodline"><span class="bignum" id="t-score"></span><span class="chip" id="t-band"></span></div>
+      <svg class="gauge" id="t-gauge" viewBox="0 0 220 128" role="img"></svg>
+      <p class="small muted">How investors are behaving: volatility, breadth, momentum, foreign flows and safe-haven demand, each compared with its normal range. <a href="#mood">See how it's measured</a></p>
+    </div>
+    <div class="panel stack">
+      <div class="row" style="justify-content:space-between"><span class="eyebrow">Macro pressure · 7 indicators</span><span class="tag-int">Interpretation, not a forecast</span></div>
+      <div class="moodline"><span class="bignum" id="t-press"></span><span class="chip down" id="t-press-n"></span></div>
+      <svg class="matrix" id="t-matrix" viewBox="0 0 320 210" role="img" aria-label="Sentiment versus macro pressure"></svg>
+      <p class="small muted" id="t-quad"></p>
+    </div>
+  </div>
+  <div class="panel stack">
+    <div class="sec-head" style="margin-bottom:0"><div><h3>Your holdings today</h3><span class="meta" id="t-hold-meta"></span></div><a class="small" href="#money">Open Portfolio Lens</a></div>
+    <div class="holdrow" id="t-hold"></div>
+  </div>
+
+  <div>
+    <div class="sec-head"><div><h2>Six numbers to know</h2><span class="meta">Before 09:15 IST</span></div></div>
+    <div class="strip" id="strip"></div>
+  </div>
+
+  <div>
+    <div class="sec-head"><div><h2>What happened, and why it matters to you</h2><span class="meta">In plain English</span></div></div>
+    <div class="g2" id="takeaways"></div>
+  </div>
+
+  <div class="g21">
+    <div class="panel">
+      <div class="sec-head"><div><h3>What drove the day</h3><span class="meta">Thu 12 Nov · India session</span></div></div>
+      <div class="stack small" id="drove"></div>
+    </div>
+    <div class="panel">
+      <div class="sec-head"><div><h3>Coming up</h3><span class="meta">Next 7 days</span></div><a class="small" href="#economy">Full calendar in Macro Watch</a></div>
+      <div class="timeline" id="t-next"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MOOD ============ -->
+<section class="view" id="v-mood" hidden>
+  <div class="g21">
+    <div class="panel stack-lg">
+      <div><span class="eyebrow">Investor sentiment index · 0 = extreme fear, 100 = extreme greed</span></div>
+      <div class="moodline"><span class="bignum" id="m-score"></span><span class="chip" id="m-band"></span><span class="small muted">Equal-weighted average of 6 components</span></div>
+      <svg class="gauge" id="m-gauge" viewBox="0 0 220 128" role="img"></svg>
+      <p class="tiny muted">Each dot on the dial is one component. Hover, tap or tab to read it.</p>
+      <div class="callout"><b>How it's built.</b> Same structure as the published fear-and-greed indices (CNN Business Fear &amp; Greed, Tickertape's Market Mood Index). Each component is scored 0–100 against a reference range, then averaged. The value is computed by this app from the brief's numbers and is not either provider's official reading. Three standard components are missing from today's data and are left out rather than guessed.</div>
+    </div>
+    <div class="panel stack">
+      <h3>Sentiment is a contrarian signal, not a timing tool</h3>
+      <span class="meta">Reading it rationally</span>
+      <ul class="small" id="m-rational"></ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="sec-head"><div><h3>What each one measures, today's value and the research behind it</h3><span class="meta">Components</span></div></div>
+    <div id="m-comps"></div>
+  </div>
+
+  <div class="panel">
+    <div class="sec-head"><div><h3>Standard components missing from the brief</h3><span class="meta">Not scored today</span></div><p class="small muted">Adding these to the morning brief would complete the index.</p></div>
+    <div class="missing" id="m-missing"></div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <div class="sec-head"><div><h3>Fundamental headwinds, kept separate from sentiment</h3><span class="meta">Macro pressure</span></div></div>
+      <div class="pressure" id="m-press"></div>
+    </div>
+    <div class="panel stack">
+      <div class="row" style="justify-content:space-between"><h3 id="m-quad-h"></h3><span class="tag-int">Interpretation, not a forecast</span></div>
+      <svg class="matrix" id="m-matrix" viewBox="0 0 320 210" role="img" aria-label="Sentiment versus macro pressure"></svg>
+      <p class="small" id="m-quad-p"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FLOWS ============ -->
+<section class="view" id="v-flows" hidden>
+  <div class="g21">
+    <div class="panel">
+      <div class="sec-head"><div><h3>Who's buying and who's selling</h3><span class="meta">FII vs DII · ₹ crore, cash market</span></div></div>
+      <div class="tug" id="tug"></div>
+      <p class="small muted" style="margin-top:12px">Every share bought is sold by someone. When FIIs and DIIs together are net buyers, everyone else (retail, HNIs, promoters, prop desks) was a net seller by the same amount, counting exchange cash trades only.</p>
+    </div>
+    <div class="panel stack">
+      <span class="eyebrow">What the flows say</span>
+      <ul class="small" id="flow-read"></ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="sec-head"><div><h3>FIIs went from heavy selling to record buying</h3><span class="meta">Monthly net flows · ₹ crore</span></div><div class="legend"><span><i style="background:var(--up)"></i>Net buying</span><span><i style="background:var(--down)"></i>Net selling</span><span><i style="background:repeating-linear-gradient(135deg,var(--down) 0 2px,var(--down-soft) 2px 4px)"></i>Striped = DII</span></div></div>
+    <div class="chartbox"><svg id="fii-chart" viewBox="0 0 420 300" role="img" aria-label="Monthly FII and DII net flows"></svg></div>
+    <p class="small muted">Sep and Oct FII figures are “about ₹45,000 cr” of selling each, per Tapetide. DII monthly totals for Sep and Oct are not in the sources. A daily series will build up here as briefs accumulate.</p>
+  </div>
+
+  <div class="panel">
+    <div class="sec-head"><div><h3>Money moved into financials and out of consumption</h3><span class="meta">Sector rotation · India</span></div><p class="small muted">Bar = theme average. Dots = each sector in the theme.</p></div>
+    <div class="tchart" id="theme-in"></div>
+  </div>
+
+  <div class="panel">
+    <div class="sec-head"><div><h3>Where money came from and where it went</h3><span class="meta">Rotation map · Thu 12 Nov</span></div></div>
+    <div class="rot" id="rotmap"></div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <div class="sec-head"><div><h3>India</h3><span class="meta">Heatmap · NSE sectors</span></div></div>
+      <div class="heat" id="heat-in"></div>
+    </div>
+    <div class="panel">
+      <div class="sec-head"><div><h3>United States</h3><span class="meta">Heatmap · S&amp;P 500 sectors</span></div></div>
+      <div class="heat" id="heat-us"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="sec-head"><div><h3>Is the move a trend, a pause or a one-day spike?</h3><span class="meta">Trend context</span></div></div>
+    <div class="scroll"><table class="wide" id="t-trend"></table></div>
+  </div>
+</section>
+
+<!-- ============ MONEY ============ -->
+<section class="view" id="v-money" hidden>
+  <div class="stack">
+    <p class="small muted">Pick what you hold. Your picks stay on this device.</p>
+    <div class="holdpick" id="holdpick"></div>
+    <p class="tiny muted" id="hold-ex"></p>
+  </div>
+  <div class="impact" id="impact"></div>
+  <p class="tiny muted">Interpretation of today's brief, not advice.</p>
+  <div class="panel">
+    <div class="sec-head"><div><h3>Is my stock in today's news?</h3><span class="meta">Watchlist</span></div><p class="muted small">Covers every company in the brief, plus this week's results calendars. Example rows are marked until you add your own.</p></div>
+    <form class="wl-form" id="wl-form" autocomplete="off">
+      <label for="wl-input" class="eyebrow" style="flex-basis:100%">Stock name or ticker</label>
+      <input id="wl-input" list="wl-names" placeholder="e.g. Eicher Motors, ONGC, NVDA">
+      <datalist id="wl-names"></datalist>
+      <button class="btn" type="submit">Add</button>
+    </form>
+    <div class="wl-msg" id="wl-msg" aria-live="polite"></div>
+    <div class="wl" id="wl"></div>
+    <p class="tiny" style="margin-top:12px"><button class="linkbtn" type="button" id="wl-reset">Reset to examples</button></p>
+  </div>
+</section>
+
+<!-- ============ INDIA ============ -->
+<section class="view" id="v-india" hidden>
+  <div class="g2">
+    <div class="panel">
+      <div class="sec-head"><div><h3>Headline indices &amp; flows</h3><span class="meta">Thu 12 Nov close</span></div></div>
+      <div class="scroll"><table id="t-india"></table></div>
+    </div>
+    <div class="panel">
+      <div class="sec-head"><div><h3>All sectors</h3><span class="meta">NSE sectoral indices, % change</span></div></div>
+      <div class="chart" id="c-india"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="sec-head"><div><h3>Why each leader and laggard moved</h3><span class="meta">Sector analysis</span></div></div>
+    <div class="scroll"><table class="wide" id="t-secan"></table></div>
+  </div>
+  <div class="panel">
+    <div class="sec-head"><div><h3>Big movers: news or noise?</h3><span class="meta">Moves of more than ±2%</span></div><p class="muted small">A move with a named catalyst tends to matter more than one without.</p></div>
+    <div class="movers" id="movers"></div>
+  </div>
+  <div class="g2">
+    <div class="panel">
+      <div class="sec-head"><div><h3>Commodities</h3><span class="meta">MCX · intraday 18:35 IST unless noted</span></div></div>
+      <div class="scroll"><table id="t-mcx"></table></div>
+      <p class="tiny muted" style="margin-top:8px">Not available today: natural gas, copper, Nifty BeES, Bank BeES, gold and silver ETFs.</p>
+      <p class="small muted" style="margin-top:10px">Bullion driver: the dollar hit a 19-month high and December Fed hike bets firmed after hot US CPI. COMEX gold then fell 2.88% overnight, so expect MCX bullion to open lower.</p>
+    </div>
+    <div class="panel">
+      <div class="sec-head"><div><h3>The rupee</h3><span class="meta">INR forex · close Thu 12 Nov</span></div></div>
+      <div class="scroll"><table id="t-fx"></table></div>
+      <p class="tiny muted" style="margin-top:8px">Not available today: EUR/INR, GBP/INR, JPY/INR, CNY/INR.</p>
+      <ul class="small" style="margin-top:12px" id="fx-drivers"></ul>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="panel">
+      <div class="sec-head"><div><h3>GIFT Nifty and corporate news</h3><span class="meta">After hours &amp; overnight</span></div></div>
+      <ul class="small" id="ah-in"></ul>
+    </div>
+    <div class="panel">
+      <div class="sec-head"><div><h3>Where the sources disagree</h3><span class="meta">Data check</span></div></div>
+      <ul class="small" id="conflicts"></ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GLOBAL ============ -->
+<section class="view" id="v-global" hidden>
+  <div class="panel">
+    <div class="sec-head"><div><h3>World markets and the India link</h3><span class="meta">Thu 12 Nov close</span></div></div>
+    <div class="scroll"><table class="wide" id="t-global"></table></div>
+  </div>
+  <div class="g2">
+    <div class="panel">
+      <div class="sec-head"><div><h3>Macro context</h3><span class="meta">Cross-asset</span></div></div>
+      <div class="scroll"><table id="t-macro"></table></div>
+      <div class="callout" style="margin-top:12px"><b>View: modest risk-off.</b> Index losses were small, but breadth was poor, small caps fell 1.66%, and bonds and gold sold off together. Three themes: a hawkish Fed repricing, an AI-leadership shock at Nvidia, and oil geopolitics. Europe's tech-light market closed at a record.</div>
+    </div>
+    <div class="panel">
+      <div class="sec-head"><div><h3>US sectors</h3><span class="meta">S&amp;P 500 sectors, % change</span></div></div>
+      <div class="chart" id="c-us"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="sec-head"><div><h3>What moved US sectors, stock by stock</h3><span class="meta">Sector analysis</span></div></div>
+    <div class="scroll"><table class="wide" id="t-usan"></table></div>
+  </div>
+  <div class="g2">
+    <div class="panel">
+      <div class="sec-head"><div><h3>Late movers</h3><span class="meta">US after hours</span></div></div>
+      <div class="scroll"><table id="t-usah"></table></div>
+      <p class="small muted" style="margin-top:10px">No mega-cap after-hours move above ±1.5% was reported.</p>
+    </div>
+    <div class="panel stack">
+      <h3>Nvidia leadership change</h3>
+      <span class="meta">Story of the day</span>
+      <ul class="small">
+        <li>Jensen Huang resigned after an investigation into his personal conduct.</li>
+        <li>CFO Colette Kress is interim CEO; Harvey Jones becomes the first chair.</li>
+        <li>Results on 17 Nov go ahead as planned.</li>
+        <li>NVDA −4.34%. AMD +5.86% (William Blair upgrade), AVGO +5.54%, ANET +5.06%. Taiwan −2.63%; Nikkei −0.70% on chip selling.</li>
+        <li>The S&amp;P 500 erased an early drop of about 1% to close −0.35%.</li>
+      </ul>
+      <p class="callout small"><b>India angle:</b> the rotation away from AI megacaps has so far helped “old-economy” markets like India.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ECONOMY ============ -->
+<section class="view" id="v-economy" hidden>
+  <div class="g2">
+    <div class="panel stack">
+      <div class="sec-head" style="margin-bottom:0"><div><h3>CPI crossed the 6% upper limit</h3><span class="meta">India retail inflation (CPI) vs RBI target band</span></div></div>
+      <svg class="bullet" id="cpi-chart" viewBox="0 0 520 150" role="img" aria-label="India CPI against the RBI 2 to 6 percent band"></svg>
+      <p class="small">October CPI came in at <b>6.09%</b>, up from 5.54% in September and above the 5.93% forecast. It is the first breach of the RBI's 6% upper limit since October 2024. Food inflation hit 8.94%.</p>
+      <p class="small muted">Why it matters: with inflation above the band, the RBI is more likely to keep raising rates at its 2–4 Dec meeting. That pressures bond-fund NAVs and rate-sensitive stocks, and can lift new FD rates.</p>
+    </div>
+    <div class="panel stack">
+      <h3>US October PPI and four Fed speakers</h3>
+      <span class="meta">Today, Fri 13 Nov · times in IST</span>
+      <div class="scroll"><table id="t-ppi"></table></div>
+      <p class="small muted">A hotter-than-forecast PPI would firm up the December Fed hike, push US yields higher and add pressure on the rupee and FII flows.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="sec-head"><div><h3>Economic indicators to watch</h3><span class="meta">Indicator dashboard</span></div><p class="small muted">Latest reading, what's next, and how to read it.</p></div>
+    <div class="scroll"><table class="wide" id="t-ind"></table></div>
+  </div>
+
+  <div class="panel">
+    <div class="sec-head"><div><h3>Dates that can move your portfolio</h3><span class="meta">Calendar · IST</span></div></div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+</section>
+
+<!-- ============ EARNINGS ============ -->
+<section class="view" id="v-earnings" hidden>
+  <div class="callout"><b>Sat 14 Nov is the deadline for September-quarter (Q2 FY27) results</b> under SEBI's listing rules (45 days after quarter-end). About 480 companies report today, so expect a heavy flow of numbers into the weekend. Board-meeting dates can still change.</div>
+
+  <div class="g2">
+    <div class="panel">
+      <div class="sec-head"><div><h3>Reporting today</h3><span class="meta">India · Fri 13 Nov</span></div></div>
+      <div class="scroll"><table id="t-er-today"></table></div>
+    </div>
+    <div class="panel">
+      <div class="sec-head"><div><h3>Reporting tomorrow</h3><span class="meta">India · Sat 14 Nov</span></div></div>
+      <div class="scroll"><table id="t-er-tom"></table></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="sec-head"><div><h3>Global earnings to look out for</h3><span class="meta">United States · week of 16 Nov</span></div><p class="small muted">BMO = before US open (evening IST). AMC = after US close (early next morning IST).</p></div>
+    <div class="scroll"><table class="wide" id="t-er-us"></table></div>
+  </div>
+
+  <div class="panel">
+    <div class="sec-head"><div><h3>Results scorecard from the brief</h3><span class="meta">Already reported</span></div></div>
+    <div class="scroll"><table class="wide" id="t-er-done"></table></div>
+  </div>
+
+  <div class="panel stack">
+    <h3>The stock reacts to expectations and guidance, not just the headline number</h3>
+    <span class="meta">How to read a results day</span>
+    <div class="g3">
+      <div class="stack"><h4>Guidance can beat the quarter</h4><p class="small muted">Cisco rose about 3% after hours on raised full-year guidance. Corteva fell 24.3% on a guidance cut.</p></div>
+      <div class="stack"><h4>A record isn't always enough</h4><p class="small muted">Applied Materials posted record revenue of $10.41bn with strong guidance and was still flat. The good news was already priced in.</p></div>
+      <div class="stack"><h4>Margins matter</h4><p class="small muted">HAL grew profit 16% but its margin slipped. Page Industries fell 12.9% after its numbers. Check the margin line, not just profit growth.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STORIES ============ -->
+<section class="view" id="v-stories" hidden>
+  <div class="cards" id="stories"></div>
+</section>
+
+<!-- ============ LEARN ============ -->
+<section class="view" id="v-learn" hidden>
+  <div class="cards" id="gloss"></div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p style="margin-bottom:8px"><b style="color:var(--ink);font-family:var(--f-display);font-size:1rem">Brownian</b> · Markets wander. You don't have to.</p>
+    <p><b>For information only; not investment advice.</b> “n/a” means the figure could not be verified from sources retrieved this morning. The sentiment index, macro-pressure reading and impact notes are a rules-based reading of the sources, not a forecast.</p>
+    <details class="src-list"><summary>Sources and methodology</summary>
+    <h4>Brief sources</h4>
+    <ol id="sources"></ol>
+    <h4>Calendar and economic data (web, 13 Nov)</h4>
+    <ol id="sources-w" style="list-style:none;padding-left:0"></ol>
+    <h4>Methodology references</h4>
+    <ol id="sources-m" style="list-style:none;padding-left:0"></ol>
+    </details>
+  </div>
+</footer>
+
+<div id="scrim" hidden></div>
+<div id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sh-t">
+  <div class="wrap">
+    <div class="shd"><h3 id="sh-t"></h3><button class="x" id="sh-x" aria-label="Close"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button></div>
+    <p id="sh-d"></p>
+    <p class="small muted" id="sh-n"></p>
+    <p class="small" id="sh-l"></p>
+  </div>
+</div>
+
+<script>
+/* ===================== DATA (from the 13 Nov brief + web calendars) ===================== */
+const D = {
+  sentiment:[
+    {id:"vol", name:"Volatility", metric:"India VIX", val:16.61, show:"16.61 (−5.38% on the day)",
+     ref:"Long-run median ≈ 16 · above 20 = stress · below 12 = complacency",
+     f:v=> v<=16 ? 50+(16-v)/6*50 : 50-(v-16)/12*50, formula:"50 at 16; falls to 0 at 28; rises to 100 at 10",
+     read:"Near its normal level and falling: options traders are pricing average, easing risk.",
+     res:"Implied-volatility indices jump when markets fall, which is why Whaley (2000) called VIX the “investor fear gauge”. NSE's India VIX applies the same method to Nifty options.", src:"S1, S4", term:"vix"},
+    {id:"breadth", name:"Market breadth", metric:"Advancing stocks, % of total", val:2377/(2377+1878)*100, show:"2,377 up vs 1,878 down (55.9% advancing)",
+     ref:"50% = balanced · above 60% = broad buying · below 40% = broad selling",
+     f:v=>v, formula:"Score = % of stocks that rose",
+     read:"Mildly positive. More stocks rose than fell, even though Nifty only gained 0.18%.",
+     res:"Breadth checks whether an index move is broad or carried by a few heavyweights. Rallies with narrowing breadth have historically been less durable; this is the idea behind the advance–decline line and McClellan indicators.", src:"S1", term:"breadth"},
+    {id:"mom", name:"Momentum", metric:"Nifty return in November", val:10, show:"≈ +10% in 9 sessions",
+     ref:"A typical month is within ±3%; ±8% or more is unusual",
+     f:v=>50+50*Math.tanh(v/8), formula:"50 + 50 × tanh(return ÷ 8%)",
+     read:"Very strong. A ~10% month is rare and puts this component near extreme greed.",
+     res:"Jegadeesh & Titman (1993) found 3–12 month winners tend to keep outperforming. Jegadeesh (1990) found very short-term (1-month) winners tend to partly give back gains. A sharp one-month rally raises the odds of consolidation.", src:"S2", term:"momentum"},
+    {id:"fii", name:"Foreign flows", metric:"FII net buying, November to date", val:73566, show:"+₹73,566 cr ($6.43bn), strongest since Sep 2024",
+     ref:"₹0 = neutral · ±₹75,000 cr in a month = exceptionally strong",
+     f:v=>50+50*Math.tanh(v/75000), formula:"50 + 50 × tanh(flow ÷ ₹75,000 cr)",
+     read:"Exceptionally strong, after two months of ~₹45,000 cr selling each.",
+     res:"Research on emerging-market capital flows (Calvo, Leiderman & Reinhart, 1993) shows global “push” factors such as US interest rates drive a large share of foreign money. That makes these flows sensitive to US yields, now above 5%.", src:"S1, S5", term:"fii"},
+    {id:"haven", name:"Safe-haven demand", metric:"Nifty minus MCX gold, 1-day return", val:0.18-(-1.29), show:"Nifty +0.18% vs gold −1.29% → +1.47 pts toward stocks",
+     ref:"0 = no preference · positive = money favours stocks over gold",
+     f:v=>50+50*Math.tanh(v/2), formula:"50 + 50 × tanh(spread ÷ 2 pts) · 1-day proxy; 20-day data n/a",
+     read:"Money is leaving gold for stocks, though partly because of a strong dollar.",
+     res:"When investors are fearful they move into gold and government bonds. CNN's index compares 20-day stock and bond returns; Tickertape's MMI uses gold demand for India.", src:"S1, S9", term:"haven"},
+    {id:"gvol", name:"Global risk appetite", metric:"US VIX (S&P 500 options)", val:18.70, show:"18.70",
+     ref:"Long-run median ≈ 18 · above 25 = stress · below 12 = complacency",
+     f:v=> v<=18 ? 50+(18-v)/7*50 : 50-(v-18)/17*50, formula:"50 at 18; falls to 0 at 35; rises to 100 at 11",
+     read:"Neutral. US investors are not panicking despite the Nvidia shock.",
+     res:"Indian equities tend to fall when global volatility spikes as foreign investors cut risk everywhere at once. That's why a global fear gauge sits alongside India VIX.", src:"S11", term:"vix"}
+  ],
+  missing:[
+    ["Put/call ratio","Nifty options PCR shows whether traders are buying protection (fear) or calls (greed)."],
+    ["Price strength","Stocks at 52-week highs vs 52-week lows on NSE."],
+    ["Trend vs average","Nifty vs its 125- or 200-day moving average."],
+    ["Valuation","Nifty P/E vs its own history. Not a sentiment input in CNN's index, but useful context."]
+  ],
+  pressure:[
+    {k:"US 10-year yield", v:"5.10%, up about 12bp; 2-year 4.88%", lv:2, why:"Higher US yields pull money out of emerging markets."},
+    {k:"Brent crude", v:"$95.82, +3.30%", lv:2, why:"India imports most of its crude; oil spikes widen the trade gap and feed inflation."},
+    {k:"India CPI (Oct)", v:"6.09%, above RBI's 6% upper limit", lv:2, why:"Keeps the RBI in tightening mode."},
+    {k:"India WPI (Sep)", v:"11.39%; fuel & power 25.85%", lv:2, why:"Input-cost pressure on company margins."},
+    {k:"RBI policy", v:"Repo raised 25bp in October; next meeting 2–4 Dec", lv:1, why:"Higher borrowing costs for companies and home buyers."},
+    {k:"Dollar index", v:"103.19, 19-month high", lv:1, why:"A strong dollar weakens the rupee and pressures EM flows."},
+    {k:"Rupee", v:"94.04/$, weaker by 33 paise", lv:1, why:"Imports, travel and overseas costs rise; exporters gain."}
+  ],
+  strip:[
+    {l:"GIFT Nifty", t:"gift", v:"25,279", d:"−20 pts vs close", i:"Flat-to-soft open", ic:"warn", s:["S8"]},
+    {l:"Nifty 50 close", v:"25,299", d:"+0.18% Thu", s:["S1","S4"]},
+    {l:"Brent crude", t:"brent", v:"$95.82", d:"+3.30% overnight", i:"Headwind for India", ic:"down", s:["S11"]},
+    {l:"US 10Y yield", t:"yield", v:"5.10%", d:"+12bp", i:"Headwind for FII flows", ic:"down", s:["S11"]},
+    {l:"USD/INR", t:"dxy", v:"94.04", d:"Rupee −0.35%", i:"Costlier imports", ic:"down", s:["S6"]},
+    {l:"FII net buy", t:"fii", v:"₹7,831 cr", d:"₹73,566 cr in Nov", i:"Support", ic:"up", s:["S5"]}
+  ],
+  takeaways:[
+    {chip:["Flat-to-soft open","warn"], h:"Overnight news turned against India", p:"US 10-year yields closed at 5.10%, a December Fed hike is fully priced, and Brent settled +3.30% at $95.82 after Houthi attacks on Saudi energy sites. That reverses the cheaper-oil tailwind India had on Thursday. GIFT Nifty last traded at 25,279, about 20 points below Nifty's close.", why:"India imports most of its oil. Costlier crude widens the trade gap, weakens the rupee and can push up inflation."},
+    {chip:["Support","up"], h:"Foreign investors are still the anchor", p:"FIIs net bought ₹7,830.60 cr on Thursday and ₹73,566 cr so far in November, the strongest since Sep 2024. DIIs sold for a 9th straight session. Financials (PSU banks, insurers, NBFCs) are leading; autos and FMCG are lagging.", why:"This foreign buying has driven November's ~10% rally. If 5% US yields slow it, the market loses its main support."},
+    {chip:["Global","down"], h:"Nvidia's CEO resigned", p:"Jensen Huang stepped down; NVDA closed −4.34% and money rotated into AMD (+5.86%) and Broadcom (+5.54%). Results are still due on 17 Nov (after the US close, early 18 Nov IST).", why:"If you hold a Nasdaq or US tech fund, this is the biggest single-stock risk. So far the rotation away from AI megacaps has helped markets like India."},
+    {chip:["New today","info"], h:"Indian inflation broke the RBI's limit", p:"October CPI rose to 6.09% from 5.54%, above the 5.93% forecast and the RBI's 6% upper limit for the first time since October 2024. Food inflation hit 8.94%. The rupee weakened to 94.04/$ as the dollar index hit a 19-month high.", why:"Higher odds of another RBI rate hike on 2–4 Dec. That matters for debt funds, home loans and rate-sensitive stocks like realty and banks."}
+  ],
+  drove:[
+    "A volatile pause after a roughly 10% November rally. Nifty +0.18%, Sensex +0.04%.",
+    "Support came from financials, FII inflows and softer crude during Indian hours.",
+    "Profit-taking in heavyweights and US yields near 5% capped gains.",
+    "Breadth was positive: 2,377 advances vs 1,878 declines. Small caps +1.12%, mid caps +0.85%.",
+    "India VIX fell 5.38% to 16.61. Bank Nifty +1.20% led, autos −1.02% lagged."
+  ],
+  next:[
+    {w:"Fri 13 · 19:00",t:"US October PPI",today:1},
+    {w:"Fri 13",t:"Q2 results: Grasim, Eicher, ABB, Tata Motors PV and ≈470 more",today:1},
+    {w:"Sat 14",t:"Q2 results deadline; Ashok Leyland, Kaynes, Patanjali Foods"},
+    {w:"Mon 16",t:"India October WPI inflation"},
+    {w:"Tue 17 · 19:00",t:"US retail sales; Home Depot results"},
+    {w:"Wed 18 · early",t:"Nvidia results (after US close Tue)"},
+    {w:"Thu 19",t:"Walmart results"}
+  ],
+  holdings:[
+    {id:"index", n:"Nifty index funds & large-cap SIPs", d:"mixed", h:"Nifty closed +0.18% after a ~10% November rally; GIFT Nifty points to a flat-to-soft open. FII buying is the support; oil, US yields and 6.09% CPI are the drags.", w:"Whether FII buying continues with US 10Y above 5%; the RBI meeting on 2–4 Dec.", t:"Sentiment reads “{band}” while macro pressure is {press}. Research links high-sentiment periods to weaker later returns, mainly for speculative stocks. A single day's move rarely changes a long-term plan."},
+    {id:"fin", n:"Bank, NBFC & insurance stocks", d:"up", h:"Financials led Thursday: Bank Nifty +1.20%, PSU Bank +1.51% (≈15% in a month), Private Bank +0.87%. HDFC Life +4.23% and SBI Life +2.97% on 26.2% premium growth; Bajaj Finance +3.36%.", w:"Pricing of Bajaj Finance's $1bn+ share sale. A higher repo rate can lift bank margins but slow loan growth.", t:"Leading sector, but up a lot in a month. Sharp runs carry pullback risk."},
+    {id:"mid", n:"Mid & small-cap funds", d:"mixed", h:"Midcap 100 +0.85% and small caps +1.12% on Thursday. Overnight, US small caps fell 1.66% on the yield spike.", w:"Small caps are the most rate-sensitive part of the market. Baker & Wurgler's research finds speculative stocks suffer most when high sentiment fades.", t:"Expect bigger swings here than in Nifty when rates move."},
+    {id:"it", n:"IT stocks & US/Nasdaq funds", d:"mixed", h:"Nifty IT −0.41%, Nasdaq −0.39%, NVDA −4.34%. The rupee at 94.04/$ lifts the rupee value of US funds and IT exporters' earnings.", w:"US PPI today at 19:00 IST; Nvidia results early 18 Nov IST.", t:"Rupee weakness partly cushions losses on US funds for Indian investors."},
+    {id:"gold", n:"Gold ETFs, SGBs & jewellery", d:"down", h:"MCX gold −1.29% intraday; COMEX gold then fell 2.88% to $3,885.30, a 13-month low, on a strong dollar and Fed hike bets.", w:"Expect MCX bullion to open lower. A weaker rupee partly offsets the global drop.", t:"Gold is reacting to US rates. If you hold it as a long-term hedge, a dip changes the price, not the reason you hold it."},
+    {id:"silver", n:"Silver ETFs", d:"down", h:"MCX silver −1.78% intraday on the same dollar strength.", w:"Dollar index (103.19) and US yields.", t:"Silver usually swings more than gold in both directions."},
+    {id:"debt", n:"Debt funds & FDs", d:"down", h:"India CPI at 6.09% breached the RBI band; the repo was raised in October and the next meeting is 2–4 Dec. US 10Y at 5.10%.", w:"Further RBI hikes push bond yields up, which lowers NAVs of longer-duration debt funds.", t:"Existing FD rates are locked. New FDs may pay more if the RBI keeps tightening. Short-duration funds are less affected than long-duration funds."},
+    {id:"oil", n:"Oil & gas stocks", d:"mixed", h:"Oil & Gas index fell 0.50% to 0.76% as crude eased during Indian hours. Brent then jumped 3.3% overnight.", w:"Upstream producers like ONGC may rise; oil marketing companies may be squeezed on margins.", t:"The same oil spike helps one half of this sector and hurts the other."},
+    {id:"consumer", n:"Auto & FMCG stocks", d:"down", h:"Auto −1.02% as profit-taking ended an 8-session rally (M&M −1.9%, Maruti −1.2%, Motherson −2.3%). FMCG −0.74% with Nestle −2.10% and HUL weak. 8.94% food inflation squeezes FMCG margins.", w:"Eicher Motors and Tata Motors PV report today; Ashok Leyland tomorrow.", t:"The auto drop looks like a pause in an uptrend on current evidence."},
+    {id:"realty", n:"Real estate stocks & REITs", d:"mixed", h:"Nifty Realty +4.50% (one source: +3.7%) with no specific catalyst. Godrej Industries jumped 11.9–13.0%.", w:"Realty is rate-sensitive: a December RBI hike would weigh on it.", t:"Treat it as a one-day spike until it follows through."},
+    {id:"wallet", n:"Your wallet: travel, fees, fuel, groceries", d:"down", h:"The rupee hit 94.04/$. Brent near $96. Food inflation 8.94%.", w:"Sharekhan's expected USD/INR range is 93.70 to 94.20.", t:"Foreign travel, overseas tuition and imported gadgets cost more. Pump prices are set administratively, so they don't move overnight."}
+  ],
+  defaultHold:["index","fin","gold","debt"],
+  stocks:{
+    "HDFC Life":["+4.23%","up","October industry first-year premiums +26.2% YoY (vs 21.3% in Sep).","Insurance"],
+    "Shriram Finance":["+3.58%","up","Broad financials rally; no company-specific catalyst.","NBFC"],
+    "Bajaj Finance":["+3.36%","up","Launched a $1bn+ institutional share sale. Watch pricing and discount.","NBFC"],
+    "SBI Life":["+2.97%","up","Same October life-insurance premium data.","Insurance"],
+    "SBI":["+2.38%","up","PSU bank rally on Q2 earnings, asset quality and credit growth (Upstox: +2.97%).","PSU Bank"],
+    "Bajaj Finserv":["+2.28%","up","No clear catalyst.","Financials"],
+    "Samvardhana Motherson":["−2.27%","down","Auto-sector profit-taking.","Auto"],
+    "Nestle India":["−2.10%","down","FMCG drag; no clear catalyst.","FMCG"],
+    "HUL":["Unverified","warn","Sources conflict: −1.47% to −2.39%. FMCG drag.","FMCG"],
+    "ONGC":["Unverified","warn","Sources conflict (−4.39% on a ticker vs ≈ −1% in text). Brent's overnight spike could help today.","Oil & Gas"],
+    "M&M":["−1.9%","down","Auto profit-taking after an 8-session streak.","Auto"],
+    "Maruti Suzuki":["−1.2%","down","Auto profit-taking after an 8-session streak.","Auto"],
+    "Godrej Industries":["+11.9% to +13.0%","up","No clear catalyst.","Outside Nifty 100"],
+    "Page Industries":["−12.9%","down","Fell after Sep-quarter results.","Outside Nifty 100"],
+    "Paytm":["+7.3%","up","Reason not given in sources.","Outside Nifty 100"],
+    "Kalyan Jewellers":["+7.1%","up","Reason not given in sources.","Outside Nifty 100"],
+    "HAL":["Results","info","Q2 FY27 net profit +16% YoY, revenue ₹7,613 cr; margin slipped.","Defence"],
+    "Alkem Laboratories":["Results","info","Q2 net profit −14.37% to ₹667 cr, revenue ₹4,552 cr.","Pharma"],
+    "P&G Hygiene":["Results","info","Q2 profit −6.7% to ₹195.84 cr.","FMCG"],
+    "Tata Power":["Results","info","New CEO Sanjay Banga; Q2 profit up about 49%.","Power"],
+    "Vodafone Idea":["Results","info","Reported Q2 this week; figures not in sources.","Telecom"],
+    "Adani Green":["Index add","info","Being added to MSCI India; passive inflows expected. Effective date n/a.","Power"],
+    "Coforge":["Index add","info","Being added to MSCI India. Effective date n/a.","IT"],
+    "LIC":["Index add","info","Being added to MSCI India. Effective date n/a.","Insurance"],
+    "Meesho":["Index add","info","Being added to MSCI India. Effective date n/a.","Internet"],
+    "PI Industries":["Index exit","down","Being removed from MSCI India; passive outflows expected.","Agrochem"],
+    "Zee Entertainment":["In focus","info","Corporate action in focus; not linked to Media index's +2.46% in sources.","Media"],
+    "Grasim Industries":["Results today","warn","Q2 FY27 results due Fri 13 Nov.","Diversified"],
+    "Eicher Motors":["Results today","warn","Q2 FY27 results due Fri 13 Nov. Autos just ended an 8-session rally.","Auto"],
+    "ABB India":["Results today","warn","Q2 results due Fri 13 Nov.","Capital goods"],
+    "Tata Motors PV":["Results today","warn","Q2 FY27 results due Fri 13 Nov.","Auto"],
+    "RVNL":["Results today","warn","Rail Vikas Nigam Q2 results due Fri 13 Nov.","Rail PSU"],
+    "Natco Pharma":["Results today","warn","Q2 results due Fri 13 Nov. Nifty Pharma −0.35% Thu.","Pharma"],
+    "Edelweiss Financial":["Results today","warn","Q2 results due Fri 13 Nov.","Financials"],
+    "Ashok Leyland":["Results Sat","warn","Q2 results due Sat 14 Nov.","Auto (CV)"],
+    "PTC Industries":["Results Sat","warn","Q2 results due Sat 14 Nov.","Aerospace parts"],
+    "Brainbees (FirstCry)":["Results Sat","warn","Q2 results due Sat 14 Nov.","Retail"],
+    "Kaynes Technology":["Results Sat","warn","Q2 results due Sat 14 Nov (F&O stock).","Electronics"],
+    "Patanjali Foods":["Results Sat","warn","Q2 results due Sat 14 Nov (F&O stock).","FMCG"],
+    "NVDA (Nvidia)":["−4.34%","down","CEO Jensen Huang resigned; Kress interim CEO. Results 17 Nov after US close.","US Tech"],
+    "AMD":["+5.86%","up","William Blair upgrade; rotation from Nvidia.","US Tech"],
+    "AVGO (Broadcom)":["+5.54%","up","Rotation within chips.","US Tech"],
+    "ANET (Arista)":["+5.06%","up","Rotation within AI infrastructure.","US Tech"],
+    "CSCO (Cisco)":["≈ +3% AH","up","Record $18.5bn revenue; FY guide raised to $74.8–75.8bn; AI infra outlook $9bn.","US Tech"],
+    "AMAT (Applied Materials)":["≈ flat AH","plain","Record Q4 revenue $10.41bn and strong guidance; stock choppy.","US Tech"],
+    "CBRS (Cerebras)":["Rose AH","up","Q3 beat and upbeat guidance.","US Tech"],
+    "Corteva":["−24.3%","down","Guidance cut.","US Materials"],
+    "TTWO (Take-Two)":["−1.88%","down","GTA VI expectations.","US Comm."],
+    "UAL (United Airlines)":["−6.0%","down","Fuel costs after oil spike.","US Industrials"],
+    "DAL (Delta)":["−5.2%","down","Fuel costs after oil spike.","US Industrials"],
+    "VLO (Valero)":["+3.1%","up","Oil spike.","US Energy"],
+    "DVN (Devon)":["+2.9%","up","Oil spike.","US Energy"],
+    "XOM (Exxon)":["+1.8%","up","Oil spike.","US Energy"],
+    "Home Depot":["Results Tue","warn","Reports Tue 17 Nov before US open.","US Retail"],
+    "Walmart":["Results Thu","warn","Reports Thu 19 Nov before US open.","US Retail"]
+  },
+  aliases:{"state bank of india":"SBI","hindustan unilever":"HUL","nestle":"Nestle India","maruti":"Maruti Suzuki","mahindra":"M&M","mahindra & mahindra":"M&M","motherson":"Samvardhana Motherson","alkem":"Alkem Laboratories","hindustan aeronautics":"HAL","one97":"Paytm","zee":"Zee Entertainment","life insurance corporation":"LIC","vi":"Vodafone Idea","grasim":"Grasim Industries","eicher":"Eicher Motors","abb":"ABB India","tata motors":"Tata Motors PV","rail vikas nigam":"RVNL","natco":"Natco Pharma","edelweiss":"Edelweiss Financial","firstcry":"Brainbees (FirstCry)","brainbees":"Brainbees (FirstCry)","kaynes":"Kaynes Technology","patanjali":"Patanjali Foods","nvidia":"NVDA (Nvidia)","nvda":"NVDA (Nvidia)","broadcom":"AVGO (Broadcom)","avgo":"AVGO (Broadcom)","arista":"ANET (Arista)","anet":"ANET (Arista)","cisco":"CSCO (Cisco)","csco":"CSCO (Cisco)","applied materials":"AMAT (Applied Materials)","amat":"AMAT (Applied Materials)","cerebras":"CBRS (Cerebras)","take-two":"TTWO (Take-Two)","united airlines":"UAL (United Airlines)","delta":"DAL (Delta)","valero":"VLO (Valero)","devon":"DVN (Devon)","exxon":"XOM (Exxon)","hd":"Home Depot","wmt":"Walmart"},
+  defaultWatch:["Bajaj Finance","Eicher Motors","ONGC","NVDA (Nvidia)","Infosys"],
+  india:[
+    ["Nifty 50","25,299.35","+0.18%","up","Upstox headline: 25,229 (see data check)"],
+    ["Sensex","81,911.01","+0.04%","up",""],
+    ["Nifty Bank","61,518","+1.20%","up","One source: +1.0%"],
+    ["Nifty Midcap 100","62,039","+0.85%","up",""],
+    ["Nifty Smallcap","n/a","+1.12%","up","Outperformed 2nd straight session"],
+    ["India VIX","16.61","−5.38%","down","Lower = calmer"],
+    ["FII net (cash, prov.)","+₹7,830.60 cr","","up",""],
+    ["DII net (cash, prov.)","−₹6,331.17 cr","","down","9th straight sale"],
+    ["Breadth","2,377 up / 1,878 down","","up","A/D ratio 1.27"]
+  ],
+  secIndia:[["Realty",4.50],["Media",2.46],["PSU Bank",1.51],["Bank",1.20],["Private Bank",0.87],["Cons. Durables",0.35],["Metal",-0.11],["Pharma",-0.35],["IT",-0.41],["Energy",-0.6],["Oil & Gas",-0.50,-0.76],["FMCG",-0.74],["Auto",-1.02]],
+  secUS:[["Energy",1.51],["Utilities",-0.02],["Technology",-0.34],["Staples",-0.43],["Discretionary",-0.44],["Real Estate",-0.52],["Health Care",-0.59],["Financials",-0.72],["Industrials",-0.89],["Comm. Services",-0.96],["Materials",-1.28]],
+  themesIn:[
+    {n:"Real estate & durables",s:[["Realty",4.50],["Cons. Durables",0.35]]},
+    {n:"Media",s:[["Media",2.46]]},
+    {n:"Financials",s:[["PSU Bank",1.51],["Bank",1.20],["Private Bank",0.87]]},
+    {n:"Metals & energy",s:[["Metal",-0.11],["Energy",-0.6],["Oil & Gas",-0.63]]},
+    {n:"Exporters & defensives",s:[["Pharma",-0.35],["IT",-0.41]]},
+    {n:"Consumption",s:[["FMCG",-0.74],["Auto",-1.02]]}
+  ],
+  rotation:[
+    {lane:"Global",out:[["US & Asian AI chips","NVDA −4.34%, Taiwan −2.63%, Nikkei −0.70%"]],into:[["Tech-light markets","STOXX 600 record +0.14%; India financials"]],note:"AI leadership shock"},
+    {lane:"India",out:[["Auto","−1.02%"],["FMCG","−0.74%"],["Oil & Gas","≈ −0.6%"],["IT","−0.41%"]],into:[["Realty","+4.50%"],["Media","+2.46%"],["PSU Bank","+1.51%"],["Insurers & NBFCs","HDFC Life +4.23%"]],note:"Profit-taking → financials"},
+    {lane:"US",out:[["Nvidia","−4.34%"],["Materials","−1.28%"],["Airlines","UAL −6.0%"]],into:[["AMD · AVGO · ANET","+5–6%"],["Energy","+1.51%"]],note:"Within-tech rotation; oil spike"},
+    {lane:"Assets",out:[["Gold","−2.88%"],["US bonds","10Y +12bp"]],into:[["US dollar","DXY 103.19"],["Oil","Brent +3.30%"]],note:"Hawkish Fed + geopolitics"}
+  ],
+  trend:[
+    ["PSU Bank","+1.51%","≈ +15% in a month","Trend","up","Q2 earnings, asset quality and credit growth. Multi-day trend."],
+    ["Bank / Private Bank","+1.20% / +0.87%","Financials leading November","Trend","up","Supported by FII buying."],
+    ["Realty","+4.50%","No catalyst cited","Spike","warn","Fits this week's broader-market buying. Treat as a one-day spike until it follows through."],
+    ["Media","+2.46%","No catalyst cited","Spike","warn","Zee corporate action in focus, but not linked to the index move."],
+    ["Auto","−1.02%","Ended an 8-session winning streak","Pause","warn","Profit-taking: M&M −1.9%, Maruti −1.2%, Motherson −2.3%. Looks like a pause within an uptrend."],
+    ["FMCG","−0.74%","No catalyst cited","Lagging","down","Nestle and HUL were the drags. Food inflation 8.94% is a margin headwind."],
+    ["Oil & Gas","−0.50% to −0.76%","Crude fell in Indian hours","Event","info","Brent +3.3% overnight could flip upstream names (ONGC) higher and pressure OMCs."]
+  ],
+  secan:[
+    ["Realty","+4.50%","No specific catalyst in sources; HDFC Sky close report gave +3.7%.","One-day spike until it follows through"],
+    ["Media","+2.46%","No clear catalyst. Zee Entertainment had a corporate action in focus.","Unconfirmed"],
+    ["PSU Bank","+1.51%","SBI ≈ +2.4%. Improving Q2 earnings, better asset quality, credit growth.","Multi-day trend (≈15% in a month)"],
+    ["Auto","−1.02%","Profit-taking ended an 8-session streak: M&M −1.9%, Maruti −1.2%, Motherson −2.3%.","Pause within uptrend"],
+    ["FMCG","−0.74%","Nestle (−2.1%) and HUL were the drags.","No clear catalyst"],
+    ["Oil & Gas","−0.50% to −0.76%","Weak as crude fell during Indian hours.","Could reverse for upstream names"],
+    ["Others","—","Bank +1.20%, Pvt Bank +0.87%, Cons. Durables +0.35%, Metal −0.11%, Pharma −0.35%, IT −0.41%, Energy −0.6%. Financial Services and Healthcare: n/a.",""]
+  ],
+  movers:[
+    ["HDFC Life","+4.23%","up","Industry first-year premiums +26.2% YoY in Oct (vs 21.3% in Sep)",1],
+    ["Shriram Finance","+3.58%","up","Part of the broad financials rally",0],
+    ["Bajaj Finance","+3.36%","up","Launched a $1bn+ institutional share sale",1],
+    ["SBI Life","+2.97%","up","Same October premium data",1],
+    ["SBI","+2.38% (Upstox +2.97%)","up","PSU bank rally on earnings and asset quality",1],
+    ["Bajaj Finserv","+2.28%","up","No clear catalyst",0],
+    ["Samvardhana Motherson","−2.27%","down","Auto-sector profit-taking",0],
+    ["Nestle India","−2.10%","down","No clear catalyst",0],
+    ["HUL","−1.47% to −2.39%","warn","Sources conflict; unverified",0],
+    ["ONGC","−4.39% or ≈ −1%","warn","Ticker vs report text conflict; unverified",0],
+    ["Godrej Industries","+11.9% to +13.0%","up","No clear catalyst (outside Nifty 100)",0],
+    ["Page Industries","−12.9%","down","After Sep-quarter results (outside Nifty 100)",1],
+    ["Paytm","+7.3%","up","Reason not given (outside Nifty 100)",0],
+    ["Kalyan Jewellers","+7.1%","up","Reason not given (outside Nifty 100)",0]
+  ],
+  mcx:[
+    ["Gold","137,910","−1.29%","down","COMEX −2.88% overnight to $3,885.30"],
+    ["Silver","181,238","−1.78%","down",""],
+    ["Crude (18:35 IST)","8,074","−1.34%","plain","Before the Brent spike"],
+    ["Crude (23:54 IST)","8,311","+1.55%","plain","After the Brent spike"],
+  ],
+  fx:[
+    ["USD/INR","94.04","+0.35%","down","Weakening (prev. 93.71, provisional)"],
+    ["EUR/USD","1.1054","","plain","Overnight"],["GBP/USD","1.3232","","plain","Overnight"],["USD/JPY","159.86","","plain","Overnight"]
+  ],
+  fxDrivers:[
+    "The rupee lost 33 paise. The dollar index was at 103.03 (+0.12%) in Indian hours on hawkish Fed talk and rising December hike odds.",
+    "Strong FII equity inflows and positive domestic equities offered support at lower levels (Mirae Asset Sharekhan).",
+    "No RBI intervention was reported in the sources reviewed.",
+    "Overnight the DXY rose to 103.19. View: 10Y yields above 5% plus Brent near $96 is a weak mix for the INR. Sharekhan's expected range: 93.70–94.20."
+  ],
+  ahIn:[
+    "<b>GIFT Nifty</b> 25,279 at 02:44 IST (−0.09%), about 20 points below spot: flat to slightly negative open. It was 25,317 in the evening session, before the US yield and oil spike.",
+    "<b>HAL</b> Q2 FY27: net profit +16% YoY, revenue ₹7,613 cr, margin slipped.",
+    "<b>Alkem Labs</b> Q2: net profit −14.37% to ₹667 cr, revenue ₹4,552 cr.",
+    "<b>P&amp;G Hygiene</b> Q2: profit −6.7% to ₹195.84 cr.",
+    "<b>Tata Power</b> named Sanjay Banga CEO; Q2 profit up about 49% (released during the session).",
+    "<b>MSCI India rebalance:</b> Adani Green, Coforge, LIC and Meesho added; PI Industries removed. Effective date n/a.",
+    "<b>Block and bulk deals:</b> n/a (none verified)."
+  ],
+  conflicts:[
+    "<b>Nifty 50 close.</b> Brief shows 25,299.35, but the Upstox wrap's headline reads “Nifty 50 ends at 25,229”. Check NSE before relying on it.",
+    "<b>Nifty Bank</b> +1.20% (Motilal Oswal, HDFC Sky) vs +1.0% (another source).",
+    "<b>Nifty Realty</b> +4.50% vs +3.7% (HDFC Sky close report).",
+    "<b>Nifty Oil &amp; Gas</b> −0.50% to −0.76%.",
+    "<b>SBI</b> +2.38% vs +2.97% (Upstox).",
+    "<b>HUL</b> −1.47% to −2.39%. <b>ONGC</b> −4.39% on a ticker vs about −1% in text.",
+    "<b>Godrej Industries</b> +11.9% to +13.0%.",
+    "<b>DAX</b> 26,816.06 (+0.57%) vs 26,771.88 (+0.41%, CappNotes).",
+    "<b>RBI repo rate</b> after the October hike: 5.50% in one source, 5.75% in another."
+  ],
+  global:[
+    ["S&P 500","7,592.40","−0.35%","down","Erased an early ~1% drop after the Nvidia CEO exit; yields up","US funds held by Indians"],
+    ["Nasdaq Composite","25,366.09","−0.39%","down","NVDA −4.34%; AI cloud names sold off","Nasdaq-100 FoFs / ETFs"],
+    ["Dow Jones","52,297.09","−0.36%","down","Nvidia, Honeywell, Boeing led losses",""],
+    ["Russell 2000","2,799.06","−1.66%","down","Yield spike; decliners beat advancers ≈3:1","Read-across to Indian small caps"],
+    ["STOXX 600","664.01","+0.14%","up","Record close on strong earnings; chips fell","Tech-light markets held up"],
+    ["FTSE 100","10,863.56","+0.26%","up","UK Q3 GDP +0.7%",""],
+    ["DAX","26,816.06","+0.57%","up","Siemens raised outlook (CappNotes: 26,771.88, +0.41%)",""],
+    ["Nikkei 225","60,819.36","−0.70%","down","Regional chip sell-off; Taiwan −2.63%","Asia sets the tone for India's open"]
+  ],
+  macro:[
+    ["US 10Y yield","5.10%","≈ +12bp","down"],["US 2Y yield","4.88%","≈ +15bp","down"],["Dollar index","103.19","+0.27%","down"],
+    ["Brent","$95.82","+3.30%","down"],["Gold futures","$3,885.30","−2.88%","plain"],["US VIX","18.70","","plain"],["Dec Fed hike odds","Fully priced","≈13% chance of 50bp","down"]
+  ],
+  usan:[
+    ["Energy","+1.51%","Crude jumped after the Saudi attacks and Trump's Iran comments. Valero +3.1%, Devon +2.9%, Exxon +1.8%.","Event-driven"],
+    ["Utilities","−0.02%","Roughly flat; defensive hold.","One-day relative move"],
+    ["Technology","−0.34%","NVDA's drop largely offset by AMD +5.86% (William Blair upgrade), AVGO +5.54%, ANET +5.06%.","Rotation within the sector"],
+    ["Staples / Discretionary","−0.43% / −0.44%","",""],
+    ["Real Estate / Health Care","−0.52% / −0.59%","",""],
+    ["Financials","−0.72%","",""],
+    ["Industrials","−0.89%","Airlines fell on fuel costs (UAL −6.0%, DAL −5.2%); Honeywell and Boeing declined.","Tied to oil"],
+    ["Comm. Services","−0.96%","No clear catalyst; Take-Two −1.88% on GTA VI expectations.",""],
+    ["Materials","−1.28%","Gold at a 13-month low; Corteva −24.3% on a guidance cut.","Continuing while yields and dollar rise"]
+  ],
+  usah:[
+    ["CSCO","≈ +3%","up","Record Q1 revenue $18.5bn; FY guide raised to $74.8–75.8bn; FY AI infrastructure outlook doubled to $9bn"],
+    ["CBRS","Rose (% n/a)","up","Q3 revenue beat and upbeat guidance"],
+    ["AMAT","≈ flat","plain","Record Q4 revenue $10.41bn and above-consensus Q1 guidance, but choppy"]
+  ],
+  ppi:[
+    ["19:00","US October PPI (headline, m/m)","+0.4%","+1.3%"],
+    ["19:00","US October PPI (core, m/m)","+0.3%","+0.7%"],
+    ["19:00","US PPI (headline, y/y)","6.6% (one source)","6.3%"],
+    ["19:40","Boston Fed's Susan Collins (housing)","",""],
+    ["21:20","Fed Governor Michelle Bowman","",""],
+    ["22:30","San Francisco Fed's Mary Daly","",""],
+    ["05:30 Sat","Fed Vice Chair Philip Jefferson","",""]
+  ],
+  indicators:[
+    ["India","CPI inflation (Oct)","6.09%","5.54%","Forecast 5.93%. Food 8.94%; rural 6.63%, urban 5.41%","Nov CPI: 14 Dec (one source)","RBI target 4% ±2%. Above 6% = pressure to hike.","down","W8"],
+    ["India","WPI inflation (Sep)","11.39%","9.92% (Aug)","Fuel & power 25.85%; linked to Hormuz disruption","Oct WPI: Mon 16 Nov","Wholesale costs lead retail prices and squeeze margins.","down","W11"],
+    ["India","RBI repo rate","+25bp in Oct","—","Level 5.50% (one source: 5.75%); stance tightening","MPC: 2–4 Dec","Higher repo → higher loan EMIs, FD rates, bond yields.","down","W17"],
+    ["India","USD/INR","94.04","93.71","Provisional; Sharekhan range 93.70–94.20","Daily","Weaker rupee helps IT/pharma exporters, hurts importers.","down","S6"],
+    ["India","FII net flows (Nov MTD)","+₹73,566 cr","≈ −₹45,000 cr (Oct)","Strongest since Sep 2024","Daily, evening","Main driver of November's rally.","up","S5"],
+    ["India","Trade balance, IIP, GDP","n/a","n/a","Not in sources","n/a","Oil import bill is the swing factor for the trade deficit.","plain",""],
+    ["US","CPI (Oct)","Hot (figure n/a)","n/a","Pushed 2Y yield up ≈15bp","Next: December","Drives Fed policy and global yields.","down","S11"],
+    ["US","PPI (Oct)","Today 19:00 IST","+1.3% m/m","Forecast +0.4% m/m, core +0.3%","Fri 13 Nov","Pipeline inflation; a hot print firms up the hike.","warn","W13"],
+    ["US","Retail sales (Oct)","Tue 17 Nov, 19:00 IST","n/a","Forecast +0.2% m/m","Tue 17 Nov","Consumer strength; strong data = more hikes.","warn","W15"],
+    ["US","Fed funds / FOMC","Dec hike fully priced","—","≈13% odds of 50bp","8–9 Dec (decision 00:30 IST 10 Dec)","Higher US rates pull money from emerging markets.","down","W16"],
+    ["US","10Y Treasury yield","5.10%","≈ 4.98%","+12bp on the day","Daily","Above 5% is a headwind for FII flows and equity valuations.","down","S11"],
+    ["UK","Q3 GDP","+0.7%","n/a","Helped FTSE +0.26%","n/a","","up","S11"],
+    ["Global","Brent crude","$95.82","$92.75 (≈)","+3.30%; Saudi attacks, Hormuz tanker blasts","Daily","India imports most of its crude.","down","S11"]
+  ],
+  events:[
+    {w:"Fri 13 · 09:15",t:"Indian market opens",d:"GIFT Nifty points to a flat to slightly negative start. Watch ONGC (oil up), gold ETFs (gold down) and financials (leaders).",today:1},
+    {w:"Fri 13",t:"~480 Q2 results",d:"Grasim, Eicher Motors, ABB India, Tata Motors PV, RVNL, Natco Pharma, Edelweiss Financial.",today:1,chip:["Earnings","info"]},
+    {w:"Fri 13 · 19:00",t:"US October PPI",d:"Forecast +0.4% m/m (core +0.3%) after +1.3%. Fed speakers follow: Collins 19:40, Bowman 21:20, Daly 22:30, Jefferson 05:30 Sat.",today:1,chip:["High impact","down"]},
+    {w:"Sat 14",t:"Q2 results deadline",d:"Ashok Leyland, PTC Industries, Brainbees (FirstCry), Kaynes Technology, Patanjali Foods.",chip:["Earnings","info"]},
+    {w:"Mon 16",t:"India October WPI",d:"September was 11.39%. Another rise would add to pressure on the RBI.",chip:["India macro","warn"]},
+    {w:"Tue 17 · 19:00",t:"US retail sales (Oct) · Home Depot results",d:"Forecast +0.2% m/m. Home Depot reports before the US open.",chip:["High impact","down"]},
+    {w:"Wed 18 · early",t:"Nvidia results",d:"Reports after the US close on Tue 17 (EPS estimate ≈ $2.49). First results since the CEO's resignation.",chip:["High impact","down"]},
+    {w:"Wed 18",t:"Target, TJX, Lowe's, PDD (expected)",d:"Target's date is not confirmed.",chip:["Earnings","info"]},
+    {w:"Thu 19",t:"Walmart, Williams-Sonoma, Valvoline",d:"Walmart reports before the US open; a read on the US consumer.",chip:["Earnings","info"]},
+    {w:"Week of 16 Nov",t:"FOMC minutes, UK CPI & jobs, China activity data, PBoC LPR, RBA minutes",d:"Exact dates n/a in sources.",chip:["Global macro","plain"]},
+    {w:"Date n/a",t:"MSCI India rebalance takes effect",d:"Adani Green, Coforge, LIC, Meesho in; PI Industries out. Passive funds trade on the effective date.",chip:["Stock-specific","info"]},
+    {w:"2–4 Dec",t:"RBI Monetary Policy Committee",d:"With CPI at 6.09%, markets will watch for another hike.",chip:["High impact","down"]},
+    {w:"8–9 Dec",t:"US Federal Reserve (FOMC)",d:"Decision 00:30 IST on 10 Dec. A hike is fully priced, with ≈13% odds of 50bp.",chip:["High impact","down"]},
+    {w:"14 Dec",t:"India November CPI",d:"Date from one source.",chip:["India macro","warn"]}
+  ],
+  erToday:[["Grasim Industries","Cement, chemicals, paints","Diversified; large Nifty weight"],["Eicher Motors","Auto (Royal Enfield)","Autos just ended an 8-session rally"],["ABB India","Capital goods",""],["Tata Motors PV","Auto (passenger vehicles)",""],["Rail Vikas Nigam","Rail PSU",""],["Natco Pharma","Pharma","Nifty Pharma −0.35% Thu"],["Edelweiss Financial","Financials","Sector leading"]],
+  erTom:[["Ashok Leyland","Auto (commercial vehicles)",""],["PTC Industries","Aerospace & precision parts",""],["Brainbees (FirstCry)","Retail",""],["Kaynes Technology","Electronics manufacturing","F&O stock"],["Patanjali Foods","FMCG","F&O stock"]],
+  erUS:[
+    ["Tue 17 Nov","Home Depot","BMO (evening IST)","US housing and consumer spending",""],
+    ["Tue 17 Nov","Nvidia","AMC (early Wed IST)","EPS est. ≈ $2.49. First report since CEO exit; sets tone for AI and chip stocks globally","High"],
+    ["Wed 18 Nov","Target · TJX · Lowe's · PDD","BMO (expected)","US retail health; Target date unconfirmed",""],
+    ["Thu 19 Nov","Walmart · Williams-Sonoma · Valvoline","BMO","Walmart is the clearest read on the US consumer",""]
+  ],
+  erDone:[
+    ["HAL","India","Net profit +16% YoY; revenue ₹7,613 cr","Margin slipped","info"],
+    ["Alkem Labs","India","Net profit −14.37% to ₹667 cr; revenue ₹4,552 cr","Profit decline","down"],
+    ["P&G Hygiene","India","Profit −6.7% to ₹195.84 cr","Profit decline","down"],
+    ["Tata Power","India","Q2 profit ≈ +49%; new CEO Sanjay Banga","Strong growth","up"],
+    ["Page Industries","India","Sep-quarter results","Stock −12.9%","down"],
+    ["Vodafone Idea","India","Reported this week; figures n/a","","plain"],
+    ["Cisco","US","Record $18.5bn revenue; FY guide $74.8–75.8bn; AI infra outlook $9bn","≈ +3% after hours","up"],
+    ["Applied Materials","US","Record Q4 revenue $10.41bn; above-consensus guidance","≈ flat","plain"],
+    ["Cerebras","US","Q3 revenue beat, upbeat guidance","Rose after hours","up"],
+    ["Corteva","US","Guidance cut","−24.3%","down"],
+    ["Siemens","Europe","Raised outlook","Lifted DAX +0.57%","up"],
+    ["Burberry · Munich Re","Europe","Strong results outweighed the chip sell-off","STOXX 600 record","up"]
+  ],
+  stories:[
+    {t:"Record FII return",st:"ONGOING",day:"Day 9 of Nov",p:"FIIs have bought ₹73,566 cr in nine sessions after selling about ₹45,000 cr in each of September and October. DIIs have sold ₹46,835 cr. HDFC Sky puts it at $6.43bn, the strongest since Sep 2024.",m:"This flow has driven the ~10% rally.",w:"Whether 5% US yields slow the buying."},
+    {t:"US rate-hike repricing",st:"ONGOING",day:"",p:"After a hot CPI print, the 2Y rose about 15bp to 4.88% and the 10Y to 5.10%. A December hike is fully priced, with about a 13% chance of 50bp.",m:"EM flows and the rupee.",w:"October PPI and four Fed speakers today."},
+    {t:"India inflation above RBI band",st:"NEW",day:"",p:"October CPI 6.09% vs 5.54% in September and a 5.93% forecast; food 8.94%. September WPI was 11.39%. The RBI raised rates in October.",m:"Raises odds of another hike on 2–4 Dec.",w:"October WPI on Mon 16 Nov."},
+    {t:"Nvidia leadership change",st:"NEW",day:"Day 1",p:"Huang resigned after an investigation into his personal conduct. CFO Colette Kress is interim CEO; Harvey Jones is the first chair. Results on 17 Nov as planned. Taiwan −2.63%.",m:"Weakens AI-trade leadership; so far has helped “old-economy” markets like India.",w:"Results after the US close on Tue 17 Nov."},
+    {t:"Middle East and oil",st:"ONGOING",day:"",p:"Brent went from about $91.88 in Indian hours to $95.82 at settlement after Houthi attacks on Saudi pipeline and Aramco sites, reported tanker explosions in the Strait of Hormuz, and Trump saying the US no longer needs an Iran deal.",m:"India's import bill, OMC margins, inflation.",w:"Whether Brent holds above $95."},
+    {t:"MSCI India rebalance",st:"NEW",day:"",p:"Adani Green, Coforge, LIC and Meesho are being added; PI Industries is being removed. Effective date n/a in sources.",m:"Passive flows into and out of these stocks.",w:"The effective date."},
+    {t:"Financials raising capital",st:"NEW",day:"",p:"Bajaj Finance launched a $1bn+ institutional share sale. Life-insurance first-year premiums grew 26.2% YoY in October (21.3% in September).",m:"Strong demand, but more share supply.",w:"Placement discount and supply from other financials."},
+    {t:"Q2 results season ends",st:"ONGOING",day:"Deadline Sat 14",p:"About 480 companies report today, including Grasim, Eicher Motors and Tata Motors PV. Results so far are mixed: HAL margins slipped, Alkem and P&G Hygiene profits fell, Tata Power profit rose ≈49%.",m:"Earnings must justify the November rally.",w:"Margin trends across autos and FMCG."}
+  ],
+  gloss:{
+    gift:["GIFT Nifty","A Nifty futures contract traded in GIFT City, Gujarat, almost round the clock. It trades while Indian markets are shut, so it hints at how Nifty may open.","Today: 25,279 vs Nifty's 25,299.35 close → flat to slightly lower start."],
+    fii:["FII / DII","Foreign institutional investors (overseas funds) and domestic institutional investors (Indian mutual funds, insurers). Exchanges publish their daily net buying or selling, first as provisional numbers.","Thursday: FIIs +₹7,830.60 cr, DIIs −₹6,331.17 cr."],
+    vix:["Volatility index (VIX)","A fear gauge built from option prices. It estimates how much the market expects to swing over the next 30 days. Higher means more nervous.","Today: India VIX 16.61 (−5.38%); US VIX 18.70."],
+    yield:["Bond yield","The return a bond pays if held to maturity. When yields rise, bond prices fall, and safe bonds look more attractive versus stocks.","Today: US 10-year yield 5.10%."],
+    bp:["Basis point (bp)","One-hundredth of a percentage point. 25bp = 0.25%.","Today: US 2-year yield up ≈15bp to 4.88%."],
+    priced:["“Fully priced”","Futures markets already assume the event will happen. If it happens, the surprise is small; if it doesn't, markets can move sharply.","Today: a December Fed hike is fully priced."],
+    dxy:["Dollar index (DXY)","The US dollar against six major currencies. A stronger dollar usually means a weaker rupee and lower gold prices.","Today: 103.19, a 19-month high."],
+    brent:["Brent crude","The global oil benchmark. India imports most of its crude, so a higher Brent widens the trade deficit and can lift inflation.","Today: $95.82, +3.30%."],
+    breadth:["Market breadth","How many stocks rose versus fell. An index can be flat while most stocks fall; poor breadth means weakness is wider than the index shows.","Today: India 2,377 up vs 1,878 down; US decliners beat advancers ≈3:1."],
+    momentum:["Momentum","The tendency of recent winners to keep winning over 3–12 months. Over very short periods (1 month), sharp moves tend to partly reverse.","Today: Nifty ≈ +10% in November."],
+    haven:["Safe-haven demand","When investors are nervous they buy gold and government bonds. Money moving out of havens into stocks signals rising risk appetite.","Today: gold −1.29% while Nifty +0.18%."],
+    cpi:["CPI (retail inflation)","Consumer Price Index: the change in prices households pay. The RBI targets 4%, with a tolerance band of 2–6%.","Today: India October CPI 6.09%."],
+    wpi:["WPI (wholesale inflation)","Wholesale Price Index: prices businesses pay for goods. It often leads retail inflation and affects company margins.","Today: September WPI 11.39%."],
+    ppi:["PPI (US producer prices)","The US equivalent of wholesale inflation. A hot PPI signals more consumer inflation ahead.","Today: forecast +0.4% m/m vs +1.3% before."],
+    repo:["Repo rate","The rate at which the RBI lends to banks. It sets the floor for loan EMIs, FD rates and bond yields.","Today: raised 25bp in October; next meeting 2–4 Dec."],
+    guidance:["Guidance","A company's own forecast for coming quarters. Stocks often react more to guidance than to the quarter just reported.","Today: Cisco +3% on raised guidance; Corteva −24.3% on a cut."],
+    bmo:["BMO / AMC","Before market open / after market close: when a company releases results. US AMC results land early next morning in India.","Today: Nvidia reports AMC Tue 17 → early Wed 18 IST."],
+    omc:["OMC","Oil marketing companies that refine and sell fuel. Their margins shrink when crude rises faster than pump prices.","Today: Brent's spike is a headwind for OMCs and a tailwind for producers like ONGC."],
+    msci:["MSCI rebalance","MSCI periodically changes which stocks are in its indices. Passive funds tracking them must buy additions and sell deletions on the effective date.","Today: Adani Green, Coforge, LIC, Meesho in; PI Industries out."],
+    prov:["Provisional data","Early figures released the same evening. Final numbers can differ slightly a day later.","Today: FII/DII flows and USD/INR 94.04 are provisional."],
+    rotation:["Sector rotation","Money moving from one group of stocks to another as investors change their outlook, such as from consumption to financials.","Today: out of autos/FMCG into financials and realty."],
+    sentiment:["Sentiment index","A composite of market behaviour (volatility, breadth, momentum, flows, safe-haven demand) scaled 0–100. Extremes are read as contrarian signals.","Today: 69, “Greed”."]
+  },
+  sources:[
+    ["HDFC Sky: Market Close Report, 12 Nov","https://hdfcsky.com/news/market-close-report-today-november-12-2026-nifty-sensex-pause-the-party"],
+    ["Upstox: Market wrap, Nov 12","https://upstox.com/news/market-news/stocks/market-wrap-nov-12-nifty-50-ends-at-25-229-sensex-flat-nifty-smallcap-100-outperforms-for-second-straight-session/article-203374/"],
+    ["HDFC Sky: Sectoral Snapshot, 12 Nov","https://hdfcsky.com/news/sectoral-snapshot-today-november-12-2026-financials-support-dalal-street-as-autos-retreat"],
+    ["Motilal Oswal Market Round-up","https://www.investmentguruindia.com/newsdetail/market-round-up-12th-november-2026-by-motilal-oswal-wealth-management-ltd708573"],
+    ["Tapetide: FII/DII flows Nov 2026","https://tapetide.com/insight/reports/fii-dii-flows/2026-11"],
+    ["HDFC Sky/PTI: Rupee closes at 94.04","https://hdfcsky.com/news/rupee-falls-33-paise-to-close-at-94-04-against-us-dollar"],
+    ["HDFC Sky: GIFT Nifty signals flat open","https://hdfcsky.com/news/gift-nifty-signals-flat-open-for-sensex-nifty-on-friday-as-asia-falls-and-oil-eases"],
+    ["BazaarWatch: GIFT Nifty live","https://bazaarwatch.in/"],
+    ["MCX Live","https://mcxlive.org/"],
+    ["Business Standard: Gold, silver fall","https://www.business-standard.com/markets/commodities/gold-silver-fall-as-expectations-of-december-rate-hike-strengthen-126111200351_1.html"],
+    ["CappNotes: Closing Look, 12 Nov","https://cappnotes.substack.com/p/closing-look-thursday-november-12"],
+    ["Rock & Turner: The Market Today, 12 Nov","https://rockandturner.substack.com/p/thur-nov-12-2026-the-market-today"],
+    ["Investing.com: US stocks close","https://www.investing.com/news/stock-market-news/us-stocks-lower-at-close-of-trade-dow-jones-industrial-average-down-036-5023324"],
+    ["Yahoo Finance: How major US indexes fared","https://finance.yahoo.com/markets/world-indices/articles/major-us-stock-indexes-fared-211731317.html"],
+    ["MLQ: European stocks close","https://mlq.ai/news/european-stocks-close-higher-as-burberry-and-munich-re-outweigh-a-chip-selloff-after-nvidias-ceo-exit/"],
+    ["Investing.com: European shares at record","https://ph.investing.com/news/stock-market-news/european-shares-hit-record-highs-as-defensive-appeal-offsets-nvidia-shock-2693944"],
+    ["Yahoo Finance/Reuters: Nvidia storm","https://finance.yahoo.com/markets/stocks/articles/asian-stocks-fragile-nvidia-plummets-015524144.html"],
+    ["Angel One: Top gainers/losers 12 Nov","https://angelone.in/news/market-updates/top-gainers-and-losers-on-november-12-2026-hdfc-life-and-shriram-finance-gain-while-nestle-drops-over-2"],
+    ["Dhan: MCX Crude Oil","https://dhan.co/commodity/crude-oil-options-summary/"],
+    ["Trading Economics: US stock market","https://tradingeconomics.com/united-states/stock-market"]
+  ],
+  web:[
+    ["W1","Upstox/Dailyhunt: Upcoming Q2 FY27 results this week","https://m.dailyhunt.in/news/india/english/upstox-epaper-upstox/upcoming+q2+fy27+results+this+week+tata+motors+pv+vi+hal+eicher+motors+ashok+leyland+and+more+check+full+list-newsid-n733150981"],
+    ["W2","MyAlgoMate: F&O results calendar","https://myalgomate.com/tools/results-calendar/fno"],
+    ["W3","Multibagg: Quarterly results deadlines FY27","https://www.multibagg.ai/market-pulse/articles/quarterly-results-dates-cmudzc57200010bgm7xw7y6sn"],
+    ["W4","Earnings Whispers: week of 16 Nov 2026","https://www.earningswhispers.com/calweek/20261116"],
+    ["W5","Schwab: Stock market update","https://www.schwab.com/learn/story/stock-market-update-open"],
+    ["W6","Investingly: NVDA earnings date","https://investingly.io/stocks/NVDA/earnings"],
+    ["W7","Wall Street Horizon: Home Depot earnings","https://wallstreethorizon.com/home-depot-earnings-calendar"],
+    ["W8","Sahi: India October CPI 6.09%","https://www.sahi.com/news/india-october-cpi-inflation-rises-to-6-09-yoy"],
+    ["W9","IndexBox: India CPI October 2026","https://www.indexbox.io/blog/indias-retail-inflation-at-609-in-october-2026-as-food-prices-stay-elevated/"],
+    ["W10","India Blooms: CPI breaches RBI's 6% limit","https://www.indiablooms.com/finance/inflation-shock-indias-retail-inflation-breaches-rbis-6-limit-hits-609-in-october/details"],
+    ["W11","Moneylife: WPI 11.39% in September","https://www.moneylife.in/article/wpi-inflation-hits-1139-percentage-in-september-as-fuel-food-and-factorygate-prices-rise/81939.html"],
+    ["W12","PSU Connect: WPI September 2026","https://www.psuconnect.in/news/wpi-inflation-rises-to-11-39-in-september-2026"],
+    ["W13","Kiplinger: This week's economic calendar","https://www.kiplinger.com/investing/economy/this-weeks-economic-calendar"],
+    ["W14","Rio Times: Global economy briefing 13 Nov","https://riotimesonline.com/global-economy-briefing-november-13-2026"],
+    ["W15","FedRateCalc: November 2026 US calendar","https://fedratecalc.com/us-economic-calendar/november-2026/"],
+    ["W16","Federal Reserve: December 2026 events","https://www.federalreserve.gov/newsevents/2026-december.htm"],
+    ["W17","RBI press release: next MPC meeting","https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63742"],
+    ["W18","5paisa: RBI MPC schedule 2026-27","https://www.5paisa.com/blog/rbi-mpc-meeting-2025"],
+    ["W19","Newsquawk: Week in focus 16–20 Nov 2026","https://www.newsquawk.com/headlines/week-in-focus--16-20th-november-2026-highlights-include-us-retail-sales-fomc-minutes-chinese-activity-data-pboc-lpr-rba-minutes-uk-inflation-and-uk-jobs"]
+  ],
+  method:[
+    "CNN Business Fear & Greed Index: seven equal-weighted components scored 0–100.",
+    "Tickertape Market Mood Index: FII activity, volatility, momentum, breadth, price strength, gold demand (India).",
+    "Whaley, R. (2000). The Investor Fear Gauge. Journal of Portfolio Management.",
+    "Baker, M. & Wurgler, J. (2006). Investor Sentiment and the Cross-Section of Stock Returns. Journal of Finance.",
+    "Jegadeesh, N. (1990). Evidence of Predictable Behavior of Security Returns. Journal of Finance.",
+    "Jegadeesh, N. & Titman, S. (1993). Returns to Buying Winners and Selling Losers. Journal of Finance.",
+    "Calvo, G., Leiderman, L. & Reinhart, C. (1993). Capital Inflows and Real Exchange Rate Appreciation in Latin America: The Role of External Factors. IMF Staff Papers.",
+    "Reference levels for India VIX and US VIX are approximate long-run medians used by this app; formulas are shown with each component."
+  ]
+};
+
+/* ===================== HELPERS ===================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const store = {
+  get(k,d){ try{ const v=localStorage.getItem("ii:"+k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem("ii:"+k,JSON.stringify(v)); }catch(e){} }
+};
+const term = (id,label) => `<button class="term" data-term="${id}">${esc(label)}</button>`;
+const chip = (t,c) => `<span class="chip ${c}">${t}</span>`;
+const clamp = v => Math.max(0,Math.min(100,v));
+const fmtCr = v => (v<0?"−":"+")+"₹"+Math.abs(Math.round(v)).toLocaleString("en-IN")+" cr";
+const sc = v => { const m=String(v).match(/[+−]/); return !m?"plain":m[0]==="+"?"up":"down"; };
+const fmtPct = v => (v>0?"+":v<0?"−":"")+Math.abs(v).toFixed(2)+"%";
+const SRC = {}; D.sources.forEach(([n,u],i)=>{ SRC["S"+(i+1)]=[n,u]; }); D.web.forEach(([k,n,u])=>{ SRC[k]=[n,u]; });
+const cite = a => (a||[]).filter(Boolean).map(k=>`<button class="src" type="button" data-src="${k}" aria-label="Source ${k}">${k}</button>`).join("");
+const XSVG = '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+const dirChip = d => d==="up" ? chip("▲ Tailwind","up") : d==="down" ? chip("▼ Headwind","down") : chip("◆ Mixed","warn");
+function table(el, head, rows){
+  $(el).innerHTML = `<tr>${head.map(h=>`<th class="${h[1]||""}">${h[0]}</th>`).join("")}</tr>` + rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${head[i][1]||""}" data-l="${esc(String(head[i][0]).replace(/<[^>]+>/g,""))}">${c}</td>`).join("")}</tr>`).join("");
+}
+
+/* ===================== ROUTING ===================== */
+const VIEWS=[["today","Brief"],["mood","Mood Index"],["flows","Flow Map"],["money","Portfolio Lens"],["india","India Markets"],["global","Global Cues"],["economy","Macro Watch"],["earnings","Earnings Radar"],["stories","Developing"],["learn","Jargon Buster"]];
+const VHEAD={
+  mood:"How investors are behaving, each signal measured against its normal range, and kept separate from macro pressure.",
+  flows:"Who is buying and selling Indian shares, and where money is rotating between sectors.",
+  money:"How today's news affects what you own.",
+  india:"Thursday's session in full: indices, sectors, movers, commodities and the rupee.",
+  global:"Overnight world markets, and what each one means for India.",
+  economy:"Economic indicators, and the dates that can move your portfolio.",
+  earnings:"Who reports when, what has already reported, and how to read a results day.",
+  stories:"Stories that carry over from day to day, with what to watch next.",
+  learn:"Terms used in today's brief, each with today's number so you can see it in use."
+};
+VIEWS.forEach(([id,name])=>{ if(VHEAD[id]) $("#v-"+id).insertAdjacentHTML("afterbegin",`<div class="vhead"><h1>${name}</h1><p>${VHEAD[id]}</p></div>`); });
+const GROUPS=[["today","money"],["mood","flows","india","global"],["economy","earnings","stories"],["learn"]];
+$("#tabs").innerHTML = GROUPS.map(g=>g.map(id=>`<a class="tab" href="#${id}" data-v="${id}">${VIEWS.find(x=>x[0]===id)[1]}</a>`).join("")).join('<span class="tabsep" aria-hidden="true"></span>');
+function route(){
+  const h=location.hash.slice(1), v=VIEWS.some(x=>x[0]===h)?h:"today";
+  VIEWS.forEach(([id])=>{ $("#v-"+id).hidden = id!==v; });
+  if(window.__ready) rise(v);
+  document.querySelectorAll(".tab").forEach(t=>{ if(t.dataset.v===v){ t.setAttribute("aria-current","page"); t.scrollIntoView({block:"nearest",inline:"nearest"}); } else t.removeAttribute("aria-current"); });
+  document.title = v==="today" ? "Brownian" : `${VIEWS.find(x=>x[0]===v)[1]} · Brownian`;
+}
+addEventListener("hashchange",()=>{ route(); scrollTo(0,0); });
+route();
+$("#skip").addEventListener("click",()=>$("#main").focus());
+
+/* ===================== SENTIMENT ===================== */
+const comps = D.sentiment.map(c=>({...c, score:clamp(c.f(c.val))}));
+const S = Math.round(comps.reduce((a,c)=>a+c.score,0)/comps.length);
+const BANDS=[[25,"Extreme fear","down"],[45,"Fear","down"],[55,"Neutral","plain"],[75,"Greed","up"],[101,"Extreme greed","up"]];
+const bandOf = v => BANDS.find(b=>v<b[0]);
+const [,bandName,bandCls] = bandOf(S);
+const P = D.pressure.reduce((a,p)=>a+p.lv,0)/(D.pressure.length*2);
+const pName = P>=.66?"High":P>=.4?"Elevated":"Low";
+const flashing = D.pressure.filter(p=>p.lv===2).length;
+
+function gauge(el){
+  const cx=110,cy=110,r=86; let s="";
+  const cols=["var(--down)","var(--down)","var(--neutral)","var(--up)","var(--up)"], ops=[1,.55,.6,.55,1], cuts=[0,25,45,55,75,100];
+  for(let i=0;i<5;i++){
+    const a0=Math.PI*(1-cuts[i]/100)-.01, a1=Math.PI*(1-cuts[i+1]/100)+.01;
+    const p=a=>[cx+r*Math.cos(a),cy-r*Math.sin(a)], [x0,y0]=p(a0),[x1,y1]=p(a1);
+    s+=`<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="${cols[i]}" stroke-opacity="${ops[i]}" stroke-width="14"/>`;
+  }
+  const a=Math.PI*(1-S/100), nx=cx+(r-22)*Math.cos(a), ny=cy-(r-22)*Math.sin(a);
+  comps.forEach(c=>{ const ca=Math.PI*(1-c.score/100); s+=`<circle class="gdot" cx="${(cx+r*Math.cos(ca)).toFixed(1)}" cy="${(cy-r*Math.sin(ca)).toFixed(1)}" r="4.5" fill="var(--ink)" stroke="var(--surface)" stroke-width="2" tabindex="0" data-tip-v="${Math.round(c.score)} / 100" data-tip-l="${esc(c.name)} · ${esc(bandOf(c.score)[1])}"/>`; });
+  s+=`<g class="needle" style="--sweep:${(-S/100*180).toFixed(1)}deg"><line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/></g><circle cx="${cx}" cy="${cy}" r="6" fill="var(--ink)"/>`;
+  s+=`<text x="${cx-r}" y="126" text-anchor="middle" font-size="10">0 Fear</text><text x="${cx}" y="14" text-anchor="middle" font-size="10">50</text><text x="${cx+r}" y="126" text-anchor="middle" font-size="10">Greed 100</text>`;
+  $(el).innerHTML=s; $(el).setAttribute("aria-label",`Sentiment ${S} of 100, ${bandName}`);
+}
+function quad(){
+  const hi=P>=.5, gr=S>=50;
+  if(gr&&hi) return ["Fragile optimism","Investors are behaving greedily while macro pressure is high. Prices are leaning on continued FII buying; a hot US PPI, another oil spike or an RBI hike would test that.","Investors are upbeat while fundamental headwinds build."];
+  if(gr&&!hi) return ["Supportive","Upbeat sentiment with benign macro conditions. Trends have tended to persist in such phases, though extreme readings still carry risk.","Upbeat sentiment, benign macro."];
+  if(!gr&&hi) return ["Stress","Fear alongside real macro headwinds. Volatility tends to stay high in these phases.","Fear with real headwinds."];
+  return ["Fear, low pressure","Fear without a clear fundamental cause. Sentiment research treats this as a contrarian reading, not a signal to act.","Fear without a clear macro cause."];
+}
+function matrix(el){
+  const W=320,H=210,l=40,t=10,w=270,h=160;
+  const x=l+P*w, y=t+(1-S/100)*h;
+  let s=`<rect class="qd" x="${l}" y="${t}" width="${w/2}" height="${h/2}" fill="var(--up-soft)" data-tip-v="Supportive" data-tip-l="Upbeat sentiment, low macro pressure"/><rect class="qd" x="${l+w/2}" y="${t}" width="${w/2}" height="${h/2}" fill="var(--warn-soft)" data-tip-v="Fragile optimism" data-tip-l="Upbeat sentiment, high macro pressure"/><rect class="qd" x="${l}" y="${t+h/2}" width="${w/2}" height="${h/2}" fill="var(--accent-soft)" data-tip-v="Fear, low pressure" data-tip-l="Fearful sentiment without a macro cause"/><rect class="qd" x="${l+w/2}" y="${t+h/2}" width="${w/2}" height="${h/2}" fill="var(--down-soft)" data-tip-v="Stress" data-tip-l="Fearful sentiment, high macro pressure"/>`;
+  s+=`<text x="${l+8}" y="${t+16}" font-size="10">Supportive</text><text x="${l+w-8}" y="${t+16}" font-size="10" text-anchor="end">Fragile optimism</text><text x="${l+8}" y="${t+h-8}" font-size="10">Fear, low pressure</text><text x="${l+w-8}" y="${t+h-8}" font-size="10" text-anchor="end">Stress</text>`;
+  s+=`<text x="${l+w/2}" y="${H-12}" font-size="10" text-anchor="middle">Macro pressure → ${pName.toLowerCase()} (${Math.round(P*100)}%)</text>`;
+  s+=`<text x="12" y="${t+h/2}" font-size="10" text-anchor="middle" transform="rotate(-90 12 ${t+h/2})">Sentiment → greed</text>`;
+  s+=`<g class="mdot" tabindex="0" data-tip-v="Sentiment ${S} · pressure ${Math.round(P*100)}%" data-tip-l="Today: ${qName}"><circle cx="${x}" cy="${y}" r="10" fill="var(--dawn)" opacity=".3"/><circle cx="${x}" cy="${y}" r="6" fill="var(--dawn)" stroke="var(--surface)" stroke-width="2"/></g><text x="${x-12}" y="${y+4}" font-size="11" text-anchor="end" style="fill:var(--ink);font-weight:600">Today</text>`;
+  $(el).innerHTML=s;
+}
+const [qName,qText,qShort]=quad();
+["#t-score","#m-score"].forEach(e=>{ $(e).textContent=S; $(e).dataset.count=S; });
+["#t-band","#m-band"].forEach(e=>{ $(e).textContent=bandName; $(e).className="chip "+bandCls; });
+gauge("#t-gauge"); gauge("#m-gauge"); matrix("#t-matrix"); matrix("#m-matrix");
+$("#t-press").textContent=pName;
+$("#t-press-n").textContent=`${flashing} of ${D.pressure.length} high`;
+$("#t-quad").innerHTML=`<b style="color:var(--ink)">${qName}.</b> ${qShort} <a href="#mood">Read the full reading</a>`;
+$("#m-quad-h").textContent=`Today: ${qName}`;
+$("#m-quad-p").textContent=qText;
+
+$("#m-comps").innerHTML = comps.map(c=>{
+  const [,bn,bc]=bandOf(c.score);
+  return `<div class="comp">
+    <div class="stack">
+      <div class="row"><h4>${term(c.term,c.name)}</h4>${chip(bn,bc)}<span class="num small">${Math.round(c.score)}/100</span></div>
+      <div class="meter" role="img" aria-label="${c.name} score ${Math.round(c.score)}"><i style="left:${c.score}%"></i></div>
+      <div class="scale"><span>Extreme fear</span><span>Neutral</span><span>Extreme greed</span></div>
+      <p class="small">${esc(c.read)}</p>
+    </div>
+    <div class="stack">
+      <dl class="kv"><dt>Measures</dt><dd>${esc(c.metric)}</dd><dt>Today</dt><dd class="num">${esc(c.show)}</dd><dt>Reference</dt><dd>${esc(c.ref)}</dd><dt>Scoring</dt><dd class="num tiny">${esc(c.formula)}</dd><dt>Source</dt><dd>${cite(c.src.split(", "))}</dd></dl>
+      <p class="small muted"><b style="color:var(--ink)">Research:</b> ${esc(c.res)}</p>
+    </div>
+  </div>`;}).join("");
+$("#m-missing").innerHTML = D.missing.map(m=>`<div><b>${m[0]}</b><br><span class="muted">${m[1]}</span></div>`).join("");
+$("#m-press").innerHTML = D.pressure.map(p=>`<div class="prow"><span><b>${esc(p.k)}</b> <span class="small">· ${esc(p.v)}</span></span><span class="v">${esc(p.why)}</span>${p.lv===2?chip("High","down"):p.lv===1?chip("Elevated","warn"):chip("Low","up")}</div>`).join("");
+const ext=comps.filter(c=>c.score>=75), neut=comps.filter(c=>c.score>=45&&c.score<55);
+$("#m-rational").innerHTML = [
+  `<b>Extremes matter more than the level.</b> Baker &amp; Wurgler (2006) found that after periods of high sentiment, speculative stocks (small, volatile, unprofitable) went on to deliver lower returns. Today reads ${S}, “${bandName}”.`,
+  `<b>A few components carry the reading.</b> ${ext.length} of ${comps.length} are at extreme greed: ${ext.map(c=>`${c.name.toLowerCase()} (${Math.round(c.score)})`).join(", ")}.${neut.length?` ${neut.map(c=>c.name).join(" and ")} ${neut.length===1?"is":"are"} neutral.`:""}`,
+  `<b>Sentiment and fundamentals disagree.</b> ${flashing} of ${D.pressure.length} macro indicators show high pressure. When the two diverge, prices depend on flows continuing.`,
+  `<b>Common biases after a rally like this.</b> Recency bias makes further gains feel likely, herding makes following FIIs feel safe, and loss aversion makes gold's 13-month low feel like a reason to sell.`,
+  `<b>Questions investors use to stay rational.</b> Has my allocation drifted from its target? Would I make this change if the market were flat? Am I reacting to a single day?`
+].map(x=>`<li>${x}</li>`).join("");
+
+/* ===================== TODAY ===================== */
+$("#strip").innerHTML = D.strip.map(t=>`<div class="tile"><span class="eyebrow">${t.t?term(t.t,t.l):esc(t.l)}</span><span class="val">${esc(t.v)}</span><span class="d num ${sc(t.d)}-t">${esc(t.d)}</span>${t.i?`<span class="tiny ${t.ic}-t">${esc(t.i)}</span>`:""}<span>${cite(t.s)}</span></div>`).join("");
+const TKS=[["S8","S11","S12"],["S5","S2","S3"],["S11","S12"],["W8","W10","S6"]];
+$("#takeaways").innerHTML = D.takeaways.map((t,i)=>`<article class="panel take"><span class="chip ${t.chip[1]}" style="justify-self:start">${t.chip[0]}</span><h3>${esc(t.h)}</h3><p>${esc(t.p)}${cite(TKS[i])}</p><p class="why"><b>Why it matters:</b> ${esc(t.why)}</p></article>`).join("");
+$("#drove").innerHTML = D.drove.map(x=>`<p>${esc(x)}</p>`).join("");
+const tl = (el,list,full) => $(el).innerHTML = list.map(e=>`<div class="ev${e.today?" today":""}"><span class="when">${esc(e.w)}</span><span class="dot"></span><div class="body"><div class="evh"><h4>${esc(e.t)}</h4>${full&&e.chip?chip(e.chip[0],e.chip[1]):""}</div>${full?`<p class="small muted">${esc(e.d)}</p>`:""}</div></div>`).join("");
+tl("#t-next",D.next,false);
+
+/* ===================== FLOWS ===================== */
+(function tug(){
+  const rows=[["Thursday 12 Nov",7830.60,-6331.17],["November to date (9 sessions)",73566,-46835]];
+  $("#tug").innerHTML = rows.map(([l,f,d])=>{
+    const m=Math.max(f,-d)*1.04, net=f+d;
+    return `<div class="tugrow"><b>${l}</b>
+      <div class="tugbar" role="img" aria-label="${l}: DII net ${fmtCr(d)}, FII net ${fmtCr(f)}, net institutional ${fmtCr(net)}"><span class="l" style="width:${(-d/m*50).toFixed(1)}%" data-tip-v="${fmtCr(d)}" data-tip-l="DII net · ${l}"></span><span class="r" style="width:${(f/m*50).toFixed(1)}%" data-tip-v="${fmtCr(f)}" data-tip-l="FII net · ${l}"></span></div>
+      <div class="tugvals"><span class="down-t">DII ${fmtCr(d)}</span><span class="up-t">FII ${fmtCr(f)}</span></div>
+      <div class="tuglabels muted tiny"><span>Net institutional ${fmtCr(net)}</span><span>Everyone else net sold ≈ ${fmtCr(net).slice(1)}</span></div></div>`;
+  }).join("");
+  $("#flow-read").innerHTML=[
+    `<b>FIIs are averaging ₹${Math.round(73566/9).toLocaleString("en-IN")} cr a day</b> in November vs ₹${Math.round(46835/9).toLocaleString("en-IN")} cr of daily DII selling. Thursday's ₹7,831 cr was in line with that pace.`,
+    `<b>A sharp reversal.</b> FIIs sold about ₹45,000 cr in each of September and October. November's ₹73,566 cr ($6.43bn) is the strongest month since Sep 2024.`,
+    `<b>Why FIIs may be buying:</b> sources point to rotation away from AI megacaps toward “old-economy” markets like India, plus re-entry after two months of selling.`,
+    `<b>Why DIIs are selling:</b> 9 straight sessions of selling into a ~10% rally looks like profit-taking by Indian funds. This is our reading; the sources don't give a reason.`,
+    `<b>The risk:</b> research on emerging-market flows finds US rates are a major driver. With the US 10Y at 5.10% and a December hike priced, this buying could slow.`
+  ].map(x=>`<li>${x}</li>`).join("");
+})();
+
+(function fiiChart(){
+  const W=420,H=300,l=48,r=8,t=28,b=46, ymin=-60000,ymax=80000;
+  const y=v=>t+(ymax-v)/(ymax-ymin)*(H-t-b);
+  const groups=[{m:"Sep",f:-45000,d:null,ap:1},{m:"Oct",f:-45000,d:null,ap:1},{m:"Nov to date",f:73566,d:-46835}];
+  const gw=(W-l-r)/groups.length, bw=38;
+  const k=v=>(v>0?"+":v<0?"−":"")+Math.abs(v).toLocaleString("en-IN");
+  let s=`<defs><pattern id="hatch-dn" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="var(--down-soft)"/><rect width="3" height="6" fill="var(--down)"/></pattern></defs>`;
+  for(let v=-40000; v<=80000; v+=40000){
+    s+=`<line x1="${l}" x2="${W-r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${l-6}" y="${y(v)+4}" font-size="12" text-anchor="end">${v===0?"0":(v>0?"+":"−")+Math.abs(v/1000)+"k"}</text>`;
+  }
+  s+=`<line x1="${l}" x2="${W-r}" y1="${y(0)}" y2="${y(0)}" stroke="var(--muted)" stroke-width="1.5"/>`;
+  groups.forEach((g,i)=>{
+    const cx=l+gw*i+gw/2, fx=g.d!==null?cx-bw-3:cx-bw/2, dx=cx+3;
+    const fy=Math.min(y(0),y(g.f)), fh=Math.abs(y(g.f)-y(0));
+    s+=`<rect class="grow ${g.f>0?"gu":"gd"}" x="${fx}" y="${fy}" width="${bw}" height="${fh}" rx="3" fill="${g.f>0?"var(--up)":"var(--down)"}" tabindex="0" data-tip-v="${g.ap?"≈ ":""}${k(g.f)} cr" data-tip-l="FII net · ${g.m}${g.ap?" (approximate)":""}"/>`;
+    s+=`<text x="${fx+bw/2}" y="${g.f>0?fy-8:fy+fh+17}" font-size="13" text-anchor="middle" style="fill:var(--ink)">${g.ap?"≈ ":""}${k(g.f)}</text>`;
+    s+=`<text x="${fx+bw/2}" y="${g.f>0?y(0)+16:y(0)-7}" font-size="11" text-anchor="middle">FII</text>`;
+    if(g.d!==null){
+      const dy=Math.min(y(0),y(g.d)), dh=Math.abs(y(g.d)-y(0));
+      s+=`<rect class="grow gd" x="${dx}" y="${dy}" width="${bw}" height="${dh}" rx="3" fill="url(#hatch-dn)" stroke="var(--down)" tabindex="0" data-tip-v="${k(g.d)} cr" data-tip-l="DII net · ${g.m}"/><text x="${dx+bw/2}" y="${dy+dh+17}" font-size="13" text-anchor="middle" style="fill:var(--ink)">${k(g.d)}</text><text x="${dx+bw/2}" y="${y(0)-7}" font-size="11" text-anchor="middle">DII</text>`;
+    }
+    s+=`<text x="${cx}" y="${H-12}" font-size="13" text-anchor="middle" style="fill:var(--ink);font-weight:600">${g.m}</text>`;
+  });
+  $("#fii-chart").innerHTML=s;
+  $("#fii-chart").setAttribute("aria-label","FII net flows: September about −45,000 crore, October about −45,000 crore, November to date +73,566 crore. DII net November to date −46,835 crore; DII September and October not available.");
+})();
+
+(function themes(){
+  const lim=5, x=v=>(v+lim)/(2*lim)*100;
+  $("#theme-in").innerHTML = D.themesIn.map(th=>{
+    const avg=th.s.reduce((a,b)=>a+b[1],0)/th.s.length, col=avg>=0?"var(--up)":"var(--down)";
+    const l=Math.min(x(0),x(avg)), w=Math.abs(x(avg)-x(0));
+    const list=th.s.map(([n,v])=>`${n} ${fmtPct(v)}`).join(" · ");
+    const dots=th.s.map(([n,v])=>`<span class="dot" style="left:${x(v)}%;background:${v>=0?"var(--up)":"var(--down)"}" tabindex="0" data-tip-v="${fmtPct(v)}" data-tip-l="${esc(n)} · ${esc(th.n)}"></span>`).join("");
+    return `<div class="trow"><span><b>${esc(th.n)}</b><span class="tiny muted" style="display:block">${esc(list)}</span></span><div class="tt" role="img" aria-label="${esc(th.n)}: average ${fmtPct(avg)}. ${esc(list)}"><span class="avg" style="left:${l}%;width:${Math.max(w,.8)}%;background:${col};transform-origin:${avg>=0?"left":"right"} center"></span>${dots}</div><span class="num ${avg>=0?"up":"down"}-t">avg ${fmtPct(avg)}</span></div>`;
+  }).join("") + `<div class="trow tiny muted" aria-hidden="true"><span></span><div class="num" style="display:flex;justify-content:space-between"><span>−5%</span><span>0</span><span>+5%</span></div><span></span></div>`;
+})();
+
+$("#rotmap").innerHTML = D.rotation.map(r=>`<div class="rrow"><div><span class="eyebrow">${r.lane}</span><div class="tiny muted">${esc(r.note)}</div></div>
+  <div class="side">${r.out.map(o=>`<span class="chip down" title="${esc(o[1])}">${esc(o[0])} · ${esc(o[1])}</span>`).join("")}</div>
+  <svg class="arrow" viewBox="0 0 44 16" aria-hidden="true"><path d="M2 8 H36 M30 2 L38 8 L30 14" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div class="side">${r.into.map(o=>`<span class="chip up">${esc(o[0])} · ${esc(o[1])}</span>`).join("")}</div></div>`).join("") +
+  `<p class="tiny muted">Arrows show the direction of relative performance on the day, not traced money. Source detail: S3, S11, S12.</p>`;
+
+const hex2rgb = h => { h=h.trim().replace("#",""); if(h.length===3) h=h.split("").map(c=>c+c).join(""); return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16)); };
+const lum = c => { const f=v=>{ v/=255; return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4); }; return .2126*f(c[0])+.7152*f(c[1])+.0722*f(c[2]); };
+const ratio = (a,b) => { const x=lum(a), y=lum(b); return (Math.max(x,y)+.05)/(Math.min(x,y)+.05); };
+function heat(el,rows,lim){
+  const cs=getComputedStyle(document.documentElement), tok=n=>hex2rgb(cs.getPropertyValue(n));
+  const up=tok("--up"), dn=tok("--down"), sf=tok("--surface"), ink=tok("--ink");
+  const cands=[["var(--ink)",ink],["var(--surface)",sf],["#0B0F1A",[11,15,26]],["#FFFFFF",[255,255,255]]];
+  $(el).innerHTML = rows.map(([n,v,v2],i)=>{
+    const m=v2!==undefined?(v+v2)/2:v, k=Math.min(1,Math.abs(m)/lim), w=.14+k*.6, c=m>=0?up:dn;
+    const bg=c.map((q,i)=>Math.round(q*w+sf[i]*(1-w)));
+    const fg=cands.reduce((best,cand)=>ratio(cand[1],bg)>ratio(best[1],bg)?cand:best)[0];
+    const lab=v2!==undefined?`${fmtPct(v)} to ${fmtPct(v2)}`:fmtPct(v);
+    return `<div class="ht" tabindex="0" style="background:rgb(${bg.join(",")});color:${fg};animation-delay:${i*30}ms" data-tip-v="${lab}" data-tip-l="${esc(n)} · rank ${i+1} of ${rows.length}"><b>${esc(n)}</b><span class="num">${lab}</span></div>`;
+  }).join("");
+}
+function renderHeat(){ heat("#heat-in",D.secIndia,3); heat("#heat-us",D.secUS,1.5); }
+renderHeat();
+try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",renderHeat); }catch(e){}
+new MutationObserver(renderHeat).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+table("#t-trend",[["Sector"],["Thu","r"],["Context"],["Read"],["What it means"]], D.trend.map(r=>[`<b>${r[0]}</b>`,`<span class="num">${r[1]}</span>`,esc(r[2]),chip(r[3],r[4]),`<span class="muted">${esc(r[5])}</span>`]));
+
+/* ===================== MY MONEY ===================== */
+const heldStored = store.get("held2",null);
+let held = heldStored || D.defaultHold.slice(), heldEx = heldStored===null;
+const HSRC={index:["S8","S5"],fin:["S1","S3"],mid:["S2","S11"],it:["S11","S6"],gold:["S9","S11"],silver:["S9"],debt:["W8","W17","S11"],oil:["S1","S3","S11"],consumer:["S3","S2"],realty:["S2","S1"],wallet:["S6","S11","W9"]};
+const fill = t => t.replace("{band}",bandName).replace("{press}",pName.toLowerCase());
+function renderTodayHold(){
+  const list=D.holdings.filter(h=>held.includes(h.id));
+  $("#t-hold-meta").textContent = heldEx ? "Example holdings. Choose yours in Portfolio Lens." : `${list.length} holding type${list.length===1?"":"s"} you picked`;
+  $("#t-hold").innerHTML = list.length ? list.map(h=>`<a href="#money">${esc(h.n)} ${dirChip(h.d)}</a>`).join("") : `<span class="small muted">No holdings picked yet. Choose them in Portfolio Lens.</span>`;
+}
+function renderHold(){
+  $("#holdpick").innerHTML = D.holdings.map(h=>`<button class="toggle" type="button" data-h="${h.id}" aria-pressed="${held.includes(h.id)}">${esc(h.n)}</button>`).join("");
+  $("#hold-ex").textContent = heldEx ? `Showing ${D.defaultHold.length} example holdings. Tap to choose your own.` : "";
+  const list=D.holdings.filter(h=>held.includes(h.id));
+  $("#impact").innerHTML = list.length ? list.map(h=>`<article class="icard"><div class="top"><h3>${esc(h.n)}</h3>${dirChip(h.d)}</div><dl><div><dt>What happened</dt><dd>${esc(h.h)}${cite(HSRC[h.id])}</dd></div><div><dt>What to watch</dt><dd>${esc(h.w)}</dd></div><div><dt>Perspective</dt><dd>${esc(fill(h.t))}</dd></div></dl></article>`).join("")
+    : `<div class="empty" style="grid-column:1/-1">Pick at least one holding above to see how today's news affects it.</div>`;
+  renderTodayHold();
+}
+$("#holdpick").addEventListener("click",e=>{ const b=e.target.closest("[data-h]"); if(!b) return; const id=b.dataset.h; held=held.includes(id)?held.filter(x=>x!==id):[...held,id]; heldEx=false; store.set("held2",held); renderHold(); });
+renderHold();
+
+const NAMES=Object.keys(D.stocks);
+$("#wl-names").innerHTML = NAMES.map(n=>`<option value="${esc(n)}"></option>`).join("");
+let watch=store.get("watch2",null), examples=watch===null;
+if(watch===null) watch=D.defaultWatch.slice();
+function resolve(q){
+  const s=q.trim().toLowerCase(); if(!s) return {};
+  if(D.aliases[s]) return {hit:D.aliases[s]};
+  const exact=NAMES.find(n=>n.toLowerCase()===s); if(exact) return {hit:exact};
+  const sug=NAMES.filter(n=>n.toLowerCase().includes(s)||Object.entries(D.aliases).some(([a,v])=>v===n&&a.startsWith(s))).slice(0,4);
+  return {raw:q.trim(), sug};
+}
+let lastRemoved=null, beforeReset=null;
+const msg = h => { $("#wl-msg").innerHTML = h; };
+function addName(n){
+  if(examples){ watch=[]; examples=false; }
+  if(!watch.includes(n)) watch.unshift(n);
+  store.set("watch2",watch); $("#wl-input").value=""; lastRemoved=null; beforeReset=null; renderWatch();
+}
+function renderWatch(){
+  $("#wl").innerHTML = watch.length ? watch.map((n,i)=>{
+    const d=D.stocks[n];
+    const m=d?chip(esc(d[0]),d[1]):chip("Not in brief","plain");
+    const note=d?`${esc(d[2])} <span class="muted">· ${esc(d[3])}</span>`:`Not mentioned in today's brief or results calendars. See its sector on the <a href="#flows">Flow Map</a>.`;
+    return `<div class="wrow"><span class="nm">${esc(n)}${examples?" "+chip("Example","plain"):""}</span>${m}<span class="note">${note}</span><button class="x" type="button" data-i="${i}" aria-label="Remove ${esc(n)}">${XSVG}</button></div>`;
+  }).join("") : `<div class="empty">Your watchlist is empty. Add a stock above to see if it was in today's news.</div>`;
+}
+$("#wl-form").addEventListener("submit",e=>{
+  e.preventDefault();
+  const r=resolve($("#wl-input").value);
+  if(r.hit){ addName(r.hit); msg(`Added ${esc(r.hit)}.`); return; }
+  if(!r.raw){ msg("Type a stock name or ticker first."); return; }
+  const anyway=`<button type="button" class="linkbtn" data-add="${esc(r.raw)}">Add “${esc(r.raw)}” anyway</button>`;
+  msg(r.sug.length ? `No exact match for “${esc(r.raw)}”. Did you mean ${r.sug.map(n=>`<button type="button" class="linkbtn" data-add="${esc(n)}">${esc(n)}</button>`).join(", ")}? Or ${anyway}.` : `“${esc(r.raw)}” isn't in today's brief or results calendars. ${anyway}.`);
+});
+$("#wl-msg").addEventListener("click",e=>{
+  const b=e.target.closest("[data-add]");
+  if(b){ addName(b.dataset.add); msg(`Added ${esc(b.dataset.add)}.`); return; }
+  if(e.target.id!=="wl-undo") return;
+  if(lastRemoved){ watch.splice(lastRemoved[1],0,lastRemoved[0]); lastRemoved=null; }
+  else if(beforeReset){ watch=beforeReset.w; examples=beforeReset.ex; beforeReset=null; }
+  if(!examples) store.set("watch2",watch);
+  renderWatch(); msg("Restored.");
+});
+$("#wl").addEventListener("click",e=>{
+  const b=e.target.closest("[data-i]"); if(!b) return;
+  const i=+b.dataset.i, [gone]=watch.splice(i,1);
+  if(!examples) store.set("watch2",watch);
+  lastRemoved=[gone,i]; beforeReset=null; renderWatch();
+  msg(`Removed ${esc(gone)}. <button type="button" class="linkbtn" id="wl-undo">Undo</button>`);
+});
+$("#wl-reset").addEventListener("click",()=>{
+  beforeReset={w:watch.slice(),ex:examples}; lastRemoved=null;
+  watch=D.defaultWatch.slice(); examples=true;
+  try{ localStorage.removeItem("ii:watch2"); }catch(e){}
+  renderWatch(); msg(`Watchlist reset to examples. <button type="button" class="linkbtn" id="wl-undo">Undo</button>`);
+});
+renderWatch();
+
+/* ===================== INDIA ===================== */
+const tlink = n => n==="India VIX"?term("vix",n):n.startsWith("FII")||n.startsWith("DII")?term("fii",n):n==="Breadth"?term("breadth",n):esc(n);
+table("#t-india",[["Index"],["Close","r"],["Change","r"],["Note"]], D.india.map(r=>[tlink(r[0]),`<span class="num">${esc(r[1])}</span>`,`<span class="num ${sc(r[2])}-t">${esc(r[2])}</span>`,`<span class="small muted">${esc(r[4])}</span>`]));
+function bars(el,rows,lim){
+  const pct=v=>Math.abs(v)/lim*50, fmt=v=>(v>0?"+":v<0?"−":"")+Math.abs(v).toFixed(2)+"%";
+  $(el).innerHTML = rows.map(([n,v,v2],i)=>{
+    let b = v>=0?`<span class="b pos" style="left:50%;width:${pct(v)}%"></span>`:`<span class="b neg" style="right:50%;width:${pct(v)}%"></span>`, lab=fmt(v);
+    if(v2!==undefined){ b+=`<span class="b ext" style="right:${50+pct(v)}%;width:${pct(v2)-pct(v)}%"></span>`; lab=`${fmt(v)} to ${fmt(v2)}`; }
+    return `<div class="crow" tabindex="0" data-tip-v="${lab}" data-tip-l="${esc(n)} · rank ${i+1} of ${rows.length}"><span>${esc(n)}</span><div class="track" aria-hidden="true">${b}</div><span class="num ${v>=0?"up":"down"}-t">${lab}</span></div>`;
+  }).join("") + `<div class="axis"><div></div><div class="num"><span>−${lim}%</span><span>0</span><span>+${lim}%</span></div><div></div></div>`;
+}
+bars("#c-india",D.secIndia,5);
+$("#c-india").insertAdjacentHTML("beforeend",`<p class="tiny muted">Hatched: sources give a range. Financial Services and Healthcare: n/a.</p>`);
+table("#t-secan",[["Sector"],["Thu","r"],["Why"],["View"]], D.secan.map(r=>[`<b>${r[0]}</b>`,`<span class="num">${r[1]}</span>`,esc(r[2]),`<span class="muted">${esc(r[3])}</span>`]));
+$("#movers").innerHTML = D.movers.map(m=>`<div class="mrow"><b>${esc(m[0])}</b><span class="num ${m[2]}-t">${esc(m[1])}</span><span class="why muted">${esc(m[3])}</span><span class="tag">${m[4]?chip("News","info"):m[2]==="warn"?chip("Unverified","warn"):chip("No clear catalyst","plain")}</span></div>`).join("");
+table("#t-mcx",[["Contract"],["Level","r"],["Change","r"],["Note"]], D.mcx.map(r=>[esc(r[0]),`<span class="num">${r[1]}</span>`,`<span class="num ${sc(r[2])}-t">${r[2]}</span>`,`<span class="small muted">${esc(r[4])}</span>`]));
+table("#t-fx",[["Pair"],["Level","r"],["Change","r"],["Note"]], D.fx.map(r=>[esc(r[0]),`<span class="num">${r[1]}</span>`,`<span class="num ${sc(r[2])}-t">${r[2]}</span>`,`<span class="small muted">${esc(r[4])}</span>`]));
+$("#fx-drivers").innerHTML = D.fxDrivers.map(x=>`<li>${esc(x)}</li>`).join("");
+$("#ah-in").innerHTML = D.ahIn.map(x=>`<li>${x}</li>`).join("");
+$("#conflicts").innerHTML = D.conflicts.map(x=>`<li>${x}</li>`).join("");
+
+/* ===================== GLOBAL ===================== */
+table("#t-global",[["Index"],["Close","r"],["Change","r"],["Driver"],["India link"]], D.global.map(r=>[`<b>${r[0]}</b>`,`<span class="num">${r[1]}</span>`,`<span class="num ${sc(r[2])}-t">${r[2]}</span>`,esc(r[4]),`<span class="muted">${esc(r[5])}</span>`]));
+table("#t-macro",[["Measure"],["Level","r"],["Change","r"],["For India"]], D.macro.map(r=>[r[0].includes("10Y")||r[0].includes("2Y")?term("yield",r[0]):r[0]==="Dollar index"?term("dxy",r[0]):r[0]==="Brent"?term("brent",r[0]):r[0]==="US VIX"?term("vix",r[0]):r[0].includes("Fed")?term("priced",r[0]):esc(r[0]),`<span class="num">${r[1]}</span>`,`<span class="num ${sc(r[2])}-t">${r[2]}</span>`,r[3]==="down"?chip("Headwind","down"):`<span class="muted">—</span>`]));
+bars("#c-us",D.secUS,2);
+table("#t-usan",[["Sector"],["Change","r"],["What moved"],["View"]], D.usan.map(r=>[`<b>${r[0]}</b>`,`<span class="num">${r[1]}</span>`,esc(r[2]),`<span class="muted">${esc(r[3])}</span>`]));
+table("#t-usah",[["Ticker"],["After hours","r"],["Reason"]], D.usah.map(r=>[`<b>${r[0]}</b>`,`<span class="num ${r[2]}-t">${r[1]}</span>`,`<span class="small">${esc(r[3])}</span>`]));
+
+/* ===================== ECONOMY ===================== */
+(function cpi(){
+  const W=520,l=20,r=20,x=v=>l+v/10*(W-l-r), y0=60;
+  let s=`<rect x="${x(2)}" y="${y0-18}" width="${x(6)-x(2)}" height="36" fill="var(--up-soft)"/><text x="${(x(2)+x(6))/2}" y="${y0-24}" font-size="11" text-anchor="middle">RBI tolerance band 2–6%</text>`;
+  s+=`<rect x="${x(6)}" y="${y0-18}" width="${x(10)-x(6)}" height="36" fill="var(--down-soft)"/>`;
+  s+=`<line x1="${x(4)}" x2="${x(4)}" y1="${y0-18}" y2="${y0+18}" stroke="var(--up)" stroke-width="2" stroke-dasharray="3 3"/><text x="${x(4)}" y="${y0+32}" font-size="10" text-anchor="middle">Target 4%</text>`;
+  for(let v=0;v<=10;v+=2) s+=`<text x="${x(v)}" y="${y0+62}" font-size="10" text-anchor="middle">${v}%</text><line x1="${x(v)}" x2="${x(v)}" y1="${y0+44}" y2="${y0+50}" stroke="var(--muted)"/>`;
+  s+=`<line x1="${x(0)}" x2="${x(10)}" y1="${y0+47}" y2="${y0+47}" stroke="var(--muted)"/>`;
+  const mk=(v,lab,col,up)=>`<circle class="pop" cx="${x(v)}" cy="${y0}" r="7" fill="${col}" stroke="var(--surface)" stroke-width="2" tabindex="0" data-tip-v="${v}%" data-tip-l="${lab.replace(/ [\d.]+%$/,"")} · RBI band 2–6%, target 4%"/><text x="${x(v)}" y="${up?y0-24:y0+32}" font-size="11" text-anchor="middle" style="fill:var(--ink);font-weight:600">${lab}</text>`;
+  s+=mk(5.54,"Sep 5.54%","var(--neutral)",false)+mk(6.09,"Oct 6.09%","var(--down)",true)+mk(8.94,"Food 8.94%","var(--warn)",true);
+  $("#cpi-chart").innerHTML=s;
+})();
+table("#t-ppi",[["IST"],["Event"],["Forecast","r"],["Previous","r"]], D.ppi.map(r=>[`<span class="num nw">${r[0]}</span>`,r[1].includes("PPI")?term("ppi",r[1]):esc(r[1]),`<span class="num">${r[2]}</span>`,`<span class="num">${r[3]}</span>`]));
+table("#t-ind",[["Region"],["Indicator"],["Latest"],["Previous"],["Detail"],["Next"],["How to read it"],["Source"]], D.indicators.map(r=>[chip(r[0],"plain"), `<b>${r[1].startsWith("CPI")?term("cpi",r[1]):r[1].startsWith("WPI")?term("wpi",r[1]):r[1].startsWith("RBI")?term("repo",r[1]):r[1].startsWith("PPI")?term("ppi",r[1]):esc(r[1])}</b>`, `<span class="num">${esc(r[2])}</span>`, `<span class="num muted">${esc(r[3])}</span>`, `<span class="small">${esc(r[4])}</span>`, `<span class="small nw">${esc(r[5])}</span>`, `<span class="small muted">${esc(r[6])}</span>`, cite(r[8]?[r[8]]:[])]));
+tl("#timeline",D.events,true);
+
+/* ===================== EARNINGS ===================== */
+table("#t-er-today",[["Company"],["Sector"],["Context"]], D.erToday.map(r=>[`<b>${r[0]}</b>`,esc(r[1]),`<span class="small muted">${esc(r[2])}</span>`]));
+$("#t-er-today").insertAdjacentHTML("beforeend",`<tr><td colspan="3" class="tiny muted">Plus ≈470 smaller companies. Sources: W1, W2.</td></tr>`);
+table("#t-er-tom",[["Company"],["Sector"],["Context"]], D.erTom.map(r=>[`<b>${r[0]}</b>`,esc(r[1]),`<span class="small muted">${esc(r[2])}</span>`]));
+table("#t-er-us",[["Date"],["Company"],["Timing"],["Why it matters"],[""]], D.erUS.map(r=>[`<span class="num nw">${r[0]}</span>`,`<b>${r[1]}</b>`,`<span class="small nw">${r[2]}</span>`,`<span class="small">${esc(r[3])}</span>`,r[4]?chip("High impact","down"):""]));
+table("#t-er-done",[["Company"],["Market"],["What they reported"],["Reaction"]], D.erDone.map(r=>[`<b>${r[0]}</b>`,chip(r[1],"plain"),`<span class="small">${esc(r[2])}</span>`,`<span class="num small ${r[4]}-t">${esc(r[3])}</span>`]));
+
+/* ===================== STORIES & LEARN ===================== */
+$("#stories").innerHTML = D.stories.map(s=>`<article class="panel card"><div class="row">${chip(s.st==="NEW"?"New":"Ongoing",s.st==="NEW"?"info":"plain")}${s.day?chip(esc(s.day),"plain"):""}</div><h3>${esc(s.t)}</h3><p class="small">${esc(s.p)}</p><p class="small"><b>Why it matters:</b> <span class="muted">${esc(s.m)}</span></p><p class="small"><b>Watch:</b> <span class="muted">${esc(s.w)}</span></p></article>`).join("");
+D.gloss.sentiment[2] = `Today: ${S}, “${bandName}”.`;
+$("#gloss").innerHTML = Object.values(D.gloss).map(g=>`<article class="panel card"><h3>${esc(g[0])}</h3><p class="small">${esc(g[1])}</p><p class="small callout">${esc(g[2])}</p></article>`).join("");
+
+/* ===================== SHEET (terms + sources) ===================== */
+const sheet=$("#sheet"), scrim=$("#scrim"); let opener=null;
+function openSheet(from,t,d,n,link){
+  opener=from; $("#sh-t").textContent=t; $("#sh-d").textContent=d; $("#sh-n").textContent=n||"";
+  $("#sh-l").innerHTML = link ? `<a href="${link}" target="_blank" rel="noopener">Open the source</a>` : "";
+  sheet.hidden=false; scrim.hidden=false; $("#sh-x").focus();
+}
+function closeSheet(){ if(sheet.hidden) return; sheet.hidden=true; scrim.hidden=true; if(opener&&opener.focus) opener.focus(); }
+document.addEventListener("click",e=>{
+  const t=e.target.closest(".term");
+  if(t){ e.preventDefault(); const g=D.gloss[t.dataset.term]; if(g) openSheet(t,g[0],g[1],g[2]); return; }
+  const s=e.target.closest(".src");
+  if(s){ const x=SRC[s.dataset.src]; if(x) openSheet(s,`Source ${s.dataset.src}`,x[0],"",x[1]); }
+});
+$("#sh-x").addEventListener("click",closeSheet);
+scrim.addEventListener("click",closeSheet);
+document.addEventListener("keydown",e=>{
+  if(sheet.hidden) return;
+  if(e.key==="Escape"){ closeSheet(); return; }
+  if(e.key==="Tab"){ const f=[...sheet.querySelectorAll("button,a[href]")]; const i=f.indexOf(document.activeElement); e.preventDefault(); f[(i+(e.shiftKey?-1:1)+f.length)%f.length].focus(); }
+});
+
+/* ===================== GREETING + DAY LINE ===================== */
+(function greet(){
+  const BY=2026, BM=10, BD=13;
+  const now=new Date(Date.now()+330*60000);
+  const today=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()), brief=Date.UTC(BY,BM,BD);
+  const mins=now.getUTCHours()*60+now.getUTCMinutes(), same=today===brief, before=today<brief;
+  let chipT, h;
+  if(before||(same&&mins<555)){ chipT="Before the open"; h="What to know before the 09:15 open"; }
+  else if(same&&mins<930){ chipT="Market open · brief from 07:52"; h="What we knew before today's open"; }
+  else if(same){ chipT="Market closed · brief from 07:52"; h="What we knew before today's open"; }
+  else { chipT="Brief from Fri 13 Nov"; h="What we knew before Friday's open"; }
+  $("#fresh").textContent=chipT; $("#greet-h").textContent=h;
+  $("#greet-p").textContent=`The Mood Index reads ${S}, “${bandName}”. Macro pressure is ${pName.toLowerCase()}, and GIFT Nifty signalled a flat-to-soft open. Here's what that means for your money.`;
+  const a=360, z=1020, x=m=>(Math.min(z,Math.max(a,m))-a)/(z-a)*100;
+  const marks=[[472,"Brief 07:52",1],[555,"Open 09:15",0],[930,"Close 15:30",0]];
+  let html=`<span class="rail"></span><span class="lit" style="width:${before?0:same?x(mins):100}%"></span>`;
+  html+=marks.map(([m,lab,upper])=>`<span class="tick" style="left:${x(m)}%"></span><span class="tl${upper?" up":""}" style="left:${x(m)}%">${lab}</span>`).join("");
+  if(same&&mins>=a&&mins<=z) html+=`<span class="sun" style="left:${x(mins)}%;--from:${x(472)}%"></span>`;
+  $("#dayline").innerHTML=html;
+})();
+
+/* ===================== SOURCES ===================== */
+$("#sources").innerHTML = D.sources.map(([n,u],i)=>`<li value="${i+1}"><span class="num">[S${i+1}]</span> <a href="${u}" target="_blank" rel="noopener">${esc(n)}</a></li>`).join("");
+$("#sources-w").innerHTML = D.web.map(([k,n,u])=>`<li><span class="num">[${k}]</span> <a href="${u}" target="_blank" rel="noopener">${esc(n)}</a></li>`).join("");
+$("#sources-m").innerHTML = D.method.map(m=>`<li>${esc(m)}</li>`).join("");
+document.querySelectorAll("#t-global,#t-usan,#t-secan,#t-trend,#t-ind,#t-er-us,#t-er-done,#t-er-today,#t-er-tom,#t-macro,#t-ppi").forEach(t=>t.classList.add("st"));
+
+/* ===================== INTERACTION + MOTION ===================== */
+const tip=document.createElement("div"); tip.id="tip"; tip.setAttribute("role","tooltip"); tip.hidden=true;
+tip.append(document.createElement("b"), document.createElement("span")); document.body.appendChild(tip);
+function showTip(el,x,y){
+  tip.firstChild.textContent=el.dataset.tipV||""; tip.lastChild.textContent=el.dataset.tipL||""; tip.hidden=false;
+  const r=tip.getBoundingClientRect(); let L=x+14, T=y-r.height-12;
+  if(L+r.width>innerWidth-8) L=x-r.width-14; if(L<8) L=8; if(T<8) T=y+18;
+  tip.style.left=L+"px"; tip.style.top=T+"px";
+}
+const tipAt = e => { const el=e.target.closest&&e.target.closest("[data-tip-v]"); if(!el){ tip.hidden=true; return; } showTip(el,e.clientX,e.clientY); };
+document.addEventListener("pointermove",tipAt);
+document.addEventListener("pointerdown",tipAt);
+document.addEventListener("focusin",e=>{ const el=e.target.closest&&e.target.closest("[data-tip-v]"); if(!el){ tip.hidden=true; return; } const r=el.getBoundingClientRect(); showTip(el,r.left+r.width/2,r.top); });
+document.addEventListener("focusout",()=>{ tip.hidden=true; });
+addEventListener("scroll",()=>{ tip.hidden=true; },{passive:true});
+function rise(v){
+  const el=$("#v-"+v); el.classList.remove("rise"); void el.offsetWidth; el.classList.add("rise");
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  el.querySelectorAll("[data-count]").forEach(n=>{
+    const to=+n.dataset.count, t0=performance.now();
+    const step=t=>{ const k=Math.min(1,(t-t0)/900), e=1-Math.pow(1-k,4); n.textContent=Math.round(to*e); if(k<1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
+window.__ready=true;
+{ const h=location.hash.slice(1); rise(VIEWS.some(x=>x[0]===h)?h:"today"); }
+</script>
+
+</body>
+
+</html>
