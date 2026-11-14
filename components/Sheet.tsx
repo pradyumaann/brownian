@@ -1,17 +1,19 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { B } from "@/data";
-import { fill } from "@/lib/mood";
+import { fillWith, type MoodVars } from "@/lib/bands";
+import { DATA_SOURCES } from "@/lib/papers";
 
 const SRC: Record<string, readonly [string, string]> = Object.fromEntries([
   ...B.sources.map(([n, u], i) => ["S" + (i + 1), [n, u]] as const),
   ...B.web.map(([k, n, u]) => [k, [n, u]] as const),
+  ...DATA_SOURCES.map(([k, n, u]) => [k, [n, u]] as const),
 ]);
 
 interface Content { title: string; body: string; note?: string; link?: string }
 
 /** One sheet for source tags ([data-src]) and glossary terms ([data-term]). Esc closes it and focus returns to the opener. */
-export function Sheet() {
+export function Sheet({ vars }: { vars: MoodVars }) {
   const dlg = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLElement | null>(null);
   const [c, setC] = useState<Content | null>(null);
@@ -24,7 +26,7 @@ export function Sheet() {
       let next: Content | null = null;
       if (term) {
         const g = B.gloss[term.dataset.term!];
-        if (g) next = { title: g[0], body: g[1], note: fill(g[2]) };
+        if (g) next = { title: g[0], body: g[1], note: fillWith(g[2], vars) };
         opener.current = term;
       } else if (src) {
         const s = SRC[src.dataset.src!];
@@ -38,7 +40,7 @@ export function Sheet() {
     };
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);
-  }, []);
+  }, [vars]);
 
   const close = () => dlg.current?.close();
 

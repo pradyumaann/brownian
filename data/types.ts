@@ -7,7 +7,6 @@ export type Tone = "gain" | "loss" | "mixed" | "info" | "plain";
 /** Rich text: plain strings, bold leads, source tags and glossary terms, in reading order. */
 export type Rich = Array<string | { b: string } | { src: string[] } | { term: string; label: string }>;
 
-export interface MoodReading { id: string; val: number; show: string; read: string; src: string[] }
 export interface Pressure { k: string; v: string; lv: 0 | 1 | 2; why: string }
 export interface Kpi { label: string; term?: string; v: string; unit?: string; d: string; dNote: string; src: string[] }
 export interface Takeaway { chip: [string, Tone]; h: string; p: string; why: string; src: string[] }
@@ -29,9 +28,10 @@ export interface Brief {
   dateShort: string;
   prepared: string;
   session: string;
+  /** ISO date of the session the brief describes (the Mood Index is read as of this day). */
+  sessionDate: string;
   lede: Rich;
   kpis: { gift: Kpi; fii: Kpi; usdinr: Kpi };
-  sentiment: MoodReading[];
   pressure: Pressure[];
   takeaways: Takeaway[];
   drove: string[];

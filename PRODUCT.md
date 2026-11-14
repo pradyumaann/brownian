@@ -40,7 +40,7 @@ Research-based and transparent, not a tips app. Every number shows its source; w
 
 Confirmed features and names:
 - Brief: the daily overview (product name "Brownian Brief")
-- Mood Index: sentiment index, 0–100, equal-weighted components with visible formulas
+- Mood Index: sentiment index, 0–100, nine equal-weighted components each ranked against its own five-year history, with visible methods and papers; plus risk readings (turbulence, fragility, global spillover, liquidity stress)
 - Flow Map: FII/DII flows and sector rotation
 - Portfolio Lens: impact on the user's holding types, plus a watchlist
 - India Markets: indices, sectors, movers, commodities, rupee, after-hours
@@ -59,7 +59,9 @@ Constraints:
 - Per-viewer preferences (holdings, watchlist) are stored on the device only in the prototype.
 - Data currently arrives once a day; there is no live market feed yet.
 
-Open decisions: data pipeline for daily ingestion and history; account model; AI analyst scope.
+Data (14 Nov 2026): history comes from free public sources (NSE archive files, NSDL, Yahoo Finance) into a daily store in the repo. NSE's and Yahoo's terms on automated download and redistribution must be checked before Brownian is public; a licensed feed is the fallback.
+
+Open decisions: parsing the morning brief into the daily record; account model; AI analyst scope.
 
 ## Brand Commitments
 

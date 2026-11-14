@@ -7,6 +7,8 @@ import { Nav } from "@/components/Nav";
 import { Readout } from "@/components/Readout";
 import { Sheet } from "@/components/Sheet";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { vars } from "@/lib/mood";
+import { DATA_SOURCES, PAPERS } from "@/lib/papers";
 
 export const metadata: Metadata = {
   title: { default: "Brownian", template: "%s · Brownian" },
@@ -56,13 +58,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <li key={k}><span className="bw-mono">{k}</span> <a href={u} target="_blank" rel="noopener noreferrer">{n}</a></li>
                 ))}
               </ol>
-              <h4>Methodology references</h4>
-              <ul>{B.method.map((m) => <li key={m}>{m}</li>)}</ul>
+              <h4>Market data history</h4>
+              <ol>
+                {DATA_SOURCES.map(([k, n, u]) => (
+                  <li key={k}><span className="bw-mono">{k}</span> <a href={u} target="_blank" rel="noopener noreferrer">{n}</a></li>
+                ))}
+              </ol>
+              <h4>Research behind the indexes</h4>
+              <ul>
+                {Object.values(PAPERS).map((p) => (
+                  <li key={p.url}>{p.cite}. <a href={p.url} target="_blank" rel="noopener noreferrer">{p.title}</a>. {p.venue}.</li>
+                ))}
+              </ul>
+              <h4>Methodology notes</h4>
+              <ul>{B.method.slice(0, 2).map((m) => <li key={m}>{m}</li>)}</ul>
             </details>
             <p className="tagline">Brownian · <span className="bw-serif">Markets wander. You don&apos;t have to.</span></p>
           </footer>
         </div>
-        <Sheet />
+        <Sheet vars={vars} />
         <Readout />
       </body>
     </html>

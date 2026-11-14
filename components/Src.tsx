@@ -1,8 +1,10 @@
 import { B } from "@/data";
+import { DATA_SOURCES } from "@/lib/papers";
 
 const NAMES: Record<string, string> = Object.fromEntries([
   ...B.sources.map(([n], i) => ["S" + (i + 1), n] as const),
   ...B.web.map(([k, n]) => [k, n] as const),
+  ...DATA_SOURCES.map(([k, n]) => [k, n] as const),
 ]);
 
 /** Source tags. Every figure carries one; the Sheet opens the source on click. */

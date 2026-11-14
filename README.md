@@ -34,6 +34,22 @@ npm run check      # after a build: every view at 1280px and 400px, night and pa
 
 `npm run check` drives an installed Edge through `playwright-core` (`node scripts/check.mjs <shots-dir> chrome` for Chrome).
 
+### Market history
+
+```bash
+npm run history          # bring data/history up to date (first run downloads ~1 GB of NSE files; later runs fetch only new days)
+npm run history:verify   # coverage, consistency, NSE vs Yahoo cross-check, implausible-value checks
+```
+
+| File | What | Source | From |
+|---|---|---|---|
+| `indices.csv` | 22 NSE indices incl. 15 sectors and India VIX, daily OHLC, P/E, P/B | NSE archives (D1) | Nov 2021 |
+| `breadth.csv` | Advances, declines, 52-week highs and lows, illiquidity | NSE cash bhavcopy (D2) | Nov 2023 |
+| `options.csv` | Nifty options put and call volume and open interest | NSE F&O bhavcopy (D3) | Nov 2024 |
+| `fpi.csv` | FPI net investment: equity, debt, index futures | NSDL daily (D4) | Nov 2021 |
+| `sector_flows.csv` | FPI net equity investment and holdings by sector, fortnightly | NSDL (D4) | Aug 2024 |
+| `world.csv` | 15 overseas and cross-asset series | Yahoo Finance (D5) | Nov 2021 |
+
 ## Features
 
 | Feature | Route | What it does |
@@ -53,7 +69,7 @@ npm run check      # after a build: every view at 1280px and 400px, night and pa
 
 1. **Web app.** Next.js, confirmed. All 10 views are built in the design language; next: PWA install, then native iOS/Android later.
 2. **Daily ingestion.** Parse each morning's brief into structured data (one record per day), keep history, and render the views from it. This unlocks trends: FII flows by day, Mood Index over the week, story day-counts.
-3. **Complete the Mood Index.** Add the three missing standard components: Nifty put/call ratio, 52-week highs vs lows, Nifty vs its 125/200-day average.
+3. **Mood Index and research indexes.** Done: nine components scored against history; turbulence, fragility, global spillover, FPI flow persistence and liquidity stress. Parked: Baker–Wurgler composite (India inputs unconfirmed). Gap: DII history has no free daily source.
 4. **Ask Brownian.** An AI analyst users can question, answering only from cited sources.
 5. **Accounts.** Holdings and watchlist are device-only today.
 

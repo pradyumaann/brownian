@@ -7,78 +7,135 @@ import { Src } from "@/components/Src";
 import { Term } from "@/components/Term";
 import { Dial } from "@/components/charts/Dial";
 import { Quadrant } from "@/components/charts/Quadrant";
-import { BANDS, MISSING, band, bandOf, comps, pressure, pressureHigh, pressureName, pressureTone, quad, score, scoreRaw } from "@/lib/mood";
+import { TimeLine } from "@/components/charts/TimeLine";
+import { BANDS, METHOD, MISSING, asOf, band, bandOf, comps, moodSeries, pressure, pressureHigh, pressureName, pressureTone, quad, score, scoreRaw, scored } from "@/lib/mood";
+import { PAPERS } from "@/lib/papers";
+import { riskOn, riskSeries } from "@/lib/risk";
+import { SPILL, spillSeries } from "@/lib/spillover";
+import { liquidity } from "@/lib/flows";
 
 export const metadata: Metadata = { title: "Mood Index" };
 
+const ord = (n: number) => { const r = Math.round(n), s = ["th", "st", "nd", "rd"], v = r % 100; return r + (s[(v - 20) % 10] || s[v] || s[0]); };
+const longDate = (d: string) => new Date(d + "T00:00:00Z").toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+
+function Papers({ ids, basis }: { ids: (keyof typeof PAPERS)[]; basis?: string }) {
+  if (!ids.length) return <>{basis}</>;
+  return <>{ids.map((id, i) => <span key={id}>{i ? "; " : ""}<a href={PAPERS[id].url} target="_blank" rel="noopener noreferrer">{PAPERS[id].cite}</a>, <i>{PAPERS[id].title}</i></span>)}</>;
+}
+
 export default function Mood() {
-  const ext = comps.filter((c) => c.score >= 75), neut = comps.filter((c) => c.score >= 45 && c.score < 55);
+  const ext = scored.filter((c) => c.score >= 75), fear = scored.filter((c) => c.score < 45), off = comps.filter((c) => !c.available);
+  const risk = riskOn(asOf), rs = riskSeries(asOf).slice(-500);
+  const series = moodSeries.slice(-500);
+  const spill = spillSeries().filter((p) => p.date <= asOf).slice(-500), spillNow = spill.at(-1)?.date === asOf ? spill.at(-1)! : null;
+  const spillAvg = spill.reduce((a, p) => a + p.toIndia, 0) / Math.max(1, spill.length);
+  const liq = liquidity(asOf);
   const rational: [string, string][] = [
     ["Extremes matter more than the level.", `Baker & Wurgler (2006) found that after periods of high sentiment, speculative stocks (small, volatile, unprofitable) went on to deliver lower returns. Today reads ${score}, “${band}”.`],
-    ["A few components carry the reading.", `${ext.length} of ${comps.length} are at extreme greed${ext.length ? ": " + ext.map((c) => `${c.name.toLowerCase()} (${Math.round(c.score)})`).join(", ") : ""}.${neut.length ? ` ${neut.map((c) => c.name).join(" and ")} ${neut.length === 1 ? "is" : "are"} neutral.` : ""}`],
-    ["Sentiment and fundamentals disagree.", `${pressureHigh} of ${B.pressure.length} macro indicators show high pressure. When the two diverge, prices depend on flows continuing.`],
-    ["Common biases after a rally like this.", "Recency bias makes further gains feel likely, herding makes following FIIs feel safe, and loss aversion makes gold's 13-month low feel like a reason to sell."],
+    ["A few components carry the reading.", `${ext.length} of ${scored.length} scored components read extreme greed${ext.length ? ": " + ext.map((c) => `${c.name.toLowerCase()} (${Math.round(c.score)})`).join(", ") : ""}. ${fear.length ? `${fear.map((c) => c.name).join(" and ")} ${fear.length === 1 ? "reads" : "read"} fear.` : "None reads fear."}`],
+    ["Sentiment and fundamentals can disagree.", `${pressureHigh} of ${B.pressure.length} macro indicators in the brief show high pressure. When the two diverge, prices depend on flows continuing.`],
+    ["Common biases after a strong run.", "Recency bias makes further gains feel likely, herding makes following FIIs feel safe, and loss aversion makes a falling asset feel like a reason to sell."],
     ["Questions investors use to stay rational.", "Has my allocation drifted from its target? Would I make this change if the market were flat? Am I reacting to a single day?"],
   ];
   return (
     <>
       <ViewHead title={<>The market&apos;s <S>mood</S></>} feature="Mood Index"
-        lede="How investors are behaving, each signal measured against its normal range, and kept separate from macro pressure. 0 is extreme fear, 100 extreme greed." />
+        lede={`How investors are behaving, each signal measured against its own last five years, and kept separate from macro pressure. As of the ${longDate(asOf)} session. 0 is extreme fear, 100 extreme greed.`} />
 
       <div className="two">
         <div>
-          <Dial score={scoreRaw} comps={comps.map((c) => ({ name: c.name, score: c.score }))} label={`Mood Index ${score} of 100, ${band}. Components: ${comps.map((c) => `${c.name} ${Math.round(c.score)}`).join(", ")}`} />
+          <Dial score={scoreRaw} comps={scored.map((c) => ({ name: c.name, score: c.score }))} label={`Mood Index ${score} of 100, ${band}. Components: ${scored.map((c) => `${c.name} ${Math.round(c.score)}`).join(", ")}`} />
           <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Each dot on the dial is one component; hover, tap or tab to read it.</p>
         </div>
         <div className="stack">
           <div className="score"><span className="n"><CountUp to={score} /></span><span className="w">{band}</span></div>
-          <p className="bw-meta">Equal-weighted average of {comps.length} components. Bands: {BANDS.map((b) => `${b.name.toLowerCase()} ${b.from}–${Math.min(100, Math.floor(b.to))}`).join(" · ")}.</p>
-          <p className="note"><b>How it&apos;s built.</b> Same structure as the published fear-and-greed indices (CNN Business Fear &amp; Greed, Tickertape&apos;s Market Mood Index). Each component is scored 0–100 against a reference range, then averaged. The value is computed by Brownian from the brief&apos;s numbers and is not either provider&apos;s official reading. Three standard components are missing from today&apos;s data and are left out rather than guessed.</p>
+          <p className="bw-meta">Average of {scored.length} of {comps.length} components{off.length ? `; ${off.map((c) => c.name.toLowerCase()).join(" and ")} not scored yet` : ""}. Bands: {BANDS.map((b) => `${b.name.toLowerCase()} ${b.from}–${Math.min(100, Math.floor(b.to))}`).join(" · ")}.</p>
+          <p className="note"><b>How it&apos;s built.</b> Each component is today&apos;s reading ranked against its own previous {METHOD.lookbackYears} years: a score of 70 means the reading was more greedy than on 70% of those days. It needs at least {METHOD.minDays} trading days of history, and uses nothing after the day it scores. The structure follows published fear-and-greed indices (CNN Business, Tickertape&apos;s Market Mood Index); the value is Brownian&apos;s own reading, not theirs.</p>
+          <p className="note"><b>Method change.</b> The 13 Nov brief&apos;s first version scored six components against fixed reference levels and read 69. From 14 Nov 2026 all components are ranked against history, which is why today&apos;s figure differs.</p>
         </div>
       </div>
 
-      <Section title={<>Reading it <S>rationally</S></>} meta="Sentiment is a contrarian signal, not a timing tool" ix="01">
-        <ul className="list">{rational.map(([b, t]) => <li key={b}><b>{b}</b> {t}</li>)}</ul>
+      <Section title={<>The mood over <S>time</S></>} meta={`Daily Mood Index, last ${series.length} sessions with at least five scored components`} ix="01">
+        <TimeLine points={series.map((p) => ({ date: p.date, value: p.score }))} bands={BANDS} label="Mood Index by session" />
+        <p className="bw-meta">Single days are noise; the bands show where the reading spends its time. Scores before November 2025 use fewer components, because 52-week, options and flow history starts later (see each component below).</p>
       </Section>
 
-      <Section title={<>What each one <S>measures</S></>} meta="Today's value, how it is scored, and the research behind it" ix="02">
+      <Section title={<>What each one <S>measures</S></>} meta="Today's reading, how it is scored, and the research behind it" ix="02">
         <div className="comps">
           {comps.map((c) => (
             <div key={c.id} className="comp">
               <div className="stack">
                 <div className="comp-h">
                   <h3><Term id={c.term}>{c.name}</Term></h3>
-                  <span className="bw-label">{bandOf(c.score).name}</span>
-                  <span className="bw-mono">{Math.round(c.score)}/100</span>
+                  {c.available ? <><span className="bw-label">{bandOf(c.score).name}</span><span className="bw-mono">{Math.round(c.score)}/100</span></> : <span className="bw-na">n/a</span>}
                 </div>
-                <div>
-                  <div className="track" role="img" aria-label={`${c.name} scores ${Math.round(c.score)} of 100, ${bandOf(c.score).name}`}>
-                    {[25, 45, 55, 75].map((e) => <b key={e} style={{ left: `${e}%` }} />)}
-                    <i style={{ left: `${c.score}%` }} />
+                {c.available && (
+                  <div>
+                    <div className="track" role="img" aria-label={`${c.name} scores ${Math.round(c.score)} of 100, ${bandOf(c.score).name}`}>
+                      {[25, 45, 55, 75].map((e) => <b key={e} style={{ left: `${e}%` }} />)}
+                      <i style={{ left: `${c.score}%` }} />
+                    </div>
+                    <div className="scale"><span>0 · Extreme fear</span><span>50</span><span>Extreme greed · 100</span></div>
                   </div>
-                  <div className="scale"><span>0 · Extreme fear</span><span>50</span><span>Extreme greed · 100</span></div>
-                </div>
-                <p className="note">{c.read}</p>
+                )}
+                <p className="note">{c.available ? c.read : c.reason}</p>
               </div>
               <div className="stack">
                 <dl className="kv">
                   <dt>Measures</dt><dd>{c.metric}</dd>
-                  <dt>Today</dt><dd className="bw-mono">{c.show}<Src k={c.src} /></dd>
-                  <dt>Reference</dt><dd>{c.ref}</dd>
-                  <dt>Scoring</dt><dd className="bw-mono">{c.formula}</dd>
+                  <dt>Today</dt><dd className="bw-mono">{c.value}<Src k={c.src} /></dd>
+                  <dt>Scoring</dt><dd>{c.how}{c.dir === -1 ? " (a higher reading means more fear)" : ""}</dd>
+                  <dt>History</dt><dd>{c.history ? `${c.history.toLocaleString("en-IN")} prior sessions` : "none yet"}{c.since ? `; scored since ${longDate(c.since)}` : ""}</dd>
+                  <dt>Basis</dt><dd><Papers ids={c.papers} basis={c.basis} /></dd>
                 </dl>
-                <p className="note"><b>Research:</b> {c.res}</p>
               </div>
             </div>
           ))}
         </div>
       </Section>
 
-      <Section title={<>Not scored <S>today</S></>} meta="Standard components missing from the brief. Adding them to the morning brief would complete the index." ix="03">
-        <div className="missing">{MISSING.map(([b, t]) => <div key={b}><b>{b}</b><span>{t}</span></div>)}</div>
+      <Section title={<>Is today <S>unusual</S>?</>} meta={<>Four readings of market structure: turbulence and fragility across {risk.sectors} NSE sectoral indices, overseas spillover, and liquidity<Src k={["D1"]} /></>} ix="03">
+        <div className="pair">
+          <div>
+            <h3 className="sub">Turbulence</h3>
+            <div className="score"><span className="n">{risk.turbPct == null ? "n/a" : ord(risk.turbPct)}</span><span className="w plain">percentile</span></div>
+            <TimeLine points={rs.map((p) => ({ date: p.date, value: p.turbPct }))} label="Turbulence percentile by session" />
+            <p className="note after-plot">How unusual {longDate(asOf)}&apos;s mix of sector moves was against the previous {risk.windows.turbulence} sessions{risk.turbPct20 != null ? `; ${ord(risk.turbPct20)} percentile on average over 20 sessions` : ""}. Turbulence tends to persist, and returns to risk have been lower in turbulent periods.</p>
+            <p className="bw-meta"><Papers ids={["kl2010"]} />. Squared Mahalanobis distance of daily sector returns; mean and covariance from the previous {risk.windows.turbulence} sessions.</p>
+          </div>
+          <div>
+            <h3 className="sub">Fragility</h3>
+            <div className="score"><span className="n">{risk.absorption == null ? "n/a" : (risk.absorption * 100).toFixed(0) + "%"}</span><span className="w plain">absorbed by {risk.windows.factors} factors</span></div>
+            <TimeLine points={rs.map((p) => ({ date: p.date, value: p.arPct }))} label="Absorption ratio percentile by session" />
+            <p className="note after-plot">{risk.arPct == null ? "" : `${ord(risk.arPct)} percentile of the previous three years. `}{risk.arShift == null ? "" : `The 15-session average sits ${Math.abs(risk.arShift).toFixed(1)} standard deviations ${risk.arShift >= 0 ? "above" : "below"} its one-year average. `}When a few common forces drive most sector moves, a shock spreads faster; the paper found most large US drawdowns were preceded by spikes in this ratio.</p>
+            <p className="bw-meta"><Papers ids={["klpr2011"]} />. Share of variance in the top {risk.windows.factors} of {risk.sectors} eigenvectors; {risk.windows.absorption}-session window, {risk.windows.halfLife}-session half-life.</p>
+          </div>
+        </div>
+        <div className="pair" style={{ marginTop: "var(--space-12)" }}>
+          <div>
+            <h3 className="sub">Global spillover<Src k={["D1", "D5"]} /></h3>
+            <div className="score"><span className="n">{spillNow ? spillNow.toIndia.toFixed(0) + "%" : "n/a"}</span><span className="w plain">from overseas</span></div>
+            <TimeLine points={spill.map((p) => ({ date: p.date, value: p.toIndia }))} label="Share of Nifty 50 forecast variance from overseas markets" unit="%" />
+            <p className="note after-plot">{spillNow ? `${spillNow.toIndia.toFixed(0)}% of the uncertainty in Nifty's next ${SPILL.horizon} sessions traces to shocks in the S&P 500, STOXX 600 and Nikkei 225, against ${spillAvg.toFixed(0)}% on average over the chart. ` : ""}A high share means overnight cues matter more than usual for the Indian open.</p>
+            <p className="bw-meta"><Papers ids={["dy2012"]} />. Generalized variance decomposition of a VAR({SPILL.lags}) on daily returns, {SPILL.window}-session window; US and European closes from the previous day.</p>
+          </div>
+          <div>
+            <h3 className="sub">Liquidity stress<Src k={["D2"]} /></h3>
+            <div className="score"><span className="n">{liq.pct == null ? "n/a" : ord(liq.pct)}</span><span className="w plain">percentile</span></div>
+            <TimeLine points={liq.series.slice(-500)} label="Liquidity stress percentile by session" />
+            <p className="note after-plot">How far prices move per rupee traded, averaged over 20 sessions and ranked against the previous three years. Higher means thinner trading: the same order moves prices more.</p>
+            <p className="bw-meta"><Papers ids={["amihud2002"]} />. Median of |return| ÷ turnover across NSE stocks trading at least ₹1 crore a day.</p>
+          </div>
+        </div>
+        <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Turbulence, fragility and liquidity charts show the percentile against each measure&apos;s own previous three years.</p>
       </Section>
 
-      <Section title={<>Macro <S>pressure</S></>} meta={`Fundamental headwinds, kept separate from sentiment · ${pressureName}: ${pressureHigh} of ${B.pressure.length} high`} ix="04">
+      <Section title={<>Reading it <S>rationally</S></>} meta="Sentiment is a contrarian signal, not a timing tool" ix="04">
+        <ul className="list">{rational.map(([b, t]) => <li key={b}><b>{b}</b> {t}</li>)}</ul>
+      </Section>
+
+      <Section title={<>Macro <S>pressure</S></>} meta={`Fundamental headwinds from the brief, kept separate from sentiment · ${pressureName}: ${pressureHigh} of ${B.pressure.length} high`} ix="05">
         <div className="pair">
           <div className="rows">
             {B.pressure.map((p) => {
@@ -99,6 +156,7 @@ export default function Mood() {
             <p className="bw-disclaimer after-plot">Interpretation, not a forecast.</p>
           </div>
         </div>
+        <div className="missing after-plot">{MISSING.map(([b, t]) => <div key={b}><b>{b}</b><span>{t}</span></div>)}</div>
       </Section>
     </>
   );

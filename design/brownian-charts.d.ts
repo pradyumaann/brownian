@@ -11,6 +11,12 @@ export interface DialOpts {
   width?: number; height?: number;
 }
 
+export interface StrandNode { id: string; label: string; cat?: string }
+export interface StrandOpts {
+  columns: StrandNode[][]; links: { source: string; target: string; value: number }[]; unit: number;
+  width?: number; height?: number; labelWidth?: number; gap?: number; format?: (v: number) => string; colorBy?: "source" | "target"; seed?: number;
+}
+
 declare const Brownian: {
   css(name: string): string;
   ramp(name: "spec" | "tide", t: number): string;
@@ -23,6 +29,7 @@ declare const Brownian: {
   };
   diverge(svg: SVGSVGElement, o: DivergeOpts): void;
   dial(svg: SVGSVGElement, o: DialOpts): void;
+  strands(svg: SVGSVGElement, o: StrandOpts): void;
   spark(svg: SVGSVGElement, o: { values: number[]; width?: number; height?: number; baseline?: number }): void;
   tip(node: Element, v: string, l: string): Element;
   readout(): void;

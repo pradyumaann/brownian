@@ -10,7 +10,7 @@ import { Term } from "@/components/Term";
 import { Change } from "@/components/Change";
 import { Diverge } from "@/components/charts/Diverge";
 import { Dial } from "@/components/charts/Dial";
-import { band, comps, pressureHigh, pressureName, quad, score, scoreRaw } from "@/lib/mood";
+import { band, comps, pressureHigh, pressureName, quad, score, scoreRaw, scored } from "@/lib/mood";
 import type { Kpi } from "@/data/types";
 
 function KpiCell({ k }: { k: Kpi }) {
@@ -71,10 +71,10 @@ export default function Brief() {
         </div>
       </Section>
 
-      <Section title={<>The market&apos;s <S>mood</S></>} meta={`Six equal-weighted components, ${B.session} session`} ix="02 · Mood Index">
+      <Section title={<>The market&apos;s <S>mood</S></>} meta={`${scored.length} of ${comps.length} components, each ranked against its own five years, ${B.session} session`} ix="02 · Mood Index">
         <div className="two">
           <div>
-            <Dial score={scoreRaw} comps={comps.map((c) => ({ name: c.name, score: c.score }))} label={`Mood Index ${score}, ${band}`} />
+            <Dial score={scoreRaw} comps={scored.map((c) => ({ name: c.name, score: c.score }))} label={`Mood Index ${score}, ${band}`} />
             <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Each dot is one component; hover, tap or tab to read it.</p>
           </div>
           <div>
@@ -82,7 +82,7 @@ export default function Brief() {
             <table className="comp-tbl">
               <tbody>
                 {comps.map((c) => (
-                  <tr key={c.id}><td>{c.name} · {c.show.split(" (")[0]}<Src k={c.src} /></td><td className="v">{Math.round(c.score)}</td></tr>
+                  <tr key={c.id}><td>{c.name} · {c.value}<Src k={c.src} /></td><td className="v">{c.available ? Math.round(c.score) : <span className="bw-na">n/a</span>}</td></tr>
                 ))}
               </tbody>
             </table>

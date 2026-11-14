@@ -1,5 +1,5 @@
 "use client";
-import { QUADS } from "@/lib/mood";
+import { QUADS } from "@/lib/bands";
 import { useWidth } from "./usePlot";
 
 type Key = keyof typeof QUADS;

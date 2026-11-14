@@ -18,8 +18,10 @@ components/            shared pieces (Src, Term, Chip, Change, Section, DataTabl
 lib/mood.ts            Mood Index methodology (scoring functions next to their visible formulas), macro pressure
 lib/format.ts          ₹ crore, %, sign and tone helpers (Indian grouping, true minus)
 data/                  one typed record per brief (types.ts is the shape ingestion must produce)
+data/history/          daily history store: one CSV per series, filled by scripts/history (see below)
 design/                design language: DESIGN.md (rules), tokens.json, brownian.css, brownian-charts.js (+ .d.ts), reference/
 scripts/               check.mjs (Playwright view check), fix-export-segments.mjs (Windows export fix)
+scripts/history/       importers for the history store, update.mjs (run all), verify.mjs (gate check)
 prototype/index.html   original single-file prototype, superseded; reference only
 PRODUCT.md             product record (users, purpose, constraints, feature names)
 docs/briefs/           source briefs, one per day
@@ -36,8 +38,10 @@ All UI follows `design/DESIGN.md` (imported by `CLAUDE.md`). The app imports `de
 - **Stack:** Next.js 16 (App Router, TypeScript), `output: "export"`: every route is prerendered to static HTML in `out/`. Pages are server components; only interactive pieces (charts, sheet, nav, theme, Portfolio Lens) are client components.
 - **Routes:** `/` Brief, `/portfolio`, `/mood`, `/flows`, `/india`, `/global`, `/macro`, `/earnings`, `/developing`, `/learn`. Nav order and grouping: `GROUPS` in `components/Nav.tsx`.
 - **Data:** `data/<date>.ts` holds the day (`Brief` in `data/types.ts`); `data/index.ts` picks the one to render. Text with inline tags uses the `Rich` segment type. Tones are `gain | loss | mixed | info | plain`.
-- **Mood Index:** the day's readings are data; scoring functions, formula strings, reference ranges and research notes live in `lib/mood.ts`. Score = equal-weighted average, banded 0–25 extreme fear, 25–45 fear, 45–55 neutral, 55–75 greed, 75–100 extreme greed. Copy that mentions the score uses `fill()` placeholders (`{score}`, `{band}`, `{press}`); never hardcode it.
-- **Sources and terms:** `<Src k={["S1"]} />` renders `.bw-src` tags and `<Term id="vix">` renders glossary buttons; one `Sheet` dialog (native `<dialog>`) opens either. Tags must match the `[S#]` tags in the brief text or the web source titles.
+- **History store:** `data/history/*.csv`, refreshed with `npm run history` (fetches only what is missing) and checked with `npm run history:verify`. Sources: NSE archive files for index closes (D1), cash-market bhavcopy (D2) and F&O bhavcopy (D3); NSDL for daily and fortnightly sector FPI flows (D4); Yahoo Finance for overseas markets (D5). A missing day stays missing; nothing is interpolated. `lib/history.ts` reads the store at build time and must never be imported by a client component. Raw bhavcopies are cached in `.cache/` (git-ignored).
+- **Mood Index:** nine components in `lib/mood.ts`, each scored as the percentile of the day's reading among its own previous five years (at least 250 sessions, no look-ahead), then averaged; a component without enough history is left out and named. Banded 0–25 extreme fear, 25–45 fear, 45–55 neutral, 55–75 greed, 75–100 extreme greed. It is read as of `B.sessionDate`. Client-safe pieces (bands, quadrant names, `fillWith`) are in `lib/bands.ts`; copy that mentions the score uses `{score}`, `{band}`, `{press}` placeholders, never a hardcoded number.
+- **Other indexes:** `lib/risk.ts` (turbulence, Kritzman & Li 2010; fragility/absorption ratio, Kritzman et al. 2011), `lib/spillover.ts` (Diebold & Yilmaz 2012), `lib/flows.ts` (FPI flow persistence and feedback, Froot et al. 2001; liquidity stress, Amihud 2002), `lib/sectorFlows.ts` (strand flow and terrain). Every paper is in `lib/papers.ts`, checked against publisher records; cite from there, and label a measure with no paper as a practitioner measure.
+- **Sources and terms:** `<Src k={["S1"]} />` renders `.bw-src` tags and `<Term id="vix">` renders glossary buttons; one `Sheet` dialog (native `<dialog>`) opens either. Tags must match the `[S#]` tags in the brief text, the web source titles, or the history datasets (`D1`–`D5`, `DATA_SOURCES` in `lib/papers.ts`).
 - **Theme:** night by default, paper as light, system when unset. `ThemeToggle` stores `bw:theme`; an inline script applies it before paint.
 - **Per-viewer state:** holdings and watchlist in `localStorage` (keys `ii:held2`, `ii:watch2`, unchanged from the prototype), always wrapped in try/catch.
 
@@ -53,7 +57,7 @@ All UI follows `design/DESIGN.md` (imported by `CLAUDE.md`). The app imports `de
 
 ## Verify every change
 
-1. `npm run typecheck` and `npm run build`.
+1. `npm run history:verify` if you touched the history store or its importers, then `npm run typecheck` and `npm run build`.
 2. `npm run check`: every view at 1280px and 400px in night and paper; it fails on console errors, failed requests or horizontal page scroll, and saves full-page screenshots to look at. Check the views you touched in the screenshots.
 3. Tab through what you changed; the readout and the sheet must work from the keyboard (Esc closes the sheet and returns focus).
 4. If you changed `design/`, also open `design/reference/brownian-brief.html`.

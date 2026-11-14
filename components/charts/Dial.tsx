@@ -1,6 +1,6 @@
 "use client";
 import Brownian from "@/design/brownian-charts";
-import { BANDS } from "@/lib/mood";
+import { BANDS } from "@/lib/bands";
 import { usePlot } from "./usePlot";
 
 /** The Mood Index dial: bands named, score as the dawn needle, components as dots. */

@@ -245,6 +245,11 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
   .rise .bw-bar.is-range { animation-delay: .3s; }
   .rise .bw-dot, .rise .bw-val, .rise .bw-comp { animation: bw-fade .6s ease-out backwards; }
   .rise .bw-needle { animation: bw-sweep .6s ease-out backwards; }
+  .rise .bw-strands > g { animation: bw-fade .6s ease-out backwards; }
+  .terrain .tb { transform-box: fill-box; animation: bw-grow-y .6s ease-out backwards; }
+  .terrain .tb.up { transform-origin: center bottom; }
+  .terrain .tb.down { transform-origin: center top; }
+  @keyframes bw-grow-y { from { transform: scaleY(0); } }
   main > * { animation: bw-in .25s ease-out; }
   @keyframes bw-grow { from { transform: scaleX(0); } }
   @keyframes bw-fade { from { opacity: 0; } }

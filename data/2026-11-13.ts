@@ -8,6 +8,7 @@ export const brief: Brief = {
   dateShort: "Fri 13 Nov",
   prepared: "07:52",
   session: "Thu 12 Nov",
+  sessionDate: "2026-11-12",
   lede: [
     { b: "A flat-to-soft open is signalled." },
     " GIFT Nifty last traded at 25,279 against Nifty's 25,299.35 close", { src: ["S8"] },
@@ -19,14 +20,6 @@ export const brief: Brief = {
     fii: { label: "FII net, cash, Thu", term: "fii", v: "+₹7,831", unit: " cr", d: "+₹73,566 cr", dNote: "Nov to date", src: ["S5"] },
     usdinr: { label: "USD/INR, provisional", term: "dxy", v: "94.04", d: "+0.35%", dNote: "rupee weaker", src: ["S6"] },
   },
-  sentiment: [
-    { id: "vol", val: 16.61, show: "16.61 (−5.38% on the day)", read: "Near its normal level and falling: options traders are pricing average, easing risk.", src: ["S1", "S4"] },
-    { id: "breadth", val: (2377 / (2377 + 1878)) * 100, show: "2,377 up vs 1,878 down (55.9% advancing)", read: "Mildly positive. More stocks rose than fell, even though Nifty only gained 0.18%.", src: ["S1"] },
-    { id: "mom", val: 10, show: "≈ +10% in 9 sessions", read: "Very strong. A ~10% month is rare and puts this component near extreme greed.", src: ["S2"] },
-    { id: "fii", val: 73566, show: "+₹73,566 cr ($6.43bn), strongest since Sep 2024", read: "Exceptionally strong, after two months of ~₹45,000 cr selling each.", src: ["S1", "S5"] },
-    { id: "haven", val: 0.18 - -1.29, show: "Nifty +0.18% vs gold −1.29% → +1.47 pts toward stocks", read: "Money is leaving gold for stocks, though partly because of a strong dollar.", src: ["S1", "S9"] },
-    { id: "gvol", val: 18.7, show: "18.70", read: "Neutral. US investors are not panicking despite the Nvidia shock.", src: ["S11"] },
-  ],
   pressure: [
     { k: "US 10-year yield", v: "5.10%, up about 12bp; 2-year 4.88%", lv: 2, why: "Higher US yields pull money out of emerging markets." },
     { k: "Brent crude", v: "$95.82, +3.30%", lv: 2, why: "India imports most of its crude; oil spikes widen the trade gap and feed inflation." },
@@ -386,6 +379,11 @@ export const brief: Brief = {
     msci: ["MSCI rebalance", "MSCI periodically changes which stocks are in its indices. Passive funds tracking them must buy additions and sell deletions on the effective date.", "Today: Adani Green, Coforge, LIC, Meesho in; PI Industries out."],
     prov: ["Provisional data", "Early figures released the same evening. Final numbers can differ slightly a day later.", "Today: FII/DII flows and USD/INR 94.04 are provisional."],
     rotation: ["Sector rotation", "Money moving from one group of stocks to another as investors change their outlook, such as from consumption to financials.", "Today: out of autos/FMCG into financials and realty."],
+    pcr: ["Put/call ratio", "Nifty options put volume divided by call volume. More puts than usual means traders are paying for protection, which sentiment indexes read as fear.", "Today: see the Mood Index for the 5-day average."],
+    strength: ["52-week highs and lows", "How many stocks closed at their highest or lowest price of the past year. More highs than lows means strength is broad, not carried by a few names.", "Today: see the Mood Index's price-strength component."],
+    trend: ["200-day moving average", "The average closing price over the last 200 sessions. An index far above it has risen fast; below it, the longer trend is down.", "Today: see the Mood Index's trend component."],
+    turbulence: ["Turbulence", "How unusual today's mix of sector moves is compared with history: the Mahalanobis distance of Kritzman & Li (2010). High turbulence means sectors moved in ways they rarely do together.", "Today: see Risk on the Mood Index page."],
+    fragility: ["Fragility (absorption ratio)", "How much of all sector moves is explained by a few common forces (Kritzman, Li, Page & Rigobon, 2011). When it is high, sectors move as one and a shock spreads faster.", "Today: see Risk on the Mood Index page."],
     sentiment: ["Sentiment index", "A composite of market behaviour (volatility, breadth, momentum, flows, safe-haven demand) scaled 0–100. Extremes are read as contrarian signals.", "Today: {score}, “{band}”."],
   },
   sources: [

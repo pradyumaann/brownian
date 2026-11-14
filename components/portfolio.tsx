@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { B } from "@/data";
 import type { StockNote } from "@/data/types";
-import { fill } from "@/lib/mood";
+import { fillWith, type MoodVars } from "@/lib/bands";
 import { Chip, DirChip } from "./Chip";
 import { Src } from "./Src";
 
@@ -50,7 +50,7 @@ export function HoldingsToday() {
 }
 
 /** Portfolio Lens: pick holding types, read today's impact on each. */
-export function Holdings() {
+export function Holdings({ vars }: { vars: MoodVars }) {
   const { held, example, toggle } = useHeld();
   const list = B.holdings.filter((h) => held.includes(h.id));
   return (
@@ -69,7 +69,7 @@ export function Holdings() {
               <dl>
                 <dt>What happened</dt><dd>{h.h}<Src k={h.src} /></dd>
                 <dt>What to watch</dt><dd>{h.w}</dd>
-                <dt>Perspective</dt><dd>{fill(h.t)}</dd>
+                <dt>Perspective</dt><dd>{fillWith(h.t, vars)}</dd>
               </dl>
             </article>
           ))}
