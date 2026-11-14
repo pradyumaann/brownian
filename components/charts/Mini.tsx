@@ -6,7 +6,7 @@ export function SegMeter({ score, segments = 20, label }: { score: number; segme
     <span className="segmeter" role="img" aria-label={label}>
       {Array.from({ length: segments }, (_, i) => {
         const mid = ((i + 0.5) / segments) * 100, lit = mid <= score, k = 1 + Math.min(5, Math.floor((i / segments) * 6));
-        return <i key={i} className={lit ? "is-lit" : undefined} style={lit ? { color: `var(--spec-${k})` } : undefined} />;
+        return <i key={i} className={lit ? "is-lit" : undefined} style={{ "--i": i, ...(lit ? { color: `var(--spec-${k})` } : {}) } as React.CSSProperties} />;
       })}
     </span>
   );

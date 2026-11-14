@@ -58,12 +58,12 @@ export function FlowLines({ dates, lines, notes = [], label }: { dates: string[]
           <rect key={d} x={X(k) - (W - l - r) / n / 2} y={t} width={(W - l - r) / n} height={H - t - b} fill="transparent"
             data-tip-v={month(d)} data-tip-l={lines.map((s) => `${s.name} ${s.values[i] == null ? "n/a" : crore(s.values[i]!)}`).join(" · ")} />
         ))}
-        {lines.map((s) => {
+        {lines.map((s, li) => {
           const pts = st.map(({ i }, k) => (s.values[i] == null ? null : ([X(k), Y(s.values[i]!)] as [number, number]))).filter((p): p is [number, number] => !!p);
-          return <path key={s.name} d={route(pts)} className="bw-glowline" stroke={`var(--cat-${s.cat})`} filter="url(#metro-glow)" style={{ strokeWidth: phone ? 2.2 : 3 }} />;
+          return <path key={s.name} d={route(pts)} className="bw-glowline" stroke={`var(--cat-${s.cat})`} filter="url(#metro-glow)" pathLength={1} style={{ strokeWidth: phone ? 2.2 : 3, "--d": `${li * 0.35}s` } as React.CSSProperties} />;
         })}
         {lines.map((s) => st.map(({ d, i }, k) => (s.values[i] == null || !["03", "06", "09", "12"].includes(d.slice(5, 7)) ? null : (
-          <circle key={s.name + d} cx={X(k)} cy={Y(s.values[i]!)} r={phone ? 2.5 : 3.2} className="bw-station" stroke={`var(--cat-${s.cat})`} />
+          <circle key={s.name + d} cx={X(k)} cy={Y(s.values[i]!)} r={phone ? 2.5 : 3.2} className="bw-station pop" stroke={`var(--cat-${s.cat})`} />
         ))))}
         {notes.slice(0, 3).map((nt, ni) => {
           const k = nearest(nt.i), v = lines[nt.line].values[nt.i]!, x = X(k), y = Y(lines[nt.line].values[st[k].i]!);

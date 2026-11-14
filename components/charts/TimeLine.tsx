@@ -65,8 +65,8 @@ export function TimeLine({ points, bands = [], label: aria, unit = "", decimals 
             <feGaussianBlur stdDeviation="2.4" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
-        <path d={area} fill={`url(#${gid}-area)`} />
-        <path d={d} fill="none" stroke={`url(#${gid}-line)`} strokeWidth={1.75} strokeLinejoin="round" filter={`url(#${gid}-glow)`} />
+        <path d={area} fill={`url(#${gid}-area)`} className="tl-area" />
+        <path d={d} fill="none" stroke={`url(#${gid}-line)`} strokeWidth={1.75} strokeLinejoin="round" filter={`url(#${gid}-glow)`} pathLength={1} className="tl-line" />
         {points.map((p, i) => (p.value == null || i % step ? null : (
           <rect key={p.date} x={X(i) - (W - l - r) / n * step / 2} y={t} width={Math.max(1, (W - l - r) / n * step)} height={H - t - b}
             fill="transparent" data-tip-v={fmt(p.value)} data-tip-l={label(p.date)} />

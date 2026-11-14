@@ -11,7 +11,7 @@ import { Change } from "@/components/Change";
 import { Diverge } from "@/components/charts/Diverge";
 import { Dial } from "@/components/charts/Dial";
 import { SegMeter } from "@/components/charts/Mini";
-import { band, comps, pressureHigh, pressureName, quad, score, scoreRaw, scored } from "@/lib/mood";
+import { band, comps, pressureHigh, pressureName, pressureScore, quad, score, scoreRaw, scored } from "@/lib/mood";
 import type { Kpi } from "@/data/types";
 
 function KpiCell({ k }: { k: Kpi }) {
@@ -26,7 +26,7 @@ function KpiCell({ k }: { k: Kpi }) {
 
 const US_TOP_BOTTOM = ["Energy", "Utilities", "Technology", "Industrials", "Comm. Services", "Materials"];
 
-export default function Brief() {
+export default function MarketsOvernight() {
   const fiiSrc = B.flows.src;
   return (
     <>
@@ -34,23 +34,28 @@ export default function Brief() {
         <h1>Markets, <S>overnight</S>.</h1>
         <div>
           <p className="lede"><Rich r={B.lede} /></p>
-          <p className="bw-source vh-f">Brownian Brief · {B.dateShort}</p>
+          <p className="bw-source vh-f">Markets, overnight · {B.dateShort}</p>
         </div>
       </header>
 
       <div className="hero">
         <KpiCell k={B.kpis.gift} />
         <div>
-          <div className="bw-label"><Link href="/mood/">Mood Index</Link></div>
-          <div className="v"><CountUp to={score} /></div>
-          <SegMeter score={scoreRaw} label={`Mood Index ${score} of 100, ${band}`} />
-          <div className="d"><span className="w">{band} · interpretation, not a forecast</span></div>
+          <div className="bw-label"><Link href="/wander/">Wander Index</Link> · <Link href="/wander/#macro-pressure">Macro pressure</Link></div>
+          <div className="v">
+            <CountUp to={score} />
+            <small className="v-sub"> / </small>
+            <span className="v-press">{pressureScore}</span>
+          </div>
+          <SegMeter score={scoreRaw} label={`Wander Index ${score} of 100, ${band}`} />
+          <SegMeter score={pressureScore} label={`Macro pressure ${pressureScore} of 100, ${pressureName}`} />
+          <div className="d"><span className="w">{band} · macro pressure {pressureName.toLowerCase()} · interpretation, not a forecast</span></div>
         </div>
         <KpiCell k={B.kpis.fii} />
         <KpiCell k={B.kpis.usdinr} />
       </div>
 
-      <Section title={<>What happened, and why it <S>matters</S></>} meta={`${B.session} session and overnight, in plain English`} ix="01 · Brief">
+      <Section title={<>What happened, and why it <S>matters</S></>} meta={`${B.session} session and overnight, in plain English`} ix="01 · Markets, overnight">
         <div className="takes">
           {B.takeaways.map((t) => (
             <article key={t.h} className="take">
@@ -73,14 +78,17 @@ export default function Brief() {
         </div>
       </Section>
 
-      <Section title={<>The market&apos;s <S>mood</S></>} meta={`${scored.length} of ${comps.length} components, each ranked against its own five years, ${B.session} session`} ix="02 · Mood Index">
+      <Section title={<>The market&apos;s <S>mood</S></>} meta={`${scored.length} of ${comps.length} components, each ranked against its own five years, ${B.session} session`} ix="02 · Wander Index">
         <div className="two">
           <div>
-            <Dial score={scoreRaw} comps={scored.map((c) => ({ name: c.name, score: c.score }))} label={`Mood Index ${score}, ${band}`} />
+            <Dial score={scoreRaw} comps={scored.map((c) => ({ name: c.name, score: c.score }))} label={`Wander Index ${score}, ${band}`} />
             <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Each dot is one component; hover, tap or tab to read it.</p>
           </div>
           <div>
-            <div className="score"><span className="n">{score}</span><span className="w plain">{band}</span></div>
+            <div className="duo">
+              <div><p className="bw-label">Wander Index</p><div className="score"><span className="n">{score}</span><span className="w">{band}</span></div></div>
+              <div><p className="bw-label">Macro pressure</p><div className="score"><span className="n">{pressureScore}</span><span className="w">{pressureName}</span></div></div>
+            </div>
             <table className="comp-tbl">
               <tbody>
                 {comps.map((c) => (
@@ -88,7 +96,7 @@ export default function Brief() {
                 ))}
               </tbody>
             </table>
-            <p className="note after-plot"><b>{quad.name}.</b> {quad.short} Macro pressure is {pressureName.toLowerCase()}: {pressureHigh} of {B.pressure.length} indicators read high. <Link href="/mood/">How it&apos;s measured</Link></p>
+            <p className="note after-plot"><b>{quad.name}.</b> {quad.short} {pressureHigh} of {B.pressure.length} macro indicators read high. <Link href="/wander/#macro-pressure">See the indicators</Link> · <Link href="/wander/">How the Wander Index is measured</Link></p>
           </div>
         </div>
       </Section>

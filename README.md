@@ -14,7 +14,7 @@ A Next.js web app built from one real brief (Fri 13 Nov 2026), in the Brownian d
 
 | Path | What it is |
 |---|---|
-| `app/`, `components/`, `lib/`, `data/` | The web app: 10 views (one route each), shared components and charts, Mood Index scoring, and the day's brief as typed data. |
+| `app/`, `components/`, `lib/`, `data/` | The web app: 10 views (one route each), shared components and charts, Wander Index scoring, and the day's brief as typed data. |
 | `prototype/index.html` | The original single-file prototype (superseded; reference only). |
 | `design/` | Design language: `DESIGN.md` (rules, imported by `CLAUDE.md`), tokens, `brownian.css`, chart helpers, and `reference/brownian-brief.html` (the Brief rebuilt in the new language from the 13 Nov brief). |
 | `PRODUCT.md` | Product truth: users, purpose, positioning, constraints, feature names, principles. Read this before any product or design work. |
@@ -54,9 +54,9 @@ npm run history:verify   # coverage, consistency, NSE vs Yahoo cross-check, impl
 
 | Feature | Route | What it does |
 |---|---|---|
-| Brief | `/` | The day in under a minute: Mood Index, macro pressure, your holdings, six key numbers, takeaways, the next 7 days |
+| Markets, overnight | `/` | The day in under a minute: Wander Index, macro pressure, your holdings, six key numbers, takeaways, the next 7 days |
 | Portfolio Lens | `/portfolio` | Impact of today's news on the user's holding types, plus a watchlist |
-| Mood Index | `/mood` | 0–100 sentiment index from 6 components with visible formulas and research, kept separate from macro pressure |
+| Wander Index | `/wander` | 0–100 sentiment index from 6 components with visible formulas and research, kept separate from macro pressure |
 | Flow Map | `/flows` | FII/DII flows and sector rotation |
 | India Markets | `/india` | Indices, sectors, movers, MCX, rupee, after-hours |
 | Global Cues | `/global` | World indices, cross-asset macro, US sectors, after-hours |
@@ -68,8 +68,8 @@ npm run history:verify   # coverage, consistency, NSE vs Yahoo cross-check, impl
 ## Roadmap (open decisions)
 
 1. **Web app.** Next.js, confirmed. All 10 views are built in the design language; next: PWA install, then native iOS/Android later.
-2. **Daily ingestion.** Parse each morning's brief into structured data (one record per day), keep history, and render the views from it. This unlocks trends: FII flows by day, Mood Index over the week, story day-counts.
-3. **Mood Index and research indexes.** Done: nine components scored against history; turbulence, fragility, global spillover, FPI flow persistence and liquidity stress. Parked: Baker–Wurgler composite (India inputs unconfirmed). Gap: DII history has no free daily source.
+2. **Daily ingestion.** Parse each morning's brief into structured data (one record per day), keep history, and render the views from it. This unlocks trends: FII flows by day, Wander Index over the week, story day-counts.
+3. **Wander Index and research indexes.** Done: eight components scored against history; turbulence, fragility, global spillover, FPI flow persistence and liquidity stress. Parked: Baker–Wurgler composite (India inputs unconfirmed). Gap: DII history has no free daily source.
 4. **Ask Brownian.** An AI analyst users can question, answering only from cited sources.
 5. **Accounts.** Holdings and watchlist are device-only today.
 

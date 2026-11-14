@@ -35,7 +35,7 @@ export function Terrain({ sectors, labels, z, label }: { sectors: string[]; labe
         {sectors.map((_, s) => { const [x1, y1] = P(0, s), [x2, y2] = P(nt - 1, s); return <line key={s} x1={x1} y1={y1} x2={x2} y2={y2} className="bw-grid" />; })}
         {[0, nt - 1].map((t) => { const [x1, y1] = P(t, 0), [x2, y2] = P(t, ns - 1); return <line key={t} x1={x1} y1={y1} x2={x2} y2={y2} className="bw-grid" />; })}
         {ramp && [...sectors.keys()].reverse().map((s) => (
-          <g key={s} data-row={sectors[s]} filter="url(#terrain-glow)">
+          <g key={s} data-row={sectors[s]} filter="url(#terrain-glow)" style={{ "--r": ns - 1 - s } as React.CSSProperties}>
             {z[s].map((v, t) => {
               if (v == null || v === 0) return null;
               const [x, y] = P(t, s), up = v > 0;

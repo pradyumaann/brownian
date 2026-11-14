@@ -3,7 +3,7 @@ import Brownian from "@/design/brownian-charts";
 import { BANDS } from "@/lib/bands";
 import { usePlot } from "./usePlot";
 
-/** The Mood Index dial: bands named, score as the dawn needle, components as dots. */
+/** The Wander Index dial: bands named, score as the dawn needle, components as dots. */
 export function Dial({ score, comps, label }: { score: number; comps: { name: string; score: number }[]; label: string }) {
   const { box, svg } = usePlot((s, w) => {
     Brownian.dial(s, { score, bands: BANDS, components: comps, width: w, height: Math.round(Math.min(w * 0.6, 340)) });

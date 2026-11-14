@@ -27,4 +27,5 @@ export function ViewHead({ title, lede, feature }: { title: React.ReactNode; led
   );
 }
 
-export const S = ({ children }: { children: React.ReactNode }) => <span className="bw-serif">{children}</span>;
+/** Kept so headings read as plain text; the old serif-italic accent word was removed on 14 Nov 2026. */
+export const S = ({ children }: { children: React.ReactNode }) => <>{children}</>;

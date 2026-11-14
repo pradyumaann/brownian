@@ -4,7 +4,6 @@ export interface Paper { cite: string; title: string; venue: string; url: string
 export const PAPERS = {
   whaley2000: { cite: "Whaley (2000)", title: "The Investor Fear Gauge", venue: "Journal of Portfolio Management 26(3), 12–17", url: "https://doi.org/10.3905/jpm.2000.319728" },
   jt1993: { cite: "Jegadeesh & Titman (1993)", title: "Returns to Buying Winners and Selling Losers: Implications for Stock Market Efficiency", venue: "Journal of Finance 48(1), 65–91", url: "https://doi.org/10.1111/j.1540-6261.1993.tb04702.x" },
-  gh2004: { cite: "George & Hwang (2004)", title: "The 52-Week High and Momentum Investing", venue: "Journal of Finance 59(5), 2145–2176", url: "https://www.bauer.uh.edu/tgeorge/papers/gh5-paper.pdf" },
   bll1992: { cite: "Brock, Lakonishok & LeBaron (1992)", title: "Simple Technical Trading Rules and the Stochastic Properties of Stock Returns", venue: "Journal of Finance 47(5), 1731–1764", url: "https://doi.org/10.1111/j.1540-6261.1992.tb04681.x" },
   mop2012: { cite: "Moskowitz, Ooi & Pedersen (2012)", title: "Time Series Momentum", venue: "Journal of Financial Economics 104(2), 228–250", url: "https://doi.org/10.1016/j.jfineco.2011.11.003" },
   pp2006: { cite: "Pan & Poteshman (2006)", title: "The Information in Option Volume for Future Stock Prices", venue: "Review of Financial Studies 19(3), 871–908", url: "https://doi.org/10.1093/rfs/hhj024" },

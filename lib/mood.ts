@@ -1,4 +1,4 @@
-// Mood Index, server-side. Nine components, each scored as the percentile of today's reading among its own
+// Wander Index, server-side. Eight components, each scored as the percentile of today's reading among its own
 // previous five years (at least 250 trading days), then averaged. Scores use only data up to each day, never later.
 import { B } from "@/data";
 import type { Tone } from "@/data/types";
@@ -55,16 +55,6 @@ const DEFS: Def[] = [
     id: "mom", name: "Momentum", metric: "Nifty 50 return over 20 sessions", term: "momentum", papers: ["jt1993"], src: ["D1"], dir: 1,
     how: "Percentile of the 20-session Nifty 50 return", raw: () => days.map((_, i) => ret(nifty, i, 20)),
     show: (v) => `Nifty 50 ${pct1(v)} over 20 sessions`,
-  },
-  {
-    id: "strength", name: "Price strength", metric: "New 52-week highs as a share of highs plus lows, 5 days", term: "strength", papers: ["gh2004"], src: ["D2"], dir: 1,
-    how: "Percentile of highs ÷ (highs + lows), stocks at 52-week extremes over 5 sessions",
-    raw: () => {
-      const hi = breadthOf((b) => b.highs52), lo = breadthOf((b) => b.lows52);
-      return days.map((_, i) => { const a = avg(hi, i, 5), b = avg(lo, i, 5); return a != null && b != null && a + b > 0 ? (a / (a + b)) * 100 : null; });
-    },
-    show: (v) => `${v.toFixed(0)}% of stocks at 52-week extremes were at highs`,
-    gap: "52-week counts start a year into the stored bhavcopies",
   },
   {
     id: "trend", name: "Trend vs average", metric: "Nifty 50 distance from its 200-day average", term: "trend", papers: ["bll1992", "mop2012"], src: ["D1"], dir: 1,
@@ -153,7 +143,7 @@ export const scoreRaw = scored.reduce((a, c) => a + c.score, 0) / scored.length;
 export const score = Math.round(scoreRaw);
 export const band = bandOf(score).name;
 
-/** Daily Mood Index for the chart: days with at least five scored components. */
+/** Daily Wander Index for the chart: days with at least five scored components. */
 export const moodSeries = days.map((d, i) => {
   const s = computed.map((c) => c.score[i]).filter((x): x is number => x != null);
   return s.length >= 5 ? { date: d, score: Math.round(s.reduce((a, b) => a + b, 0) / s.length * 10) / 10, n: s.length } : null;
@@ -162,6 +152,8 @@ export const moodSeries = days.map((d, i) => {
 // Macro pressure: a separate, fundamental reading from the brief. 0 = low, 1 = elevated, 2 = high per indicator.
 export const pressure = B.pressure.reduce((a, p) => a + p.lv, 0) / (B.pressure.length * 2);
 export const pressureName = pressure >= 0.66 ? "High" : pressure >= 0.4 ? "Elevated" : "Low";
+/** Macro pressure on the same 0–100 scale as the Wander Index (0 low, 100 high). */
+export const pressureScore = Math.round(pressure * 100);
 export const pressureHigh = B.pressure.filter((p) => p.lv === 2).length;
 export const pressureTone = (lv: number): [string, Tone] => (lv === 2 ? ["High", "loss"] : lv === 1 ? ["Elevated", "mixed"] : ["Low", "gain"]);
 

@@ -9,13 +9,13 @@ import { Dial } from "@/components/charts/Dial";
 import { SegMeter } from "@/components/charts/Mini";
 import { Quadrant } from "@/components/charts/Quadrant";
 import { TimeLine } from "@/components/charts/TimeLine";
-import { BANDS, METHOD, MISSING, asOf, band, bandOf, comps, moodSeries, pressure, pressureHigh, pressureName, pressureTone, quad, score, scoreRaw, scored } from "@/lib/mood";
+import { BANDS, METHOD, MISSING, asOf, band, bandOf, comps, moodSeries, pressure, pressureHigh, pressureName, pressureScore, pressureTone, quad, score, scoreRaw, scored } from "@/lib/mood";
 import { PAPERS } from "@/lib/papers";
 import { riskOn, riskSeries } from "@/lib/risk";
 import { SPILL, spillSeries } from "@/lib/spillover";
 import { liquidity } from "@/lib/flows";
 
-export const metadata: Metadata = { title: "Mood Index" };
+export const metadata: Metadata = { title: "Wander Index" };
 
 const ord = (n: number) => { const r = Math.round(n), s = ["th", "st", "nd", "rd"], v = r % 100; return r + (s[(v - 20) % 10] || s[v] || s[0]); };
 const longDate = (d: string) => new Date(d + "T00:00:00Z").toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
@@ -25,7 +25,7 @@ function Papers({ ids, basis }: { ids: (keyof typeof PAPERS)[]; basis?: string }
   return <>{ids.map((id, i) => <span key={id}>{i ? "; " : ""}<a href={PAPERS[id].url} target="_blank" rel="noopener noreferrer">{PAPERS[id].cite}</a>, <i>{PAPERS[id].title}</i></span>)}</>;
 }
 
-export default function Mood() {
+export default function Wander() {
   const ext = scored.filter((c) => c.score >= 75), fear = scored.filter((c) => c.score < 45), off = comps.filter((c) => !c.available);
   const risk = riskOn(asOf), rs = riskSeries(asOf).slice(-500);
   const series = moodSeries.slice(-500);
@@ -41,28 +41,61 @@ export default function Mood() {
   ];
   return (
     <>
-      <ViewHead title={<>The market&apos;s <S>mood</S></>} feature="Mood Index"
-        lede={`How investors are behaving, each signal measured against its own last five years, and kept separate from macro pressure. As of the ${longDate(asOf)} session. 0 is extreme fear, 100 extreme greed.`} />
+      <ViewHead title={<>How far markets have <S>wandered</S></>} feature="Wander Index"
+        lede={`How far investor behaviour has strayed from its own normal, each signal ranked against its own last five years, shown beside the macro pressure that sits underneath it. As of the ${longDate(asOf)} session.`} />
 
       <div className="two">
         <div>
-          <Dial score={scoreRaw} comps={scored.map((c) => ({ name: c.name, score: c.score }))} label={`Mood Index ${score} of 100, ${band}. Components: ${scored.map((c) => `${c.name} ${Math.round(c.score)}`).join(", ")}`} />
+          <Dial score={scoreRaw} comps={scored.map((c) => ({ name: c.name, score: c.score }))} label={`Wander Index ${score} of 100, ${band}. Components: ${scored.map((c) => `${c.name} ${Math.round(c.score)}`).join(", ")}`} />
           <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Each dot on the dial is one component; hover, tap or tab to read it.</p>
         </div>
         <div className="stack">
-          <div className="score"><span className="n"><CountUp to={score} /></span><span className="w">{band}</span></div>
-          <p className="bw-meta">Average of {scored.length} of {comps.length} components{off.length ? `; ${off.map((c) => c.name.toLowerCase()).join(" and ")} not scored yet` : ""}. Bands: {BANDS.map((b) => `${b.name.toLowerCase()} ${b.from}–${Math.min(100, Math.floor(b.to))}`).join(" · ")}.</p>
-          <p className="note"><b>How it&apos;s built.</b> Each component is today&apos;s reading ranked against its own previous {METHOD.lookbackYears} years: a score of 70 means the reading was more greedy than on 70% of those days. It needs at least {METHOD.minDays} trading days of history, and uses nothing after the day it scores. The structure follows published fear-and-greed indices (CNN Business, Tickertape&apos;s Market Mood Index); the value is Brownian&apos;s own reading, not theirs.</p>
-          <p className="note"><b>Method change.</b> The 13 Nov brief&apos;s first version scored six components against fixed reference levels and read 69. From 14 Nov 2026 all components are ranked against history, which is why today&apos;s figure differs.</p>
+          <div>
+            <p className="bw-label">Wander Index · 0 extreme fear, 100 extreme greed</p>
+            <div className="score"><span className="n"><CountUp to={score} /></span><span className="w">{band}</span></div>
+            <SegMeter score={scoreRaw} label={`Wander Index ${score} of 100, ${band}`} />
+          </div>
+          <div className="pressure-read">
+            <p className="bw-label">Macro pressure · 0 low, 100 high<Src k={["S11", "W8", "W11"]} /></p>
+            <div className="score"><span className="n">{pressureScore}</span><span className="w">{pressureName}</span></div>
+            <SegMeter score={pressureScore} label={`Macro pressure ${pressureScore} of 100, ${pressureName}`} />
+            <p className="bw-meta">{pressureHigh} of {B.pressure.length} indicators in the brief read high. Today: <b>{quad.name}</b>. <a href="#macro-pressure">See the indicators</a></p>
+          </div>
+          <p className="bw-meta">Wander Index: average of {scored.length} of {comps.length} components{off.length ? `; ${off.map((c) => c.name.toLowerCase()).join(" and ")} not scored yet` : ""}. Bands: {BANDS.map((x) => `${x.name.toLowerCase()} ${x.from}–${Math.min(100, Math.floor(x.to))}`).join(" · ")}.</p>
         </div>
       </div>
 
-      <Section title={<>The mood over <S>time</S></>} meta={`Daily Mood Index, last ${series.length} sessions with at least five scored components`} ix="01">
-        <TimeLine points={series.map((p) => ({ date: p.date, value: p.score }))} bands={BANDS} label="Mood Index by session" />
-        <p className="bw-meta">Single days are noise; the bands show where the reading spends its time. Scores before November 2025 use fewer components, because 52-week, options and flow history starts later (see each component below).</p>
+      <Section id="macro-pressure" title={<>Macro <S>pressure</S></>} meta={`Fundamental headwinds from the brief, kept separate from sentiment · ${pressureName}, ${pressureHigh} of ${B.pressure.length} indicators high`} ix="01">
+        <div className="pair">
+          <div className="rows">
+            {B.pressure.map((p) => {
+              const [w, t] = pressureTone(p.lv);
+              return (
+                <div key={p.k} className="prow">
+                  <span><b>{p.k}</b> <span className="bw-mono" style={{ fontSize: 13 }}>· {p.v}</span></span>
+                  <span className="why">{p.why}</span>
+                  <Chip tone={t}>{w}</Chip>
+                </div>
+              );
+            })}
+          </div>
+          <div>
+            <h3 className="sub">Today: {quad.name}</h3>
+            <Quadrant score={score} pressure={pressure} current={quad.name} />
+            <p className="note after-plot">{quad.long}</p>
+            <p className="bw-disclaimer after-plot">Interpretation, not a forecast.</p>
+          </div>
+        </div>
+        <div className="missing after-plot">{MISSING.map(([b, t]) => <div key={b}><b>{b}</b><span>{t}</span></div>)}</div>
       </Section>
 
-      <Section title={<>What each one <S>measures</S></>} meta="Today's reading, how it is scored, and the research behind it" ix="02">
+      <Section title={<>The Wander Index over <S>time</S></>} meta={`Daily reading, last ${series.length} sessions with at least five scored components`} ix="02">
+        <TimeLine points={series.map((p) => ({ date: p.date, value: p.score }))} bands={BANDS} label="Wander Index by session" />
+        <p className="note after-plot"><b>How it&apos;s built.</b> Each component is today&apos;s reading ranked against its own previous {METHOD.lookbackYears} years: a score of 70 means the reading was more greedy than on 70% of those days. It needs at least {METHOD.minDays} trading days of history and uses nothing after the day it scores. The structure follows published fear-and-greed indices (CNN Business, Tickertape&apos;s Market Mood Index); the value is Brownian&apos;s own reading, not theirs. <b>Method change:</b> the 13 Nov brief&apos;s first version scored six components against fixed reference levels and read 69; from 14 Nov 2026 every component is ranked against history, so today&apos;s figure differs.</p>
+        <p className="bw-meta">Single days are noise; the bands show where the reading spends its time. Scores before November 2025 use fewer components, because options history starts later (see each component below).</p>
+      </Section>
+
+      <Section title={<>What each one <S>measures</S></>} meta="Today's reading, how it is scored, and the research behind it" ix="03">
         <div className="comps">
           {comps.map((c) => (
             <div key={c.id} className="comp">
@@ -93,7 +126,7 @@ export default function Mood() {
         </div>
       </Section>
 
-      <Section title={<>Is today <S>unusual</S>?</>} meta={<>Four readings of market structure: turbulence and fragility across {risk.sectors} NSE sectoral indices, overseas spillover, and liquidity<Src k={["D1"]} /></>} ix="03">
+      <Section title={<>Is today <S>unusual</S>?</>} meta={<>Four readings of market structure: turbulence and fragility across {risk.sectors} NSE sectoral indices, overseas spillover, and liquidity<Src k={["D1"]} /></>} ix="04">
         <div className="pair">
           <div>
             <h3 className="sub">Turbulence</h3>
@@ -129,33 +162,10 @@ export default function Mood() {
         <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Turbulence, fragility and liquidity charts show the percentile against each measure&apos;s own previous three years.</p>
       </Section>
 
-      <Section title={<>Reading it <S>rationally</S></>} meta="Sentiment is a contrarian signal, not a timing tool" ix="04">
+      <Section title={<>Reading it <S>rationally</S></>} meta="Sentiment is a contrarian signal, not a timing tool" ix="05">
         <ul className="list">{rational.map(([b, t]) => <li key={b}><b>{b}</b> {t}</li>)}</ul>
       </Section>
 
-      <Section title={<>Macro <S>pressure</S></>} meta={`Fundamental headwinds from the brief, kept separate from sentiment · ${pressureName}: ${pressureHigh} of ${B.pressure.length} high`} ix="05">
-        <div className="pair">
-          <div className="rows">
-            {B.pressure.map((p) => {
-              const [w, t] = pressureTone(p.lv);
-              return (
-                <div key={p.k} className="prow">
-                  <span><b>{p.k}</b> <span className="bw-mono" style={{ fontSize: 13 }}>· {p.v}</span></span>
-                  <span className="why">{p.why}</span>
-                  <Chip tone={t}>{w}</Chip>
-                </div>
-              );
-            })}
-          </div>
-          <div>
-            <h3 className="sub">Today: {quad.name}</h3>
-            <Quadrant score={score} pressure={pressure} current={quad.name} />
-            <p className="note after-plot">{quad.long}</p>
-            <p className="bw-disclaimer after-plot">Interpretation, not a forecast.</p>
-          </div>
-        </div>
-        <div className="missing after-plot">{MISSING.map(([b, t]) => <div key={b}><b>{b}</b><span>{t}</span></div>)}</div>
-      </Section>
     </>
   );
 }

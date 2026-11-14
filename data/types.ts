@@ -28,7 +28,7 @@ export interface Brief {
   dateShort: string;
   prepared: string;
   session: string;
-  /** ISO date of the session the brief describes (the Mood Index is read as of this day). */
+  /** ISO date of the session the brief describes (the Wander Index is read as of this day). */
   sessionDate: string;
   lede: Rich;
   kpis: { gift: Kpi; fii: Kpi; usdinr: Kpi };

@@ -119,7 +119,7 @@
 body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
 .bw-pad { padding: var(--space-6); }
 .bw-num, .bw-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-.bw-serif { font-family: var(--font-serif); font-style: italic; font-weight: 400; letter-spacing: -0.01em; }
+.bw-serif { font-family: inherit; font-style: normal; font-weight: inherit; }
 .bw-label { font: 500 12px/1.3 var(--font-sans); color: var(--ink-muted); }
 .bw-meta { font: 400 13px/1.45 var(--font-sans); color: var(--ink-muted); margin: var(--space-2) 0 0; }
 .bw-na { color: var(--ink-faint); font-family: var(--font-mono); }

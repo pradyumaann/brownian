@@ -79,14 +79,14 @@
 
   <div class="hero">
     <div><div class="bw-label">GIFT Nifty, 02:44 IST</div><div class="v">25,279<button class="bw-src">S8</button></div><div class="d bw-loss">▼ −20 pts <span class="w">vs Nifty close</span></div></div>
-    <div><div class="bw-label">Mood Index</div><div class="v" id="mood-v"></div><div class="d"><span class="w" id="mood-w"></span></div></div>
+    <div><div class="bw-label">Wander Index</div><div class="v" id="mood-v"></div><div class="d"><span class="w" id="mood-w"></span></div></div>
     <div><div class="bw-label">FII net, cash, Thu</div><div class="v">+₹7,831<small> cr</small><button class="bw-src">S5</button></div><div class="d bw-gain">▲ ₹73,566 cr <span class="w">Nov to date</span></div></div>
     <div><div class="bw-label">USD/INR, provisional</div><div class="v">94.04<button class="bw-src">S6</button></div><div class="d bw-gain">▲ +0.35% <span class="w">rupee weaker</span></div></div>
   </div>
 
   <section>
     <div class="sh"><h2>The market's <span class="bw-serif">mood</span></h2>
-      <p class="bw-meta"><span>Six equal-weighted components, Thu 12 Nov session</span><span class="ix">01 · Mood Index</span></p><hr class="bw-rule"></div>
+      <p class="bw-meta"><span>Six equal-weighted components, Thu 12 Nov session</span><span class="ix">01 · Wander Index</span></p><hr class="bw-rule"></div>
     <div class="two">
       <div><div class="bw-plot" id="dialbox"><svg id="dial" role="img"></svg></div>
         <p class="bw-disclaimer">Interpretation, not a forecast.</p></div>
@@ -149,7 +149,7 @@
   <footer><span class="bw-disclaimer">For information only; not investment advice.</span><span class="bw-source">Built from the Pre-Market Brief of Fri 13 Nov 2026, prepared 07:52 IST</span></footer>
 </div>
 <script>
-  // Mood Index: component values from the brief, scored with the prototype's published formulas. Copy is templated from the result.
+  // Wander Index: component values from the brief, scored with the prototype's published formulas. Copy is templated from the result.
   var C = [
     { name: 'Volatility · India VIX 16.61', src: ['S1', 'S4'], s: 50 - (16.61 - 16) / 12 * 50 },
     { name: 'Breadth · 55.9% advancing', src: ['S1'], s: 2377 / (2377 + 1878) * 100 },
@@ -171,7 +171,7 @@
     v.className = 'v'; v.textContent = c.s.toFixed(0);
   });
   var dial = document.getElementById('dial');
-  dial.setAttribute('aria-label', 'Mood Index ' + Math.round(score) + ', ' + band);
+  dial.setAttribute('aria-label', 'Wander Index ' + Math.round(score) + ', ' + band);
   Brownian.fit(document.getElementById('dialbox'), function (w) {
     Brownian.dial(dial, { score: score, bands: B, components: C.map(function (c) { return { name: c.name, score: c.s }; }), width: w, height: Math.round(w * 0.6) });
   });

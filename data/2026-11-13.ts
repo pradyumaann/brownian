@@ -1,7 +1,7 @@
 import type { Brief } from "./types";
 
 // Pre-Market Brief of Fri 13 Nov 2026 (docs/briefs/2026-11-13-pre-market-brief.txt) plus web calendars.
-// Ported from the prototype's `D` object. Interpretive copy that depends on the Mood Index score is templated in code.
+// Ported from the prototype's `D` object. Interpretive copy that depends on the Wander Index score is templated in code.
 export const brief: Brief = {
   date: "2026-11-13",
   dateLabel: "Fri 13 Nov 2026",
@@ -379,11 +379,10 @@ export const brief: Brief = {
     msci: ["MSCI rebalance", "MSCI periodically changes which stocks are in its indices. Passive funds tracking them must buy additions and sell deletions on the effective date.", "Today: Adani Green, Coforge, LIC, Meesho in; PI Industries out."],
     prov: ["Provisional data", "Early figures released the same evening. Final numbers can differ slightly a day later.", "Today: FII/DII flows and USD/INR 94.04 are provisional."],
     rotation: ["Sector rotation", "Money moving from one group of stocks to another as investors change their outlook, such as from consumption to financials.", "Today: out of autos/FMCG into financials and realty."],
-    pcr: ["Put/call ratio", "Nifty options put volume divided by call volume. More puts than usual means traders are paying for protection, which sentiment indexes read as fear.", "Today: see the Mood Index for the 5-day average."],
-    strength: ["52-week highs and lows", "How many stocks closed at their highest or lowest price of the past year. More highs than lows means strength is broad, not carried by a few names.", "Today: see the Mood Index's price-strength component."],
-    trend: ["200-day moving average", "The average closing price over the last 200 sessions. An index far above it has risen fast; below it, the longer trend is down.", "Today: see the Mood Index's trend component."],
-    turbulence: ["Turbulence", "How unusual today's mix of sector moves is compared with history: the Mahalanobis distance of Kritzman & Li (2010). High turbulence means sectors moved in ways they rarely do together.", "Today: see Risk on the Mood Index page."],
-    fragility: ["Fragility (absorption ratio)", "How much of all sector moves is explained by a few common forces (Kritzman, Li, Page & Rigobon, 2011). When it is high, sectors move as one and a shock spreads faster.", "Today: see Risk on the Mood Index page."],
+    pcr: ["Put/call ratio", "Nifty options put volume divided by call volume. More puts than usual means traders are paying for protection, which sentiment indexes read as fear.", "Today: see the Wander Index for the 5-day average."],
+    trend: ["200-day moving average", "The average closing price over the last 200 sessions. An index far above it has risen fast; below it, the longer trend is down.", "Today: see the Wander Index's trend component."],
+    turbulence: ["Turbulence", "How unusual today's mix of sector moves is compared with history: the Mahalanobis distance of Kritzman & Li (2010). High turbulence means sectors moved in ways they rarely do together.", "Today: see Risk on the Wander Index page."],
+    fragility: ["Fragility (absorption ratio)", "How much of all sector moves is explained by a few common forces (Kritzman, Li, Page & Rigobon, 2011). When it is high, sectors move as one and a shock spreads faster.", "Today: see Risk on the Wander Index page."],
     sentiment: ["Sentiment index", "A composite of market behaviour (volatility, breadth, momentum, flows, safe-haven demand) scaled 0–100. Extremes are read as contrarian signals.", "Today: {score}, “{band}”."],
   },
   sources: [

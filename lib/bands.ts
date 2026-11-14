@@ -1,4 +1,4 @@
-// Client-safe Mood Index constants: bands, quadrant names, and copy templating. Scoring lives in lib/mood.ts (server).
+// Client-safe Wander Index constants: bands, quadrant names, and copy templating. Scoring lives in lib/mood.ts (server).
 
 export const BANDS = [
   { from: 0, to: 25, name: "Extreme fear" },

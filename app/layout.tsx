@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import Link from "next/link";
 import "./globals.css";
 import { B } from "@/data";
 import { Freshness } from "@/components/Freshness";
+import { Masthead } from "@/components/Masthead";
 import { Nav } from "@/components/Nav";
 import { Readout } from "@/components/Readout";
 import { Sheet } from "@/components/Sheet";
@@ -29,7 +29,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a className="skip" href="#main">Skip to content</a>
         <div className="page">
           <header className="bar">
-            <Link href="/" className="mark">Brownian</Link>
             <div className="st">
               <span>{B.dateLabel}</span>
               <Freshness />
@@ -37,11 +36,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <ThemeToggle />
             </div>
           </header>
+          <Masthead />
           <Nav />
           <main id="main" tabIndex={-1}>{children}</main>
           <footer className="foot">
             <div className="foot-top">
-              <p className="bw-disclaimer"><b>For information only; not investment advice.</b> “n/a” means the figure could not be verified from the sources retrieved this morning. The Mood Index, macro-pressure reading and impact notes are a rules-based reading of the sources, not a forecast.</p>
+              <p className="bw-disclaimer"><b>For information only; not investment advice.</b> “n/a” means the figure could not be verified from the sources retrieved this morning. The Wander Index, macro-pressure reading and impact notes are a rules-based reading of the sources, not a forecast.</p>
               <p className="bw-source">Built from the Pre-Market Brief of {B.dateLabel}, prepared {B.prepared} IST</p>
             </div>
             <details className="srcs">

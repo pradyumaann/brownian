@@ -9,7 +9,7 @@ import { chromium } from "playwright-core";
 const ROOT = resolve("out");
 const SHOTS = resolve(process.argv[2] || "check-shots");
 const CHANNEL = process.argv[3] || "msedge";
-const ROUTES = ["/", "/portfolio/", "/mood/", "/flows/", "/india/", "/global/", "/macro/", "/earnings/", "/developing/", "/learn/"];
+const ROUTES = ["/", "/portfolio/", "/wander/", "/flows/", "/india/", "/global/", "/macro/", "/earnings/", "/developing/", "/learn/"];
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".svg": "image/svg+xml", ".woff2": "font/woff2", ".txt": "text/plain" };
 
 const server = createServer(async (req, res) => {

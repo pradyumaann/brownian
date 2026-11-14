@@ -148,12 +148,12 @@
       var count = Math.max(1, Math.round(l.value / o.unit));
       var color = l.color || css(o.colorBy === 'target' ? t.cat : s.cat);
       var x0 = s.x + nodeW, x1 = t.x, mx = (x0 + x1) / 2;
-      var g = el('g', { 'data-link': l.source + '>' + l.target }, gStr);
+      var g = el('g', { 'data-link': l.source + '>' + l.target, style: '--d:' + (o.links.indexOf(l) * 0.07).toFixed(2) + 's' }, gStr);
       tip(g, (o.format || String)(l.value), s.n.label + ' \u2192 ' + t.n.label);
       for (var i = 0; i < count; i++) {
         var f = (i + 0.5) / count, y0 = s.outY + f * bw, y1 = t.inY + f * bw;
         var j = (r() - 0.5) * Math.min(18, bw * 0.6); // mid-curve drift only; endpoints stay exact
-        el('path', { d: 'M' + x0 + ' ' + y0.toFixed(2) + 'C' + (mx + j).toFixed(1) + ' ' + y0.toFixed(2) + ' ' + (mx - j).toFixed(1) + ' ' + y1.toFixed(2) + ' ' + x1 + ' ' + y1.toFixed(2), stroke: color, 'class': 'bw-strand' }, g);
+        el('path', { d: 'M' + x0 + ' ' + y0.toFixed(2) + 'C' + (mx + j).toFixed(1) + ' ' + y0.toFixed(2) + ' ' + (mx - j).toFixed(1) + ' ' + y1.toFixed(2) + ' ' + x1 + ' ' + y1.toFixed(2), stroke: color, pathLength: 1, 'class': 'bw-strand' }, g);
       }
       s.outY += bw; t.inY += bw;
     });
@@ -326,7 +326,7 @@
       var a0 = i * 100 / segs + gap / 2, a1 = (i + 1) * 100 / segs - gap / 2, lit = (i + 0.5) * 100 / segs <= o.score;
       var p1 = pt(a0, R), p2 = pt(a1, R), p3 = pt(a1, r0), p4 = pt(a0, r0);
       el('path', { d: 'M' + p1.join(' ') + 'A' + R + ' ' + R + ' 0 0 1 ' + p2.join(' ') + 'L' + p3.join(' ') + 'A' + r0 + ' ' + r0 + ' 0 0 0 ' + p4.join(' ') + 'Z',
-        fill: lit ? ramp('spec', 0.2 + 0.8 * (i + 0.5) / segs) : css('plot-grid'), filter: lit ? gl : null, 'class': lit ? 'bw-seg is-lit' : 'bw-seg' }, svg);
+        fill: lit ? ramp('spec', 0.2 + 0.8 * (i + 0.5) / segs) : css('plot-grid'), filter: lit ? gl : null, style: '--i:' + i, 'class': lit ? 'bw-seg is-lit' : 'bw-seg' }, svg);
     }
     o.bands.forEach(function (b) {
       if (b.from > 0) { var a = pt(b.from, R + 4), c = pt(b.from, r0 - 6); el('line', { x1: a[0], y1: a[1], x2: c[0], y2: c[1], 'class': 'bw-tickline is-edge' }, svg); }
