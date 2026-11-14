@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-Current prototype: a single static HTML page (published as a claude.ai artifact). Deployment target confirmed by the user: a responsive web app first (installable as a PWA), native iOS/Android later. Framework: Next.js, or Claude's recommendation when the build starts (delegated detail, not yet decided).
+Web app: Next.js (App Router, TypeScript), confirmed 14 Nov 2026, built as a static export from the day's brief. Deployment target: a responsive web app first (installable as a PWA), native iOS/Android later. The original single-file prototype (`prototype/index.html`) is kept as a reference only.
 
 ## Users
 
@@ -59,7 +59,7 @@ Constraints:
 - Per-viewer preferences (holdings, watchlist) are stored on the device only in the prototype.
 - Data currently arrives once a day; there is no live market feed yet.
 
-Open decisions: final web framework; data pipeline for daily ingestion and history; account model; AI analyst scope.
+Open decisions: data pipeline for daily ingestion and history; account model; AI analyst scope.
 
 ## Brand Commitments
 

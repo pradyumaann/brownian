@@ -163,6 +163,7 @@ body { margin: 0; background: var(--ground); color: var(--ink); font-family: var
 .bw-wire-x { stroke: var(--plot-ink); stroke-width: var(--stroke-hair); fill: none; opacity: .22; }
 .bw-fringe { stroke-width: 1px; }
 .bw-bar.is-gain { fill: var(--plot-gain); opacity: .28; } .bw-bar.is-loss { fill: var(--plot-loss); opacity: .28; }
+.bw-bar.is-range { opacity: .12; }
 .bw-dot.is-gain { fill: var(--plot-gain); } .bw-dot.is-loss { fill: var(--plot-loss); }
 .bw-val { font: 500 11px var(--font-mono); } .bw-val.is-gain { fill: var(--plot-gain); } .bw-val.is-loss { fill: var(--plot-loss); }
 .bw-tickline { stroke: var(--plot-muted); stroke-width: var(--stroke-thin); opacity: .55; }

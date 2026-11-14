@@ -10,11 +10,12 @@ AI market intelligence for Indian retail investors. Brownian turns the daily pre
 
 ## Status
 
-A working single-file prototype built from one real brief (Fri 13 Nov 2026). The data is embedded in the page; there is no backend or live feed yet.
+A Next.js web app built from one real brief (Fri 13 Nov 2026), in the Brownian design language. The day's data is a typed record in `data/`; there is no backend or live feed yet. The original single-file prototype is kept in `prototype/` for reference.
 
 | Path | What it is |
 |---|---|
-| `prototype/index.html` | The full app: 10 views, charts, watchlist. Open it in a browser; no build step. |
+| `app/`, `components/`, `lib/`, `data/` | The web app: 10 views (one route each), shared components and charts, Mood Index scoring, and the day's brief as typed data. |
+| `prototype/index.html` | The original single-file prototype (superseded; reference only). |
 | `design/` | Design language: `DESIGN.md` (rules, imported by `CLAUDE.md`), tokens, `brownian.css`, chart helpers, and `reference/brownian-brief.html` (the Brief rebuilt in the new language from the 13 Nov brief). |
 | `PRODUCT.md` | Product truth: users, purpose, positioning, constraints, feature names, principles. Read this before any product or design work. |
 | `AGENTS.md` | Brief for coding agents and collaborators: rules, architecture, conventions, how to verify. `CLAUDE.md` imports it. |
@@ -22,38 +23,35 @@ A working single-file prototype built from one real brief (Fri 13 Nov 2026). The
 | `docs/design-review-2026-11-13.md` | Findings from the first design critique and what the polish pass fixed. |
 | `.impeccable/` | Impeccable design-tool state (critique snapshots stay local). |
 
-## Run the prototype
+## Run the app
 
 ```bash
-open prototype/index.html
+npm install
+npm run dev        # http://localhost:3000
+npm run build      # static export to out/
+npm run check      # after a build: every view at 1280px and 400px, night and paper; console errors and sideways scroll
 ```
 
-Or serve it locally (any static server works):
-
-```bash
-python3 -m http.server 8000 --directory prototype
-```
-
-Then go to `http://localhost:8000`. Views are hash routes: `#today`, `#money`, `#mood`, `#flows`, `#india`, `#global`, `#economy`, `#earnings`, `#stories`, `#learn`.
+`npm run check` drives an installed Edge through `playwright-core` (`node scripts/check.mjs <shots-dir> chrome` for Chrome).
 
 ## Features
 
-| Feature | View | What it does |
+| Feature | Route | What it does |
 |---|---|---|
-| Brief | `#today` | The day in under a minute: Mood Index, macro pressure, your holdings, six key numbers, takeaways, the next 7 days |
-| Portfolio Lens | `#money` | Impact of today's news on the user's holding types, plus a watchlist |
-| Mood Index | `#mood` | 0–100 sentiment index from 6 components with visible formulas and research, kept separate from macro pressure |
-| Flow Map | `#flows` | FII/DII flows and sector rotation |
-| India Markets | `#india` | Indices, sectors, movers, MCX, rupee, after-hours |
-| Global Cues | `#global` | World indices, cross-asset macro, US sectors, after-hours |
-| Macro Watch | `#economy` | Economic indicators and the event calendar |
-| Earnings Radar | `#earnings` | India and US results calendars and scorecard |
-| Developing | `#stories` | Stories that carry over from day to day |
-| Jargon Buster | `#learn` | Glossary tied to the day's numbers |
+| Brief | `/` | The day in under a minute: Mood Index, macro pressure, your holdings, six key numbers, takeaways, the next 7 days |
+| Portfolio Lens | `/portfolio` | Impact of today's news on the user's holding types, plus a watchlist |
+| Mood Index | `/mood` | 0–100 sentiment index from 6 components with visible formulas and research, kept separate from macro pressure |
+| Flow Map | `/flows` | FII/DII flows and sector rotation |
+| India Markets | `/india` | Indices, sectors, movers, MCX, rupee, after-hours |
+| Global Cues | `/global` | World indices, cross-asset macro, US sectors, after-hours |
+| Macro Watch | `/macro` | Economic indicators and the event calendar |
+| Earnings Radar | `/earnings` | India and US results calendars and scorecard |
+| Developing | `/developing` | Stories that carry over from day to day |
+| Jargon Buster | `/learn` | Glossary tied to the day's numbers |
 
 ## Roadmap (open decisions)
 
-1. **Web app.** Responsive web app first (installable as a PWA), native iOS/Android later. Framework: Next.js is the working assumption, not final.
+1. **Web app.** Next.js, confirmed. All 10 views are built in the design language; next: PWA install, then native iOS/Android later.
 2. **Daily ingestion.** Parse each morning's brief into structured data (one record per day), keep history, and render the views from it. This unlocks trends: FII flows by day, Mood Index over the week, story day-counts.
 3. **Complete the Mood Index.** Add the three missing standard components: Nifty put/call ratio, 52-week highs vs lows, Nifty vs its 125/200-day average.
 4. **Ask Brownian.** An AI analyst users can question, answering only from cited sources.

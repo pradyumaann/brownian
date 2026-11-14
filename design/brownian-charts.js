@@ -250,9 +250,10 @@
 
   /* ---------------------------------------------------------------- Diverge (signed bars from a zero line)
      The plain workhorse for "how much did each thing move": sectors, indices, flows.
-     opts: { rows:[{label, value:number|null, src?:'S1'|..., note?}], width, rowH (default 26),
+     opts: { rows:[{label, value:number|null, to?:number, src?:'S1'|..., note?}], width, rowH (default 26),
              format(v)->string, labelWidth, domain? (symmetric max; default = max |value|) }
-     null values render as "n/a" with no bar — never estimated. */
+     null values render as "n/a" with no bar — never estimated. Where sources disagree, `to` is the other
+     end of the reported range: the bar runs to `value`, a faint extension runs on to `to`, and both are printed. */
   function diverge(svg, o) {
     var rows = o.rows, w = o.width || 560, rh = o.rowH || 26, lw = o.labelWidth || 120, vw = o.valueWidth || 92;
     var h = rows.length * rh + 24;
@@ -262,7 +263,7 @@
     rows.forEach(function (r) { probe.textContent = r.label; need = Math.max(need, probe.getComputedTextLength ? probe.getComputedTextLength() : r.label.length * 6.2); });
     svg.removeChild(probe);
     lw = Math.min(Math.max(lw, need + 18), Math.round(w * 0.42));
-    var max = o.domain || Math.max.apply(null, rows.map(function (r) { return r.value == null ? 0 : Math.abs(r.value); })) || 1;
+    var max = o.domain || Math.max.apply(null, rows.map(function (r) { return r.value == null ? 0 : Math.max(Math.abs(r.value), r.to == null ? 0 : Math.abs(r.to)); })) || 1;
     var x0 = lw + (w - lw - vw) / 2, half = (w - lw - vw) / 2 - 4;
     el('line', { x1: x0, x2: x0, y1: 4, y2: h - 18, 'class': 'bw-base' }, svg);
     text(svg, x0, h - 4, '0', 'bw-tick', 'middle');
@@ -273,8 +274,13 @@
       if (r.value == null) { text(svg, w - 8, y + 4, 'n/a', 'bw-tick', 'end'); return; }
       var len = Math.abs(r.value) / max * half, up = r.value >= 0;
       var bar = el('rect', { x: up ? x0 : x0 - len, y: y - 5, width: Math.max(1, len), height: 10, 'class': 'bw-bar ' + (up ? 'is-gain' : 'is-loss') }, svg);
+      var F = o.format || function (v) { return fmt.pct(v); }, f = F(r.value);
+      if (r.to != null && (r.to >= 0) === up && Math.abs(r.to) > Math.abs(r.value)) {
+        var len2 = Math.abs(r.to) / max * half;
+        el('rect', { x: up ? x0 + len : x0 - len2, y: y - 5, width: len2 - len, height: 10, 'class': 'bw-bar is-range ' + (up ? 'is-gain' : 'is-loss') }, svg);
+        f = f + ' to ' + F(r.to);
+      }
       el('circle', { cx: up ? x0 + len : x0 - len, cy: y, r: 2.5, 'class': up ? 'bw-dot is-gain' : 'bw-dot is-loss' }, svg);
-      var f = (o.format || function (v) { return fmt.pct(v); })(r.value);
       tip(bar, f, r.label + (r.src ? ' [' + r.src + ']' : ''));
       text(svg, w - 8, y + 4, (up ? '▲ ' : '▼ ') + f, 'bw-val ' + (up ? 'is-gain' : 'is-loss'), 'end');
     });
@@ -337,5 +343,8 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') box.hidden = true; });
   }
 
-  window.Brownian = { css: css, rng: rng, ramp: ramp, fmt: fmt, spark: spark, ridgeline: ridgeline, strands: strands, field: field, fringe: fringe, diverge: diverge, dial: dial, fit: fit, tip: tip, readout: readout, crosshairs: crosshairs };
+  var api = { css: css, rng: rng, ramp: ramp, fmt: fmt, spark: spark, ridgeline: ridgeline, strands: strands, field: field, fringe: fringe, diverge: diverge, dial: dial, fit: fit, tip: tip, readout: readout, crosshairs: crosshairs };
+  // Classic <script> on reference pages; CommonJS module in the Next.js app (nothing touches the DOM at load).
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (typeof window !== 'undefined') window.Brownian = api;
 })();
