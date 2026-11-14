@@ -14,11 +14,16 @@ Brief for any agent or collaborator working on Brownian. Read `PRODUCT.md` first
 
 ```
 prototype/index.html   single-file app (HTML + CSS + JS, no build)
+design/                design language: DESIGN.md (rules), tokens.json, brownian.css, brownian-charts.js, reference/
 PRODUCT.md             product record (users, purpose, constraints, feature names)
 docs/briefs/           source briefs, one per day
 docs/design-review-*.md  design critique findings
 .impeccable/           design-tool state
 ```
+
+## Design language
+
+All new UI follows `design/DESIGN.md` (imported by `CLAUDE.md`): tokens in `design/tokens.json`, styles in `design/brownian.css`, reference charts in `design/brownian-charts.js`, and the Brief rebuilt in `design/reference/brownian-brief.html`. The prototype below predates it and still uses its own tokens and fonts; when you touch a view, migrate it using the token map at the end of DESIGN.md rather than mixing the two systems in one view.
 
 ## How the prototype is built
 
@@ -39,10 +44,11 @@ Everything lives in `prototype/index.html`:
 - **Heatmap text** colour is chosen by measured contrast at render time; keep it that way.
 - **Phone:** wide tables get class `st` and stack into cards under 620px; charts must fit 400px without sideways scroll.
 - **Design rules from the review:** no small uppercase label (eyebrow/kicker) above a heading; put the context line under the heading as `.meta`. No nested cards. Body text ≥ 4.5:1 contrast in both themes.
+- **Design language rules:** charts sit in a dark `.bw-plot` window in both themes; ▲/▼ plus a sign on every change; one `dawn` highlight and one primary button per view; every chart redraws to its container (`Brownian.fit`). See `design/DESIGN.md`.
 
 ## Verify every change
 
-1. Open `prototype/index.html` at 1280px and 400px, light and dark. Check each view you touched.
+1. Open `prototype/index.html` (and `design/reference/brownian-brief.html` if you changed `design/`) at 1280px and 400px, light and dark. Check each view you touched.
 2. No console errors, no horizontal page scroll (`document.documentElement.scrollWidth` equals the viewport width).
 3. Tab through what you changed; the readout and the info sheet must work from the keyboard (Esc closes the sheet and returns focus).
 

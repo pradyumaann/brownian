@@ -15,6 +15,7 @@ A working single-file prototype built from one real brief (Fri 13 Nov 2026). The
 | Path | What it is |
 |---|---|
 | `prototype/index.html` | The full app: 10 views, charts, watchlist. Open it in a browser; no build step. |
+| `design/` | Design language: `DESIGN.md` (rules, imported by `CLAUDE.md`), tokens, `brownian.css`, chart helpers, and `reference/brownian-brief.html` (the Brief rebuilt in the new language from the 13 Nov brief). |
 | `PRODUCT.md` | Product truth: users, purpose, positioning, constraints, feature names, principles. Read this before any product or design work. |
 | `AGENTS.md` | Brief for coding agents and collaborators: rules, architecture, conventions, how to verify. `CLAUDE.md` imports it. |
 | `docs/briefs/` | Source briefs. `2026-11-13-pre-market-brief.txt` is the one the prototype is built from. |
