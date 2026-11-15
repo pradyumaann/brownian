@@ -11,7 +11,8 @@ import { FlowLines } from "@/components/charts/FlowLines";
 import { MiniBars } from "@/components/charts/Mini";
 import { Strands } from "@/components/charts/Strands";
 import { Terrain } from "@/components/charts/Terrain";
-import { strandShape, terrainShape } from "@/lib/sectorFlows";
+import { More } from "@/components/More";
+import { strandShape, terrainQuarters } from "@/lib/sectorFlows";
 import { crore, pct } from "@/lib/format";
 import { flowContext, fpiDaily } from "@/lib/flows";
 import { asOf } from "@/lib/mood";
@@ -39,7 +40,10 @@ export default function Flows() {
   const span = daily.slice(-750);
   const cum = (f: (r: (typeof span)[number]) => number | null) => { let s = 0, seen = false; return span.map((r) => { const v = f(r); if (v == null) return seen ? s : null; seen = true; return (s += v); }); };
   const big = span.reduce((m, r, i) => (r.equity > span[m].equity ? i : m), 0), small = span.reduce((m, r, i) => (r.equity < span[m].equity ? i : m), 0);
-  const st = strandShape(), tr = terrainShape();
+  const st = strandShape(), tq = terrainQuarters();
+  const cells = tq.z.flatMap((r, s) => r.map((v, q) => ({ v, s, q }))).filter((c): c is { v: number; s: number; q: number } => c.v != null);
+  const at = (c: { v: number; s: number; q: number }) => `${tq.sectors[c.s]}, ${tq.quarters[c.q].label}, ${crore(c.v)}`;
+  const peak = { buy: at(cells.reduce((a, c) => (c.v > a.v ? c : a))), sell: at(cells.reduce((a, c) => (c.v < a.v ? c : a))) };
   const themes = B.themesIn.map((t) => ({ ...t, avg: t.s.reduce((a, s) => a + s[1], 0) / t.s.length }));
   return (
     <>
@@ -61,14 +65,14 @@ export default function Flows() {
             );
           })}
         </div>
-        <div className="pair" style={{ marginTop: "var(--space-8)" }}>
+        <More label="What sits behind the numbers" bodyClassName="pair" className="gap-top">
           <p className="note">Every share bought is sold by someone. When FIIs and DIIs together are net buyers, everyone else (retail, HNIs, promoters, prop desks) was a net seller by the same amount, counting exchange cash trades only.</p>
           <ul className="list">{read.map(([b, t]) => <li key={b}><b>{b}</b> {t}</li>)}</ul>
-        </div>
+        </More>
       </Section>
 
       <Section title={<>From selling to record <S>buying</S></>} meta={<>FPI net equity investment by month, ₹ crore, NSDL reporting days<Src k={["D4"]} /></>} ix="02">
-        <Diverge format="crore" valueWidth={132} rows={last12.map((m) => ({ label: m.label, value: m.value }))}
+        <Diverge format="crore" valueWidth={132} phoneRows={6} phoneKeep="last" rows={last12.map((m) => ({ label: m.label, value: m.value }))}
           label={`FPI net equity investment by month: ${last12.map((m) => `${m.label} ${crore(m.value)}`).join(", ")}`} />
         <p className="bw-meta">NSDL counts custodian-confirmed trades, so its November figure ({crore(last12.at(-1)!.value)} to date) differs from the brief&apos;s exchange provisional FII figure ({crore(mtd.fii)}<Src k={["S5"]} />). DII history has no free daily source yet: n/a.</p>
       </Section>
@@ -93,11 +97,11 @@ export default function Flows() {
           </div>
           <div className="take">
             <h3>Persistence {ctx.persistence == null ? "n/a" : ctx.persistence.toFixed(2)}</h3>
-            <p>Correlation of each day&apos;s FPI equity flow with the next day&apos;s, over the last 250 reporting days. Above 0 means buying tends to follow buying, as <a href={PAPERS.fos2001.url} target="_blank" rel="noopener noreferrer">Froot, O&apos;Connell &amp; Seasholes (2001)</a> found for international flows.</p>
+            <More label="What it measures"><p>Correlation of each day&apos;s FPI equity flow with the next day&apos;s, over the last 250 reporting days. Above 0 means buying tends to follow buying, as <a href={PAPERS.fos2001.url} target="_blank" rel="noopener noreferrer">Froot, O&apos;Connell &amp; Seasholes (2001)</a> found for international flows.</p></More>
           </div>
           <div className="take">
             <h3>Feedback {ctx.feedback == null ? "n/a" : ctx.feedback.toFixed(2)}</h3>
-            <p>Correlation of daily FPI equity flows with Nifty 50&apos;s return over the previous 20 sessions. Above 0 means foreign money has been chasing recent gains, the positive-feedback pattern in the same paper.</p>
+            <More label="What it measures"><p>Correlation of daily FPI equity flows with Nifty 50&apos;s return over the previous 20 sessions. Above 0 means foreign money has been chasing recent gains, the positive-feedback pattern in the same paper.</p></More>
           </div>
         </div>
         <p className="bw-disclaimer after-plot">Interpretation, not a forecast. NSDL reporting days lag the trade date by one session.</p>
@@ -106,23 +110,27 @@ export default function Flows() {
       <Section title={<>Where foreign money <S>went</S></>} meta={<>FPI net equity investment by sector, {st.label}, NSDL fortnightly data<Src k={["D4"]} /></>} ix="04">
         <Strands left={st.left} right={st.right} unit={st.unit}
           label={`FPI equity flows by sector in ${st.label}. Sold: ${st.left.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}. Bought: ${st.right.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}.`} />
-        <p className="bw-meta">One hairline = ₹{st.unit.toLocaleString("en-IN")} crore. Left: sectors where FPIs were net sellers{st.total > 0 ? ", plus the net new money they brought in" : ""}. Right: sectors where they were net buyers{st.total < 0 ? ", plus the net amount they took out of India" : ""}. Net for the month: {crore(st.total)}. Sector flows net within each sector; they are not traced trades from one sector to another.</p>
+        <p className="bw-meta after-plot">One hairline = ₹{st.unit.toLocaleString("en-IN")} crore; each sector has its own colour, warm for selling and cool for buying. In: sectors where FPIs were net sellers{st.total > 0 ? ", plus the net new money they brought in" : ""} (left; on a phone, the top). Out: sectors where they were net buyers{st.total < 0 ? ", plus the net amount they took out of India" : ""} (right; on a phone, the bottom). Net for the month: {crore(st.total)}. Sector flows net within each sector; they are not traced trades from one sector to another.</p>
       </Section>
 
-      <Section title={<>Two years of sector <S>flows</S></>} meta={<>Net FPI equity flow by sector and fortnight, {tr.labels[0]} to {tr.labels.at(-1)}, the {tr.sectors.length} sectors with the largest flows<Src k={["D4"]} /></>} ix="05">
-        <Terrain sectors={tr.sectors} labels={tr.labels} z={tr.z} label={`Net FPI equity flows for ${tr.sectors.length} sectors over ${tr.labels.length} fortnights. Totals: ${tr.totals.map((t) => `${t.sector} ${crore(t.net)}`).join(", ")}.`} />
-        <p className="bw-meta">Height and colour both show the flow: bars rise for net buying and hang below the floor for net selling; colour runs from the largest sale (dark violet) to the largest purchase (light gold). Hover or tap a bar for its value; the table gives every total. Latest fortnight: {tr.labels.at(-1)}.</p>
-        <div className="after-plot" />
-        <DataTable head={[["Sector"], ["Two years", "r"], ["Latest fortnight", "r"]]}
-          rows={[...tr.totals].sort((x, y) => y.net - x.net).map((t) => [t.sector, <Change key="n" v={crore(t.net)} />, t.last == null ? <span key="l" className="bw-na">n/a</span> : <Change key="l" v={crore(t.last)} />])} />
+      <Section title={<>Two years of sector <S>flows</S></>} meta={<>Net FPI equity flow by sector and calendar quarter, {tq.quarters[0].label} to {tq.quarters.at(-1)!.label}, the {tq.sectors.length} sectors with the largest flows<Src k={["D4"]} /></>} ix="05">
+        <Terrain sectors={tq.sectors} quarters={tq.quarters} z={tq.z}
+          label={`Terrain of net FPI equity flows, ${tq.sectors.length} sectors by ${tq.quarters.length} quarters. Two-year totals: ${tq.totals.map((t) => `${t.sector} ${crore(t.net)}`).join(", ")}. Largest quarter of buying: ${peak.buy}. Largest quarter of selling: ${peak.sell}.`} />
+        <p className="bw-meta after-plot">Height and colour both show the flow: columns rise for net buying (teal) and hang below the floor for net selling (ember), deeper in colour the larger they are. Each column sums that quarter&apos;s NSDL fortnights; {tq.quarters.at(-1)!.short} is {tq.quarters.at(-1)!.toDate ? `the quarter to date (${tq.quarters.at(-1)!.label})` : "complete"}. Q1 is January to March.</p>
+        <More label="Every sector's total" className="after-plot">
+          <DataTable head={[["Sector"], ["Two years", "r"], [`${tq.quarters.at(-1)!.short.replace("*", "")}${tq.quarters.at(-1)!.toDate ? " to date" : ""}`, "r"]]}
+            rows={[...tq.totals].sort((x, y) => y.net - x.net).map((t) => [t.sector, <Change key="n" v={crore(t.net)} />, t.last == null ? <span key="l" className="bw-na">n/a</span> : <Change key="l" v={crore(t.last)} />])} />
+        </More>
       </Section>
 
       <Section title={<>Into financials, out of <S>consumption</S></>} meta={<><Term id="rotation">Sector rotation</Term> · India, theme average of its NSE sectors, {B.session}<Src k={["S3"]} /></>} ix="06">
         <div className="two">
           <Diverge rows={themes.map((t) => ({ label: t.n, value: Math.round(t.avg * 100) / 100 }))} label={`Theme averages: ${themes.map((t) => `${t.n} ${pct(t.avg)}`).join(", ")}`} labelWidth={170} />
-          <ul className="list">
-            {themes.map((t) => <li key={t.n}><b>{t.n}</b> {t.s.map(([n, v]) => `${n} ${pct(v)}`).join(" · ")}</li>)}
-          </ul>
+          <More label="Sectors in each theme">
+            <ul className="list">
+              {themes.map((t) => <li key={t.n}><b>{t.n}</b> {t.s.map(([n, v]) => `${n} ${pct(v)}`).join(" · ")}</li>)}
+            </ul>
+          </More>
         </div>
       </Section>
 
@@ -144,11 +152,11 @@ export default function Flows() {
         <div className="pair">
           <div>
             <p className="cap">India<Src k={["S1", "S2", "S3"]} /></p>
-            <Diverge rows={B.secIndia.map(([label, value, to]) => ({ label, value, to }))} label={`NSE sector changes, ${B.session}`} />
+            <Diverge phoneRows={8} rows={B.secIndia.map(([label, value, to]) => ({ label, value, to }))} label={`NSE sector changes, ${B.session}`} />
           </div>
           <div>
             <p className="cap">United States<Src k={["S11"]} /></p>
-            <Diverge rows={B.secUS.map(([label, value]) => ({ label, value }))} label={`S&P 500 sector changes, ${B.session}`} />
+            <Diverge phoneRows={6} rows={B.secUS.map(([label, value]) => ({ label, value }))} label={`S&P 500 sector changes, ${B.session}`} />
           </div>
         </div>
       </Section>

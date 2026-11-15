@@ -31,7 +31,7 @@ export default function Global() {
       <Section title={<>The macro <S>backdrop</S></>} meta={<>Cross-asset, US close<Src k={["S11"]} /></>} ix="01">
         <div className="pair">
           <div>
-            <DataTable head={[["Measure"], ["Level", "r"], ["Change", "r"], ["For India"]]}
+            <DataTable stack head={[["Measure"], ["Level", "r"], ["Change", "r"], ["For India"]]}
               rows={B.macro.map(([m, v, d, head]) => [macroName(m), v, <Change key="c" v={d} />, head ? <Chip key="h" tone="loss">Headwind</Chip> : <span key="h" className="faint">n/a</span>])} />
           </div>
           <p className="note"><b>View: modest risk-off.</b> {B.macroView}</p>
@@ -40,7 +40,7 @@ export default function Global() {
 
       <Section title={<>US <S>sectors</S></>} meta={<>S&amp;P 500 sectors, % change<Src k={["S11"]} /></>} ix="02">
         <div className="two">
-          <Diverge rows={B.secUS.map(([label, value]) => ({ label, value }))} label={`S&P 500 sector changes, ${B.session}`} />
+          <Diverge phoneRows={6} rows={B.secUS.map(([label, value]) => ({ label, value }))} label={`S&P 500 sector changes, ${B.session}`} />
           <ul className="list">
             {B.usan.filter((r) => r[2]).map((r) => <li key={r[0]}><b>{r[0]} <Change v={r[1]} /></b> {r[2]}{r[3] && <> <span className="faint">· {r[3]}</span></>}</li>)}
           </ul>
@@ -51,7 +51,7 @@ export default function Global() {
         <div className="pair">
           <div>
             <h3 className="sub">After hours<Src k={["S11", "S12"]} /></h3>
-            <DataTable head={[["Ticker"], ["After hours", "r"], ["Reason"]]}
+            <DataTable stack head={[["Ticker"], ["After hours", "r"], ["Reason"]]}
               rows={B.usah.map((r) => [<b key="t">{r[0]}</b>, <Change key="c" v={r[1]} tone={r[2]} />, r[3]])} />
             <p className="bw-meta">No mega-cap after-hours move above ±1.5% was reported.</p>
           </div>

@@ -21,7 +21,9 @@ export function FlowLines({ dates, lines, notes = [], label }: { dates: string[]
   const all = lines.flatMap((s) => st.map(({ i }) => s.values[i]).filter((v): v is number => v != null));
   const lo = Math.min(0, ...all), hi = Math.max(0, ...all), span = hi - lo || 1;
   const n = st.length, X = (k: number) => l + (k / Math.max(1, n - 1)) * (W - l - r), Y = (v: number) => t + ((hi - v) / span) * (H - t - b);
-  const raw = span / 4, mag = 10 ** Math.floor(Math.log10(raw)), step = [1, 2, 5, 10].map((m) => m * mag).find((s) => s >= raw)!;
+  // Phones get fewer gridlines and half-yearly stations, so fewer marks compete on a narrow screen.
+  const STATIONS = phone ? ["06", "12"] : ["03", "06", "09", "12"];
+  const raw = span / (phone ? 3 : 4), mag = 10 ** Math.floor(Math.log10(raw)), step = [1, 2, 5, 10].map((m) => m * mag).find((s) => s >= raw)!;
   const grid: number[] = [];
   for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) grid.push(v);
   // Metro routing between stations: level first, then 45°, then straight down or up for any remainder.
@@ -33,7 +35,7 @@ export function FlowLines({ dates, lines, notes = [], label }: { dates: string[]
   const ends = lines.map((s, k) => { const j = st.findLastIndex(({ i }) => s.values[i] != null); const v = s.values[st[j].i]!; return { k, j, v, y: Y(v) }; }).sort((a, c) => a.y - c.y);
   for (let k = 1; k < ends.length; k++) if (ends[k].y - ends[k - 1].y < 30) ends[k].y = ends[k - 1].y + 30;
   const years = st.map(({ d }, k) => ({ d, k })).filter(({ d, k }) => k > 0 && d.slice(0, 4) !== st[k - 1].d.slice(0, 4));
-  const quarters = st.map(({ d }, k) => ({ d, k })).filter(({ d }) => ["03", "06", "09", "12"].includes(d.slice(5, 7)));
+  const quarters = st.map(({ d }, k) => ({ d, k })).filter(({ d }) => STATIONS.includes(d.slice(5, 7)));
   const nearest = (i: number) => { let best = 0; st.forEach((s, k) => { if (Math.abs(s.i - i) < Math.abs(st[best].i - i)) best = k; }); return best; };
   return (
     <div className="bw-plot" ref={ref}>
@@ -62,7 +64,7 @@ export function FlowLines({ dates, lines, notes = [], label }: { dates: string[]
           const pts = st.map(({ i }, k) => (s.values[i] == null ? null : ([X(k), Y(s.values[i]!)] as [number, number]))).filter((p): p is [number, number] => !!p);
           return <path key={s.name} d={route(pts)} className="bw-glowline" stroke={`var(--cat-${s.cat})`} filter="url(#metro-glow)" pathLength={1} style={{ strokeWidth: phone ? 2.2 : 3, "--d": `${li * 0.35}s` } as React.CSSProperties} />;
         })}
-        {lines.map((s) => st.map(({ d, i }, k) => (s.values[i] == null || !["03", "06", "09", "12"].includes(d.slice(5, 7)) ? null : (
+        {lines.map((s) => st.map(({ d, i }, k) => (s.values[i] == null || !STATIONS.includes(d.slice(5, 7)) ? null : (
           <circle key={s.name + d} cx={X(k)} cy={Y(s.values[i]!)} r={phone ? 2.5 : 3.2} className="bw-station pop" stroke={`var(--cat-${s.cat})`} />
         ))))}
         {(() => {

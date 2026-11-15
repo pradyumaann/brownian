@@ -27,6 +27,18 @@ export function usePlot(draw: (svg: SVGSVGElement, w: number) => void, deps: unk
   return { box, svg };
 }
 
+/** True on phone widths (the same 620px break as the layout). False on the server and until mounted. */
+export function usePhone(query = "(max-width: 620px)") {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const m = matchMedia(query), run = () => setOn(m.matches);
+    run();
+    m.addEventListener("change", run);
+    return () => m.removeEventListener("change", run);
+  }, [query]);
+  return on;
+}
+
 /** Container width for charts drawn as React SVG (0 until measured); the entrance plays when it scrolls into view. */
 export function useWidth<T extends HTMLElement>() {
   const ref = useRef<T>(null);

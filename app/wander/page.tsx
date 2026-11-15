@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { B } from "@/data";
 import { Chip } from "@/components/Chip";
 import { CountUp } from "@/components/CountUp";
+import { More } from "@/components/More";
 import { S, Section, ViewHead } from "@/components/Section";
 import { Src } from "@/components/Src";
 import { Term } from "@/components/Term";
@@ -90,7 +91,7 @@ export default function Wander() {
             <p className="bw-disclaimer after-plot">Interpretation, not a forecast.</p>
           </div>
         </div>
-        <div className="missing after-plot">{MISSING.map(([b, t]) => <div key={b}><b>{b}</b><span>{t}</span></div>)}</div>
+        <More label="What the brief does not cover" className="after-plot" bodyClassName="missing">{MISSING.map(([b, t]) => <div key={b}><b>{b}</b><span>{t}</span></div>)}</More>
       </Section>
 
       <Section title={<>The Wander Index over <S>time</S></>} meta={<>Daily reading, last {series.length} sessions with at least five scored components, with the Nifty 50 close<Src k={["D1"]} /></>} ix="02">
@@ -98,8 +99,10 @@ export default function Wander() {
           overlay={{ name: "Nifty 50", values: niftyOn(series.map((p) => p.date)) }} />
         <p className="note after-plot"><b>Beside the market.</b> {vsN.rBack != null ? <>Over these sessions the reading moved with the Nifty 50&apos;s previous {vsN.horizon} sessions (correlation {r2(vsN.rBack)}). Part of that is built in: momentum, trend and safe-haven demand are measured on the Nifty itself. </> : null}{vsN.rFwd != null ? <>Against the Nifty&apos;s following {vsN.horizon} sessions the correlation was {r2(vsN.rFwd)} ({vsN.nFwd} readings). </> : null}{vsN.greed.n || vsN.fear.n ? <>Average Nifty 50 move over the following {vsN.horizon} sessions: after extreme fear, {after(vsN.fear)}; after extreme greed, {after(vsN.greed)}; on all days, {after(vsN.all)}.</> : null}</p>
         <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Neighbouring days share most of their {vsN.horizon}-session windows, so these readings overlap and are far fewer independent observations than the count suggests; one period is not evidence of a lasting pattern.</p>
+        <More label="How it&apos;s built">
         <p className="note after-plot"><b>How it&apos;s built.</b> Each component is today&apos;s reading ranked against its own previous {METHOD.lookbackYears} years: a score of 70 means the reading was more greedy than on 70% of those days. It needs at least {METHOD.minDays} trading days of history and uses nothing after the day it scores. The structure follows published fear-and-greed indices (CNN Business, Tickertape&apos;s Market Mood Index); the value is Brownian&apos;s own reading, not theirs. <b>Method change:</b> the 13 Nov brief&apos;s first version scored six components against fixed reference levels and read 69; from 14 Nov 2026 every component is ranked against history, so today&apos;s figure differs.</p>
         <p className="bw-meta">Single days are noise; the bands show where the reading spends its time. Scores before November 2025 use fewer components, because options history starts later (see each component below).</p>
+        </More>
       </Section>
 
       <Section title={<>What each one <S>measures</S></>} meta="Today's reading, how it is scored, and the research behind it" ix="03">
@@ -119,7 +122,7 @@ export default function Wander() {
                 )}
                 <p className="note">{c.available ? c.read : c.reason}</p>
               </div>
-              <div className="stack">
+              <More label="How it is scored" bodyClassName="stack">
                 <dl className="kv">
                   <dt>Measures</dt><dd>{c.metric}</dd>
                   <dt>Today</dt><dd className="bw-mono">{c.value}<Src k={c.src} /></dd>
@@ -127,7 +130,7 @@ export default function Wander() {
                   <dt>History</dt><dd>{c.history ? `${c.history.toLocaleString("en-IN")} prior sessions` : "none yet"}{c.since ? `; scored since ${longDate(c.since)}` : ""}</dd>
                   <dt>Basis</dt><dd><Papers ids={c.papers} basis={c.basis} /></dd>
                 </dl>
-              </div>
+              </More>
             </div>
           ))}
         </div>

@@ -46,6 +46,48 @@ export function strandShape() {
   return { ...m, left, right, unit };
 }
 
+/** Calendar quarter of an ISO date: "2025-Q3". */
+const quarterOf = (d: string) => `${d.slice(0, 4)}-Q${Math.floor((Number(d.slice(5, 7)) - 1) / 3) + 1}`;
+const Q_MONTHS = ["Jan–Mar", "Apr–Jun", "Jul–Sep", "Oct–Dec"];
+
+/** Terrain by quarter: the sectors with the largest gross flows (sorted largest first) × the last eight whole
+ *  calendar quarters plus the current one to date. A cell is the sum of that quarter's NSDL fortnights; a quarter
+ *  with no fortnight reported for a sector stays null (n/a), never zero. Quarters missing a fortnight in the data
+ *  are flagged so the label can say so. */
+export function terrainQuarters(maxSectors = 12, whole = 8) {
+  const ends = fortnights(), gross = new Map<string, number>();
+  const qs = [...new Set(ends.map(quarterOf))];
+  // The latest quarter is "to date" unless its last month's second fortnight is in.
+  const lastEnd = ends.at(-1)!, lastQ = quarterOf(lastEnd), lastM = Number(lastEnd.slice(5, 7));
+  const partial = !(lastM % 3 === 0 && Number(lastEnd.slice(8)) > 15);
+  const keep = qs.slice(-(whole + (partial ? 1 : 0)));
+  const inKeep = new Set(keep);
+  const rs = rows().filter((r) => inKeep.has(quarterOf(r.date)));
+  for (const r of rs) gross.set(r.sector, (gross.get(r.sector) ?? 0) + Math.abs(r.net));
+  const top = [...gross.entries()].sort((a, b) => b[1] - a[1]).slice(0, maxSectors).map(([s]) => s);
+  const cell = new Map<string, number>();
+  for (const r of rs) { const k = quarterOf(r.date) + "|" + r.sector; cell.set(k, (cell.get(k) ?? 0) + r.net); }
+  const fnIn = (q: string) => ends.filter((d) => quarterOf(d) === q).length;
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const quarters = keep.map((q) => {
+    const [y, n] = [q.slice(0, 4), Number(q.slice(6))], toDate = q === lastQ && partial, f = fnIn(q);
+    return {
+      id: q,
+      label: toDate
+        ? `${Q_MONTHS[n - 1].slice(0, 3) === MONTHS[lastM - 1] ? MONTHS[lastM - 1] : `${Q_MONTHS[n - 1].slice(0, 3)}–${MONTHS[lastM - 1]}`} ${y}, to ${Number(lastEnd.slice(8))} ${MONTHS[lastM - 1]}`
+        : `${Q_MONTHS[n - 1]} ${y}`,
+      short: `Q${n} ${y.slice(2)}${toDate ? "*" : ""}`,
+      toDate, fortnights: f, gap: !toDate && f < 6,
+    };
+  });
+  const z = top.map((s) => keep.map((q) => cell.get(q + "|" + s) ?? null));
+  return {
+    sectors: top.map(short), quarters, z,
+    lastEnd,
+    totals: top.map((s, i) => ({ sector: short(s), net: z[i].reduce<number>((t, v) => t + (v ?? 0), 0), last: z[i].at(-1) ?? null })),
+  };
+}
+
 /** Terrain shape: the sectors with the largest gross flows, by fortnight. */
 export function terrainShape(maxSectors = 12) {
   const ends = fortnights(), gross = new Map<string, number>();
