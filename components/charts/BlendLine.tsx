@@ -18,7 +18,7 @@ export function BlendLine({ dates, mix, nifty, name }: {
   dates: string[]; mix: (number | null)[]; nifty: (number | null)[] | null; name: string;
 }) {
   const { ref, w } = useWidth<HTMLDivElement>();
-  const W = w || 640, phone = W < 480, H = phone ? 240 : 280, l = phone ? 34 : 40, r = 16, t = 14, b = 30;
+  const W = w || 640, phone = W < 480, H = phone ? 240 : 280, l = phone ? 38 : 44, r = 16, t = 14, b = 30;
   const n = dates.length;
   const lastI = mix.findLastIndex((v) => v != null);
   const [cursor, setCursor] = useState<number | null>(null);
@@ -39,7 +39,13 @@ export function BlendLine({ dates, mix, nifty, name }: {
     a.forEach((v, i) => { if (v == null) { pen = false; return; } d += `${pen ? "L" : "M"}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`; pen = true; });
     return d;
   };
-  const yTicks = niceTicks(dMin, dMax);
+  // Round ticks about a quarter of the range apart, so the scale reads without the readout (niceTicks alone can give just one).
+  let yTicks = niceTicks(dMin, dMax);
+  if (yTicks.length < 3 || yTicks.some((v) => !Number.isInteger(v))) {
+    const raw = (dMax - dMin) / 4, mag = 10 ** Math.floor(Math.log10(raw)), step = [1, 2, 5, 10].map((m) => m * mag).filter((s) => s <= raw).at(-1)!;
+    yTicks = [];
+    for (let v = Math.ceil(dMin / step) * step; v <= dMax; v += step) yTicks.push(Math.round(v * 100) / 100);
+  }
   // One tick at the first session of each quarter month (two a year on phones), never closer than 56px.
   const xTicks = dates.map((d, i) => ({ d, i })).filter(({ d, i }) => i > 0 && d.slice(5, 7) !== dates[i - 1].slice(5, 7) && (phone ? ["01", "07"] : ["01", "04", "07", "10"]).includes(d.slice(5, 7)))
     .filter((tk, k, all) => k === 0 || X(tk.i) - X(all[k - 1].i) >= 56);
@@ -90,6 +96,7 @@ export function BlendLine({ dates, mix, nifty, name }: {
           <rect key={dates[i]} x={X(i) - (W - l - r) / n * step / 2} y={t} width={Math.max(1, (W - l - r) / n * step)} height={H - t - b}
             fill="transparent" {...readoutAttrs(one(v), tipL(i))} />
         )))}
+        {at !== lastI && <circle cx={X(lastI)} cy={Y(endV)} r={4} className="bw-now" aria-hidden="true" />}
         {cv != null && (
           <circle ref={dot} cx={X(at)} cy={Y(cv)} r={4} className={at === lastI ? "bw-now" : "bl-cursor"} tabIndex={0}
             role="group" aria-label={`${name} and Nifty 50 by session. Arrow keys move one session, PageUp and PageDown twenty.`}

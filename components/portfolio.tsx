@@ -164,15 +164,18 @@ export function Watchlist() {
       {watch.length ? (
         <ul className="wl">
           {watch.map((n, i) => {
-            const d: StockNote | undefined = B.stocks[n];
+            // The same resolver reads the note and the date, so a stored alias spelling gets both or neither.
+            const key = resolve(n).hit ?? n;
+            const d: StockNote | undefined = B.stocks[key];
             const rd = resultFor(RESULTS, n, NAMES, B.aliases);
+            const srcs = rd.kind === "due" ? ["W1", "W2"] : rd.kind === "reports" ? ["W4", ...(/nvidia/i.test(key) ? ["W6"] : /home depot/i.test(key) ? ["W7"] : [])] : [];
             return (
               <li key={n} className="wrow">
                 <span className="nm">{n}{examples && <> <Chip>Example</Chip></>}</span>
-                <span className="mv">{d ? <WatchMove d={d} /> : <Chip>Not in brief</Chip>}</span>
+                <span className="mv">{d ? <WatchMove d={d} /> : <Chip>{rd.kind === "none" ? "Not in brief" : "Calendar only"}</Chip>}</span>
                 <span className="note">
-                  {d ? <>{d[2]} <span className="faint">· {d[3]}</span></> : <>Not mentioned in today&apos;s brief or results calendars. Its sector is on the <Link href="/flows/">Flow Map</Link>.</>}
-                  <span className={`rd${rd.kind === "none" ? " none" : ""}`}>{rd.text}{(rd.kind === "due" || rd.kind === "reports") && <Src k={rd.kind === "due" ? ["W1", "W2"] : ["W4", "W6", "W7"]} />}</span>
+                  {d ? <>{d[2]} <span className="faint">· {d[3]}</span></> : rd.kind !== "none" ? <>Named only in today&apos;s results calendars; the brief has no other note on it.</> : <>Not mentioned in today&apos;s brief or results calendars. Its sector is on the <Link href="/flows/">Flow Map</Link>.</>}
+                  <span className={`rd${rd.kind === "none" ? " none" : ""}`}>{rd.text}{srcs.length > 0 && <Src k={srcs} />}</span>
                 </span>
                 <button type="button" className="x" onClick={() => remove(i)} aria-label={`Remove ${n}`}>
                   <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>

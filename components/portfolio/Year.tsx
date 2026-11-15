@@ -62,7 +62,7 @@ export function Year({ w, series, example }: { w: Weights; series: PortfolioSeri
               ["Volatility, annualised", vol(mixVol), vol(nVol)],
               ["Largest fall from a peak", dd(mixDd), dd(nDd)],
               ["Worst single day", wd(mixWd), wd(nWd)],
-            ].map(([l, a, b]) => [l, <span key="a" className="nv">{a}</span>, <span key="b" className="nv">{b}</span>])} />
+            ].map(([l, a, b]) => [l, <span key="a" className="nv"><span className="lbl">{name} </span>{a}</span>, <span key="b" className="nv">{b}</span>])} />
         </div>
         <p className="bw-source">Volatility = sample standard deviation of the daily changes × √250. Largest fall = the deepest drop below a running peak<Src k={srcs} /></p>
       </More>
