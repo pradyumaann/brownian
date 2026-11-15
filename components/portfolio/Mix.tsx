@@ -24,7 +24,7 @@ function Stepper({ id, name, value, onStep, onZero }: { id: string; name: string
 }
 
 const NOTE: Record<Mode, string> = {
-  example: "Example mix. Weights you set stay on this device.",
+  example: "Weights you set stay on this device.",
   migrated: "Carried over from your earlier picks as equal weights. Change any weight to save it on this device.",
   saved: "Saved on this device only. Nothing is sent anywhere.",
 };
