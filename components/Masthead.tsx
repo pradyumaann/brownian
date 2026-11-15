@@ -5,9 +5,10 @@ import { Freshness } from "./Freshness";
 import { ThemeToggle } from "./ThemeToggle";
 
 const DAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-// Teal, violet, rose, orange, gold: the order and colours of the header design (Correction folder, 14 Nov 2026).
-const FILL = ["var(--cat-1)", "var(--spec-2)", "var(--spec-3)", "var(--spec-4)", "var(--spec-5)"];
-const INK = ["var(--on-dawn)", "var(--plot-ink)", "var(--on-dawn)", "var(--on-dawn)", "var(--on-dawn)"];
+// Cyan, periwinkle, magenta, tangerine, lime on Night; deeper values of each on Paper (--mast-1…5). At rest each bar
+// takes one colour; with motion allowed the colours roll through the bars (bw-mast-hue). One ink reads on all five.
+const FILL = ["var(--mast-1)", "var(--mast-2)", "var(--mast-3)", "var(--mast-4)", "var(--mast-5)"];
+const INK = "var(--mast-on)";
 
 export interface MastProps {
   /** The Wander Index for the last five sessions (ISO date, 0–100). */
@@ -76,8 +77,8 @@ function Bars({ bars }: { bars: MastProps["bars"] }) {
         return (
           <g key={b.date} className="mast-bar" style={{ "--i": i } as React.CSSProperties} tabIndex={0} data-tip-v={`${Math.round(b.score)}`} data-tip-l={`Wander Index · ${dow(b.date)} ${Number(b.date.slice(8))}`}>
             <rect x={i * bw} y={H - h} width={bw} height={h} fill={FILL[i]} />
-            <text x={i * bw + 10} y={H - h + 20} className="mast-val" fill={INK[i]}>{Math.round(b.score)}</text>
-            <text x={i * bw + 10} y={H - 8} className="mast-day" fill={INK[i]}>{dow(b.date)} {Number(b.date.slice(8))}</text>
+            <text x={i * bw + 10} y={H - h + 20} className="mast-val" fill={INK}>{Math.round(b.score)}</text>
+            <text x={i * bw + 10} y={H - 8} className="mast-day" fill={INK}>{dow(b.date)} {Number(b.date.slice(8))}</text>
           </g>
         );
       })}

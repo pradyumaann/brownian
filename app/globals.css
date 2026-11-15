@@ -368,7 +368,12 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
   /* Segment meters and the masthead light up on load. */
   .segmeter i.is-lit { animation: bw-light .5s ease-out calc(var(--i) * 24ms) backwards; }
   .minibars rect { transform-box: fill-box; transform-origin: center bottom; animation: bw-grow-y .6s ease-out backwards; }
-  .mast-bar rect { animation-delay: calc(var(--i) * 90ms); }
+  /* Each bar grows once, then its colour rolls through the five header colours, a fifth of a lap behind its neighbour. */
+  .mast-bar rect { animation: bw-grow-y .6s ease-out calc(var(--i) * 90ms) backwards, bw-mast-hue 30s linear calc(var(--i) * -6s) infinite; }
+  @keyframes bw-mast-hue {
+    0%, 100% { fill: var(--mast-1); } 20% { fill: var(--mast-2); } 40% { fill: var(--mast-3); }
+    60% { fill: var(--mast-4); } 80% { fill: var(--mast-5); }
+  }
   .mast-bar text { animation: bw-fade .5s ease-out calc(var(--i) * 90ms + 450ms) backwards; }
   .mast-plus { animation: bw-fade .6s ease-out calc(var(--i) * 40ms) backwards, bw-twinkle 6s ease-in-out calc(var(--i) * -0.7s) infinite; }
   /* The dawn dot that marks "now" breathes slowly. */
@@ -387,13 +392,10 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
 
 /* ---- Brownian header ----------------------------------------------------------------------------------------
    Markets, Overnight carries the full header from the device showcase: day line, wordmark and tagline,
-   with the Wander Index's last five sessions beside it on wider screens. It is the one dark window
-   (the Brownian Header design), whatever the theme, so it carries its own night values. Other views get a compact
-   bar in the page's own colours. */
-.mast { position: relative; margin-top: var(--space-4); overflow: hidden; background: var(--plot); color: var(--plot-ink); border: 1px solid var(--hairline);
-  --plot: #050607; --plot-ink: #ece9e2; --plot-muted: #8c9097; --plot-grid: #ffffff14; --cat-1: #3fd8c6; --spec-2: #9a2b8c; --spec-3: #df4662; --spec-4: #f7823b; --spec-5: #fbc34c;
-  --ink: #f3f1ec; --ink-muted: #a4a7ad; --ink-faint: #80848c; --hairline: #ffffff1f; --hairline-strong: #ffffff3d; --surface-raised: #16191d; --ground: #07080a; --dawn-ink: #ffb547; --focus: #ffb547; --on-dawn: #1a1206;
-  color-scheme: dark; }
+   with the Wander Index's last five sessions beside it on wider screens. It follows the theme like every other
+   window: the page's own colour on Night and on Paper. The bars use the --mast-* colours, which roll through
+   each bar slowly (see the motion block). Other views get a compact bar in the page's own colours. */
+.mast { position: relative; margin-top: var(--space-4); overflow: hidden; background: var(--plot); color: var(--plot-ink); border: 1px solid var(--hairline); }
 .mast-top { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-8); border-bottom: 1px solid var(--hairline); }
 .mast-day-line { display: flex; flex-wrap: wrap; gap: 2px var(--space-2); margin: 0; font: 400 12px/1.5 var(--font-mono); color: var(--ink-faint); letter-spacing: .02em; }
 .mast-day-line .live { color: var(--dawn-ink); }
