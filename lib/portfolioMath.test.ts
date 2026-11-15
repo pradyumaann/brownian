@@ -1,7 +1,7 @@
 // Run with: npm run test:portfolio  (node --test, Node 24 strips the types)
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { blend, concentration, equalWeights, exposure, fmtBp, fmtPct, normalise, stepWeight, weightedRank, type MoveFact } from "./portfolioMath.ts";
+import { blend, blendSeries, changeOver, concentration, levelsOf, maxDrawdown, volatility, worstDay, equalWeights, exposure, fmtBp, fmtPct, normalise, stepWeight, weightedRank, type MoveFact } from "./portfolioMath.ts";
 
 const facts: MoveFact[] = [
   { id: "index", n: "Index", d1: 1 }, { id: "fin", n: "Fin", d1: 2 }, { id: "mid", n: "Mid", d1: -1 },
@@ -123,4 +123,85 @@ test("stepping moves 5% at a time and stays within 0 to 100", () => {
   assert.deepEqual(stepWeight({ gold: 5 }, "gold", -1), {});
   assert.deepEqual(stepWeight({}, "gold", -1), {});
   assert.deepEqual(stepWeight({ gold: 100 }, "gold", 1), { gold: 100 });
+});
+
+// ---- blend history ----
+const D = (n: number) => Array.from({ length: n }, (_, i) => `2026-01-${String(i + 1).padStart(2, "0")}`);
+const ser = (...r: number[]) => [null, ...r];
+
+test("blend history: equal weights give the plain average of the daily changes, compounded and rebased to 100", () => {
+  const types = { index: ser(1, 2), fin: ser(3, -2) };
+  const b = blendSeries({ index: 50, fin: 50 }, types)!;
+  assert.deepEqual(b.used.map((u) => u.id), ["index", "fin"]);
+  near(b.covered, 100);
+  assert.equal(b.returns[0], null);
+  near(b.returns[1], 2);
+  near(b.returns[2], 0);
+  near(b.levels[0], 100);
+  near(b.levels[1], 102);
+  near(b.levels[2], 102);
+});
+
+test("blend history: partial weights are re-weighted among the covered types and Unallocated adds nothing", () => {
+  const types = { index: ser(1), fin: ser(3) };
+  const b = blendSeries({ index: 20, fin: 20 }, types)!;     // 60% unallocated
+  near(b.covered, 40);
+  near(b.returns[1], 2);                                     // (20×1 + 20×3) ÷ 40
+});
+
+test("blend history: a type with no series is left out and named; the rest is re-weighted to 100%", () => {
+  const b = blendSeries({ index: 30, silver: 40, debt: 30 }, { index: ser(2) })!;
+  assert.deepEqual(b.left.map((l) => l.id), ["silver", "debt"]);
+  near(b.left[0].share, 40);
+  near(b.covered, 30);
+  near(b.returns[1], 2);
+});
+
+test("blend history: nothing covered gives null (silver and debt only, or an empty mix)", () => {
+  assert.equal(blendSeries({ silver: 50, debt: 50 }, { index: ser(1) }), null);
+  assert.equal(blendSeries({}, { index: ser(1) }), null);
+});
+
+test("blend history: weights over 100% are scaled first, so 80 + 80 equals 50 + 50", () => {
+  const types = { index: ser(1), fin: ser(3) };
+  near(blendSeries({ index: 80, fin: 80 }, types)!.returns[1]!, blendSeries({ index: 50, fin: 50 }, types)!.returns[1]!);
+});
+
+test("blend history: a missing change gives no blended change that day and stops the line, with nothing filled in", () => {
+  const b = blendSeries({ index: 50, fin: 50 }, { index: [null, 1, 1, 1], fin: [null, 1, null, 1] })!;
+  near(b.returns[1], 1);
+  assert.equal(b.returns[2], null);
+  assert.deepEqual(b.levels.map((x) => x == null), [false, false, true, true]);
+});
+
+test("a flat series: zero change, zero volatility, no drawdown", () => {
+  const flat = [null, ...Array(30).fill(0)];
+  const lv = levelsOf(flat);
+  near(changeOver(lv), 0);
+  near(volatility(flat), 0);
+  const dd = maxDrawdown(lv, D(31))!;
+  near(dd.value, 0);
+  assert.equal(dd.peak, null);
+});
+
+test("volatility is the sample standard deviation (n − 1) times √250 and needs at least 20 changes", () => {
+  const r = [null, ...Array.from({ length: 24 }, (_, i) => (i % 2 ? 1 : -1))];     // 24 changes of ±1: mean 0
+  near(volatility(r), Math.sqrt(24 / 23) * Math.sqrt(250));
+  assert.equal(volatility([null, 1, 2, 3]), null);
+});
+
+test("drawdown on a known path: peak, trough and depth", () => {
+  const lv = [100, 110, 121, 90.75, 99.825, 80.6, 130];
+  const dd = maxDrawdown(lv, D(7))!;
+  near(dd.value, (80.6 / 121 - 1) * 100);
+  assert.equal(dd.peak, "2026-01-03");
+  assert.equal(dd.trough, "2026-01-06");
+  assert.equal(maxDrawdown([null, 100], D(2)), null);
+});
+
+test("worst day: the lowest daily change and its date; none when there are no changes", () => {
+  const w = worstDay([null, 1, -3.2, 0.5, -1], D(5))!;
+  near(w.value, -3.2);
+  assert.equal(w.date, "2026-01-03");
+  assert.equal(worstDay([null, null], D(2)), null);
 });

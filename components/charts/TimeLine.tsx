@@ -10,8 +10,9 @@ export interface Band { from: number; to: number; name: string }
 export interface Overlay { name: string; values: (number | null)[] }
 
 const inr = (v: number) => Math.round(v).toLocaleString("en-IN");
-/** Three or four round ticks covering [lo, hi]. */
-function niceTicks(lo: number, hi: number): number[] {
+/** Three or four round ticks covering [lo, hi]. A zero or reversed range gives the one value, never an endless loop. */
+export function niceTicks(lo: number, hi: number): number[] {
+  if (!(hi > lo)) return [lo];
   const raw = (hi - lo) / 3, mag = 10 ** Math.floor(Math.log10(raw)), step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw)!;
   const out: number[] = [];
   for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) out.push(v);

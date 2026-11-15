@@ -140,3 +140,100 @@ export function concentration(w: Weights): Concentration {
     topTwo: items.length > 1 ? (items[0].s + items[1].s) * 100 : 100, hhi, equivalent: eq, words,
   };
 }
+
+// ---- Your mix over the year (blend history) -------------------------------------------------------------------------
+// The server (lib/portfolioSeries.ts) sends each type's daily % change for the last SESSIONS sessions; everything below
+// is arithmetic on those and the viewer's weights. A day on which any covered type has no change gives no blended change
+// and the line stops there: nothing is filled in, and nothing is compounded across a gap.
+
+/** Sessions in the window: SESSIONS closes, so SESSIONS − 1 daily changes (the first session is the base, rebased to 100). */
+export const SESSIONS = 250;
+/** Trading days per year, used to annualise a daily standard deviation. */
+export const ANNUAL = 250;
+
+/** Daily % changes aligned to `dates`; index 0 is the base session and carries no change (null). A type is absent when it
+ *  has no series (silver, debt) or has a missing day inside the window. */
+export interface ReturnSeries { dates: string[]; types: Record<string, (number | null)[]>; nifty: (number | null)[] }
+
+export interface BlendHistory {
+  /** Types in the mix that have a series, with their share of the whole mix in %. */
+  used: { id: string; share: number }[];
+  /** Types in the mix with no series, with their share of the whole mix in %. */
+  left: { id: string; share: number }[];
+  /** Share of the whole mix covered by `used`, in %. */
+  covered: number;
+  /** Daily % change of the covered part, each type re-weighted to 100% among the covered types. */
+  returns: (number | null)[];
+  /** The same, compounded and rebased to 100 on the first session. */
+  levels: (number | null)[];
+}
+
+/** Daily % changes compounded and rebased to 100 on the first session. A missing change stops the line: later days are null. */
+export function levelsOf(returns: (number | null)[]): (number | null)[] {
+  const out: (number | null)[] = [];
+  returns.forEach((r, i) => {
+    if (i === 0) { out.push(100); return; }
+    const prev = out[i - 1];
+    out.push(prev == null || r == null ? null : prev * (1 + r / 100));
+  });
+  return out;
+}
+
+/** The mix's daily change = Σ (share ÷ covered share) × the type's daily change, weights held constant each day. Types with
+ *  no series are left out and named. Null when no weighted type has a series. */
+export function blendSeries(w: Weights, types: Record<string, (number | null)[]>): BlendHistory | null {
+  const nm = normalise(w);
+  const weighted = HOLDING_IDS.filter((id) => nm.shares[id] > 0).map((id) => ({ id, share: nm.shares[id] }));
+  const used = weighted.filter((r) => types[r.id]), left = weighted.filter((r) => !types[r.id]);
+  const covered = used.reduce((s, r) => s + r.share, 0);
+  if (!used.length) return null;
+  const n = types[used[0].id].length;
+  const returns = Array.from({ length: n }, (_, i) => {
+    if (i === 0) return null;
+    let sum = 0;
+    for (const r of used) { const v = types[r.id][i]; if (v == null) return null; sum += (r.share / covered) * v; }
+    return sum;
+  });
+  return { used, left, covered, returns, levels: levelsOf(returns) };
+}
+
+/** Change from the first to the last level, in %. Null when either end is missing. */
+export function changeOver(levels: (number | null)[]): number | null {
+  const a = levels[0], b = levels.at(-1);
+  return a == null || b == null ? null : (b / a - 1) * 100;
+}
+
+/** Annualised volatility in %: the sample standard deviation (n − 1) of the daily % changes times √250. Null under 20 changes. */
+export function volatility(returns: (number | null)[]): number | null {
+  const v = returns.filter((x): x is number => x != null);
+  if (v.length < 20) return null;
+  const mean = v.reduce((s, x) => s + x, 0) / v.length;
+  const variance = v.reduce((s, x) => s + (x - mean) ** 2, 0) / (v.length - 1);
+  return Math.sqrt(variance) * Math.sqrt(ANNUAL);
+}
+
+export interface Drawdown { value: number; peak: string | null; trough: string | null }
+/** Largest fall from a running peak, in % (0 or negative), with the dates of that peak and its lowest point. The scan stops
+ *  at the first missing level. A series that never falls gives 0 with no dates. */
+export function maxDrawdown(levels: (number | null)[], dates: string[]): Drawdown | null {
+  if (levels[0] == null) return null;
+  let peak = levels[0]!, peakI = 0, best = 0, bp = -1, bt = -1;
+  for (let i = 0; i < levels.length; i++) {
+    const v = levels[i];
+    if (v == null) break;
+    if (v > peak) { peak = v; peakI = i; }
+    const dd = (v / peak - 1) * 100;
+    if (dd < best) { best = dd; bp = peakI; bt = i; }
+  }
+  return { value: best, peak: bp < 0 ? null : dates[bp], trough: bt < 0 ? null : dates[bt] };
+}
+
+/** The lowest single-day change in %, with its date. Null when there is no change. */
+export function worstDay(returns: (number | null)[], dates: string[]): { value: number; date: string } | null {
+  let best: { value: number; date: string } | null = null;
+  for (let i = 0; i < returns.length; i++) {
+    const r = returns[i];
+    if (r != null && (best == null || r < best.value)) best = { value: r, date: dates[i] };
+  }
+  return best;
+}
