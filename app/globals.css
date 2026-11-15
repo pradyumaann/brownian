@@ -509,6 +509,8 @@ ul.list.list-cont { border-top: 0; }
 }
 .t3d-col.is-on polygon { stroke: var(--plot-ink); stroke-width: 1.2px; }
 .t3d-on { fill: var(--plot-dawn); }
+.t3d-leader { fill: none; stroke: var(--plot-muted); stroke-width: var(--stroke-hair); opacity: .7; }
+.t3d-lab.is-on .t3d-leader { stroke: var(--plot-dawn); opacity: 1; }
 :root[data-theme="paper"] .t3d-cols { filter: none; }
 @media (prefers-color-scheme: light) { :root:not([data-theme="night"]) .t3d-cols { filter: none; } }
 .t3d-bar { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3) var(--space-6); flex-wrap: wrap; margin-top: var(--space-3); }

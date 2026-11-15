@@ -52,22 +52,43 @@ export function Terrain({ sectors, quarters, z, label, phoneSectors = 8 }: {
   const S = sectors.slice(0, ns), Z = z.slice(0, ns);
   const all = Z.flat().filter((v): v is number => v != null);
   const max = Math.max(1, ...all.map(Math.abs));
-  const W = w || 720, H = phone ? 340 : 540;
-  const side = phone ? 44 : 120, top = 14, bottom = 24;
+  const W = w || 720;
+  // Sector names sit in their own column at the right edge, each on a leader line from its row, so they never
+  // overlap each other or the columns, at any angle. The terrain is fitted to the rest of the panel.
+  const LW = phone ? 110 : 150, pad = 8, top = 12, bottom = 26;
   const { yaw, pitch, zoom } = view;
-  const cy = Math.cos(rad(yaw)), sy = Math.sin(rad(yaw)), cp = Math.cos(rad(pitch)), sp = Math.sin(rad(pitch));
   const HZ = Math.max(nq, ns) * 0.46; // world height of the largest column
-  // Fit a footprint circle (so turning never changes the scale), plus the tallest column up and down. On a phone
-  // the sector names may sit over the floor's edge; they keep a halo in the plot colour, so they stay legible.
-  const R = Math.hypot(nq / 2, ns / 2), hiZ = Math.max(0, ...all) / max * HZ, loZ = Math.min(0, ...all) / max * HZ;
-  const k = Math.min((W - side * 2) / (2 * R), (H - top - bottom) / (2 * R * sp + (hiZ - loZ) * cp)) * zoom;
-  const ox = W / 2, oy = top + (H - top - bottom) / 2 + (k * (hiZ + loZ) * cp) / 2;
-  // World: x along quarters (oldest at left), y along sectors (largest at the front), z up.
-  const P = (x: number, y: number, h: number) => {
-    const xr = x * cy - y * sy, yr = x * sy + y * cy;
-    return [ox + xr * k, oy + (yr * sp - h * cp) * k, yr * cp + h * sp] as const;
-  };
   const wx = (q: number) => q - (nq - 1) / 2, wy = (s: number) => (ns - 1) / 2 - s;
+  // Unscaled projection for a view: screen x, screen y (down), depth (toward the viewer).
+  const proj = (yw: number, pc: number) => {
+    const cy = Math.cos(rad(yw)), sy = Math.sin(rad(yw)), cp = Math.cos(rad(pc)), sp = Math.sin(rad(pc));
+    return { cy, sy, U: (x: number, y: number, h: number) => { const xr = x * cy - y * sy, yr = x * sy + y * cy; return [xr, yr * sp - h * cp, yr * cp + h * sp] as const; } };
+  };
+  // Projected bounds (floor, every column at full height, the quarter-label line) for a view.
+  const bounds = (yw: number, pc: number) => {
+    const { cy, U } = proj(yw, pc), ye = cy >= 0 ? 1 : -1;
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    const add = (p: readonly [number, number, number]) => { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); };
+    for (const [a, b] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) add(U((a * nq) / 2, (b * ns) / 2, 0));
+    Z.forEach((row, s) => row.forEach((v, q) => { if (v != null) add(U(wx(q), wy(s), (v / max) * HZ)); }));
+    quarters.forEach((_, q) => add(U(wx(q), ye * (ns / 2 + 0.9), 0)));
+    return { x0, x1, y0, y1 };
+  };
+  const aw = W - LW - pad * 2;
+  // The panel is as tall as the default view needs at this width (within limits), so no band stays empty;
+  // turned views are fitted inside that same panel.
+  const d0 = bounds(YAW, PITCH), H = Math.round(Math.min(phone ? 360 : 540, Math.max(phone ? 220 : 380, (d0.y1 - d0.y0) * (aw / (d0.x1 - d0.x0 || 1)) + top + bottom)));
+  const ah = H - top - bottom;
+  const { cy, sy, U } = proj(yaw, pitch);
+  const xe = cy >= 0 ? 1 : -1;           // the quarter-axis end that projects further right takes the leaders
+  const ye = cy >= 0 ? 1 : -1;           // the sector-axis edge nearer the viewer takes the quarter labels
+  const { x0, x1, y0, y1 } = bounds(yaw, pitch);
+  const k = Math.min(aw / (x1 - x0 || 1), ah / (y1 - y0 || 1)) * zoom;
+  // Where the terrain leaves width spare, the terrain and its label column are centred together, so leaders stay short.
+  const ox0 = pad + aw / 2 - ((x0 + x1) / 2) * k, oy = top + ah / 2 - ((y0 + y1) / 2) * k;
+  const shift = Math.max(0, (W - LW + 4 - (ox0 + x1 * k + 28)) / 2), ox = ox0 + shift;
+  const lx = Math.min(W - LW + 4, ox + x1 * k + 28);
+  const P = (x: number, y: number, h: number) => { const u = U(x, y, h); return [ox + u[0] * k, oy + u[1] * k, u[2]] as const; };
   const pt = (p: readonly [number, number, number]) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`;
 
   const fillOf = (v: number) => {
@@ -82,15 +103,12 @@ export function Terrain({ sectors, quarters, z, label, phoneSectors = 8 }: {
   cols.sort((a, b) => a.depth - b.depth);
   const faces = [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([nx, ny]) => nx * sy + ny * cy > 0.001);
 
-  // Labels: sectors beside the floor edge that sits further right on screen; quarters along the nearer floor edge.
-  const xe = P(nq / 2 + 0.1, 0, 0)[0] > P(-nq / 2 - 0.1, 0, 0)[0] ? 1 : -1;
-  const ye = P(0, ns / 2, 0)[1] > P(0, -ns / 2, 0)[1] ? 1 : -1;
-  const sLab: { s: number; x: number; y: number; end: boolean }[] = [];
-  S.forEach((_, s) => {
-    const p = P(xe * (nq / 2 + 0.25), wy(s), 0), end = p[0] < ox;
-    if (sLab.length && Math.abs(p[1] - sLab.at(-1)!.y) < (phone ? 12 : 13) && Math.abs(p[0] - sLab.at(-1)!.x) < 60) return;
-    sLab.push({ s, x: p[0] + (end ? -6 : 6), y: p[1] + 3, end });
-  });
+  // Sector labels: anchored at each row's right-hand end, then spread down the edge column at least `gap` apart
+  // (in row order where possible), pushed back up if they run off the bottom.
+  const gap = phone ? 14 : 16, minY = top + 8, maxY = H - bottom - 2;
+  const sLab = S.map((_, s) => { const a = P(xe * (nq / 2 + 0.1), wy(s), 0); return { s, ax: a[0], ay: a[1], y: a[1] + 3 }; }).sort((a, b) => a.ay - b.ay);
+  sLab.forEach((l, i) => { l.y = Math.max(l.y, minY, i ? sLab[i - 1].y + gap : minY); });
+  for (let i = sLab.length - 1; i >= 0; i--) sLab[i].y = Math.min(sLab[i].y, i === sLab.length - 1 ? maxY : sLab[i + 1].y - gap);
   const qLab: { q: number; x: number; y: number }[] = [];
   quarters.forEach((_, q) => {
     const p = P(wx(q), ye * (ns / 2 + 0.9), 0);
@@ -101,7 +119,7 @@ export function Terrain({ sectors, quarters, z, label, phoneSectors = 8 }: {
   const lw = (t: string, px: number) => t.length * px * 0.56;
   const inX = (x: number, t: string, anchor: "start" | "end" | "middle", px: number) => {
     const wd = lw(t, px), x0 = anchor === "start" ? x : anchor === "end" ? x - wd : x - wd / 2;
-    return x + (Math.max(4, Math.min(W - 4 - wd, x0)) - x0);
+    return x + (Math.max(4, Math.min(W - LW - wd, x0)) - x0);
   };
 
   const cur = sel && Z[sel.s] ? { ...sel, v: Z[sel.s][sel.q] } : null;
@@ -211,8 +229,11 @@ export function Terrain({ sectors, quarters, z, label, phoneSectors = 8 }: {
               );
             })}
           </g>
-          {sLab.map(({ s, x, y, end }) => (
-            <text key={s} x={inX(x, S[s], end ? "end" : "start", 11)} y={y} textAnchor={end ? "end" : "start"} className={cur?.s === s ? "bw-label t3d-on" : "bw-label"}>{S[s]}</text>
+          {sLab.map(({ s, ax, ay, y }) => (
+            <g key={s} className={cur?.s === s ? "t3d-lab is-on" : "t3d-lab"}>
+              <path d={`M${ax.toFixed(1)} ${ay.toFixed(1)}L${(lx - 10).toFixed(1)} ${(y - 3).toFixed(1)}H${(lx - 4).toFixed(1)}`} className="t3d-leader" />
+              <text x={lx} y={y} className={cur?.s === s ? "bw-label t3d-on" : "bw-label"}>{S[s]}</text>
+            </g>
           ))}
           {qLab.map(({ q, x, y }) => (
             <text key={q} x={inX(x, quarters[q].short, "middle", 10)} y={Math.min(H - 6, y)} textAnchor="middle" className={cur?.q === q ? "bw-tick t3d-on" : "bw-tick"}>{quarters[q].short}</text>

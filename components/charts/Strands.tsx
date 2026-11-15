@@ -37,7 +37,10 @@ function useFocusThreads(svg: React.RefObject<SVGSVGElement | null>) {
       root.classList.toggle("has-focus", !!g);
       g?.classList.add("is-focus");
     };
-    const off = () => { const root = s.querySelector(".bw-strands"); root?.classList.remove("has-focus"); root?.querySelectorAll(".is-focus").forEach((n) => n.classList.remove("is-focus")); };
+    const off = (e: Event) => {
+      // Leaving with the mouse keeps the highlight of a thread that has keyboard focus.
+      if (e.type === "pointerleave" && (document.activeElement as Element | null)?.closest?.("[data-link]") && s.contains(document.activeElement)) { on({ target: document.activeElement } as unknown as Event); return; }
+      const root = s.querySelector(".bw-strands"); root?.classList.remove("has-focus"); root?.querySelectorAll(".is-focus").forEach((n) => n.classList.remove("is-focus")); };
     s.addEventListener("pointerover", on); s.addEventListener("focusin", on);
     s.addEventListener("pointerleave", off); s.addEventListener("focusout", off);
     return () => { s.removeEventListener("pointerover", on); s.removeEventListener("focusin", on); s.removeEventListener("pointerleave", off); s.removeEventListener("focusout", off); };
