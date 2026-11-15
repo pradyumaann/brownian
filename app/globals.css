@@ -316,7 +316,9 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
 @media (max-width: 620px) { .duo .score .n { font-size: 44px; } .duo .score .w { font-size: 18px; } }
 
 /* Brownian header: the full header on Markets, Overnight (see the masthead block at the end) */
-.mast-plus { stroke: var(--plot-muted); stroke-width: 1; fill: none; opacity: .75; }
+.mast-field { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; pointer-events: none; }
+.mast-top, .mast-body { position: relative; z-index: 1; }
+.mast-plus { stroke: var(--plot-muted); stroke-width: 1; fill: none; opacity: .6; transform-box: fill-box; transform-origin: center; }
 .mast-val { font: 500 13px var(--font-mono); font-variant-numeric: tabular-nums; }
 .mast-day { font: 400 10px var(--font-mono); letter-spacing: .02em; }
 .mast-bar:focus-visible rect { stroke: var(--focus); stroke-width: 2; }
@@ -374,8 +376,20 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
     0%, 100% { fill: var(--mast-1); } 20% { fill: var(--mast-2); } 40% { fill: var(--mast-3); }
     60% { fill: var(--mast-4); } 80% { fill: var(--mast-5); }
   }
-  .mast-bar text { animation: bw-fade .5s ease-out calc(var(--i) * 90ms + 450ms) backwards; }
-  .mast-plus { animation: bw-fade .6s ease-out calc(var(--i) * 40ms) backwards, bw-twinkle 6s ease-in-out calc(var(--i) * -0.7s) infinite; }
+  /* The text colour follows the fill on the same clock, but it switches (it never blends: a blend of dark and light
+     text is grey, which reads on nothing), halfway through each colour change. */
+  @keyframes bw-mast-ink {
+    0%  { fill: var(--mast-ink-1); animation-timing-function: step-end; }
+    10% { fill: var(--mast-ink-2); animation-timing-function: step-end; }
+    30% { fill: var(--mast-ink-3); animation-timing-function: step-end; }
+    50% { fill: var(--mast-ink-4); animation-timing-function: step-end; }
+    70% { fill: var(--mast-ink-5); animation-timing-function: step-end; }
+    90%, 100% { fill: var(--mast-ink-1); }
+  }
+  .mast-bar text { animation: bw-fade .5s ease-out calc(var(--i) * 90ms + 450ms) backwards, bw-mast-ink 30s linear calc(var(--i) * -6s) infinite; }
+  /* The plus marks: each one shrinks to a speck and grows back, out of step with its neighbours. */
+  .mast-plus { animation: bw-fade .6s ease-out calc(var(--i) * 40ms) backwards, bw-plus-pulse 5s ease-in-out calc(var(--i) * -0.55s) infinite; }
+  @keyframes bw-plus-pulse { 0%, 100% { transform: scale(1); opacity: .6; } 50% { transform: scale(.15); opacity: .25; } }
   /* The dawn dot that marks "now" breathes slowly. */
   .bw-now { animation: bw-breathe 3.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
   @keyframes bw-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }

@@ -55,17 +55,16 @@
   --neon-5: #ffe048;
   --neon-6: #fffaf0;
 
-  --mast-1: #22e3ff;
-
-  --mast-2: #7f8bff;
-
-  --mast-3: #ff4fd0;
-
-  --mast-4: #ff8a4c;
-
-  --mast-5: #c8f542;
-
-  --mast-on: #07080a;
+  --mast-1: #3fd8c6;
+  --mast-2: #9a2b8c;
+  --mast-3: #df4662;
+  --mast-4: #f7823b;
+  --mast-5: #fbc34c;
+  --mast-ink-1: #1a1206;
+  --mast-ink-2: #ece9e2;
+  --mast-ink-3: #1a1206;
+  --mast-ink-4: #1a1206;
+  --mast-ink-5: #1a1206;
   color-scheme: dark;
 }
 [data-theme="paper"] {
@@ -120,17 +119,16 @@
   --neon-5: #8a6200;
   --neon-6: #2a1f08;
 
-  --mast-1: #0a7d96;
-
-  --mast-2: #4b46d9;
-
-  --mast-3: #bf1a8f;
-
-  --mast-4: #c24a12;
-
-  --mast-5: #5a7a00;
-
-  --mast-on: #ffffff;
+  --mast-1: #00a3ff;
+  --mast-2: #8a2bff;
+  --mast-3: #ff2d8a;
+  --mast-4: #ff6a00;
+  --mast-5: #00c853;
+  --mast-ink-1: #111214;
+  --mast-ink-2: #ffffff;
+  --mast-ink-3: #111214;
+  --mast-ink-4: #111214;
+  --mast-ink-5: #111214;
   color-scheme: light;
 }
 @media (prefers-color-scheme: light) {
@@ -186,17 +184,16 @@
     --neon-5: #8a6200;
     --neon-6: #2a1f08;
 
-    --mast-1: #0a7d96;
-
-    --mast-2: #4b46d9;
-
-    --mast-3: #bf1a8f;
-
-    --mast-4: #c24a12;
-
-    --mast-5: #5a7a00;
-
-    --mast-on: #ffffff;
+    --mast-1: #00a3ff;
+    --mast-2: #8a2bff;
+    --mast-3: #ff2d8a;
+    --mast-4: #ff6a00;
+    --mast-5: #00c853;
+    --mast-ink-1: #111214;
+    --mast-ink-2: #ffffff;
+    --mast-ink-3: #111214;
+    --mast-ink-4: #111214;
+    --mast-ink-5: #111214;
     color-scheme: light;
   }
 }

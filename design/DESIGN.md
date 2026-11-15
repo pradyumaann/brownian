@@ -1,4 +1,4 @@
-# Design language
+﻿# Design language
 
 Brownian treats the market as a landscape: ridges, surfaces and rivers of strands on a dark canvas, framed by exact, sourced numbers. A reader at 07:50 IST should grasp the day's shape in one glance and the precise figures in the next. *Markets wander. You don't have to.* Single days are noise, so every figure is shown calmly and in context.
 
@@ -60,7 +60,7 @@ Bars start at zero. Log axes say "log". At most 3 annotations per figure, on lea
 
 ## Brief layout (in order)
 
-1. Brownian header (the device showcase hero, 15 Nov 2026), a window in the page’s own colour on Night and on Paper: the day line in mono (date · brief time · open · close IST, all from the day's record) with the theme switch, the wordmark (Onest 600, −0.045em) and the mono tagline, with the Wander Index's last five sessions as five bars beside it on wider screens, coloured by `--mast-1…5` (cyan, periwinkle, magenta, tangerine, lime on Night; deeper values on Paper) that roll slowly through the bars when motion is allowed. There is no descriptor sentence. Phones keep the words only. Every other view has a compact bar: wordmark, day line and the theme switch, in the page's colours.
+1. Brownian header (the device showcase hero, 15 Nov 2026), a window in the page’s own colour on Night and on Paper: the day line in mono (date · brief time · open · close IST, all from the day's record) with the theme switch, the wordmark (Onest 600, −0.045em) and the mono tagline, with the Wander Index's last five sessions as five bars beside it on wider screens, coloured by `--mast-1…5` (teal, violet, rose, orange, gold on Night; electric azure, violet, hot pink, neon orange, neon green on Paper), which roll slowly through the bars when motion is allowed, with the text colour (`--mast-ink-1…5`) switching alongside. A grid of plus marks covers the whole header, each shrinking and growing out of step with its neighbours (the bars sit on top of it). There is no descriptor sentence. Phones keep the words only. Every other view has a compact bar: wordmark, day line and the theme switch, in the page's colours.
 2. A `.t-display-l` title with a 2–3 sentence tagged lede.
 3. Hero row: up to 4 KPIs divided by hairlines (2×2 on phones).
 4. Wander Index (dial + component table + "Interpretation, not a forecast.").
