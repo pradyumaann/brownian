@@ -20,6 +20,17 @@ export interface Rotation { lane: string; out: [string, string][]; into: [string
 export type TrendRow = [string, string, string, string, Tone, string];
 /** label, value, optional other end of a range reported by another source */
 export type SectorMove = [string, number | null, number?];
+/** One scheduled release: name, region, basis (y/y, m/m), latest, forecast and previous print in %, null = n/a. */
+export interface Release {
+  n: string; region: string; basis?: string; latest: number | null; forecast: number | null; prior: number | null;
+  /** What the previous print refers to ("Sep"), or "previous". */
+  priorLabel: string;
+  /** When a release not yet out is due (IST). */
+  due?: string;
+  /** What the brief says about a release whose figure it does not give. */
+  note?: string;
+  tone: Tone; src: string[];
+}
 export interface Story { t: string; st: "NEW" | "ONGOING"; day: string; p: string; m: string; w: string; src: string[] }
 
 export interface Brief {
@@ -78,6 +89,9 @@ export interface Brief {
   ppi: [string, string, string, string][];
   /** [region, indicator, latest, previous, detail, next, how to read, tone, source] */
   indicators: [string, string, string, string, string, string, string, Tone, string][];
+  /** The scheduled releases among the indicators, as numbers for the release bars (all in %). A null is n/a;
+   *  a null `latest` with `due` set is a release not out yet when the brief was prepared. */
+  releases: Release[];
   events: CalendarItem[];
   erDeadline: string;
   /** [company, sector, context] */

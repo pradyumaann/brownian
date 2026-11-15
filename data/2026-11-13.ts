@@ -302,6 +302,15 @@ export const brief: Brief = {
     ["UK", "Q3 GDP", "+0.7%", "n/a", "Helped FTSE +0.26%", "n/a", "", "gain", "S11"],
     ["Global", "Brent crude", "$95.82", "$92.75 (≈)", "+3.30%; Saudi attacks, Hormuz tanker blasts", "Daily", "India imports most of its crude.", "loss", "S11"],
   ],
+  releases: [
+    { n: "CPI inflation (Oct)", region: "India", basis: "y/y", latest: 6.09, forecast: 5.93, prior: 5.54, priorLabel: "Sep", tone: "loss", src: ["W8"] },
+    { n: "WPI inflation (Sep)", region: "India", basis: "y/y", latest: 11.39, forecast: null, prior: 9.92, priorLabel: "Aug", tone: "loss", src: ["W11"] },
+    { n: "CPI (Oct)", region: "US", latest: null, forecast: null, prior: null, priorLabel: "previous", note: "Reported hot; figure not in the sources", tone: "loss", src: ["S11"] },
+    { n: "PPI, headline (Oct)", region: "US", basis: "m/m", latest: null, forecast: 0.4, prior: 1.3, priorLabel: "previous", due: "Fri 13 Nov, 19:00 IST", tone: "mixed", src: ["W13"] },
+    { n: "PPI, core (Oct)", region: "US", basis: "m/m", latest: null, forecast: 0.3, prior: 0.7, priorLabel: "previous", due: "Fri 13 Nov, 19:00 IST", tone: "mixed", src: ["W13"] },
+    { n: "Retail sales (Oct)", region: "US", basis: "m/m", latest: null, forecast: 0.2, prior: null, priorLabel: "previous", due: "Tue 17 Nov, 19:00 IST", tone: "mixed", src: ["W15"] },
+    { n: "Q3 GDP", region: "UK", latest: 0.7, forecast: null, prior: null, priorLabel: "previous", tone: "gain", src: ["S11"] },
+  ],
   events: [
     { w: "Fri 13 · 09:15", t: "Indian market opens", d: "GIFT Nifty points to a flat to slightly negative start. Names in focus: ONGC (oil up), gold ETFs (gold down) and financials (leaders).", today: true },
     { w: "Fri 13", t: "~480 Q2 results", d: "Grasim, Eicher Motors, ABB India, Tata Motors PV, RVNL, Natco Pharma, Edelweiss Financial.", today: true, chip: ["Earnings", "info"] },

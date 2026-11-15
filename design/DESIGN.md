@@ -49,6 +49,8 @@ CSS custom properties from `design/brownian.css`. `data-theme="night"` is the br
 | Is today unusual? (needs history) | Stacked ridges on ONE shared scale | `ridgeline` |
 | How far from the peak? | Drawdown lines hanging from the running peak, linear % | `fringe` |
 | What does the yield curve look like through time? | Isometric wireframe, always beside a 2-D table | `field` |
+| How does a macro indicator sit in its own history? | Indicator field: one row per indicator, one column per week (month on phones), height AND colour (spec ramp, violet to gold) both the column's rank 0–100 among that indicator's own five years, so rows share one zero-based scale and the brightest peaks are each indicator's highs. Only series the history store holds; a week with no reading draws no column; an open week or month is hollowed and marked to date. Glow on Night only. Beside it the latest value, ▲/▼ change and an impact chip in words | `IndicatorField.tsx` (data: `lib/indicatorField.ts`) |
+| Did a release beat the forecast? | Release bars: previous, forecast (hollow) and latest from one zero line per release, each on its own scale, the gap in pp printed with ▲/▼; a release not out shows its due time, a missing figure is n/a | `ReleaseBars.tsx` |
 | What one number first? | HeroNumber: value, signed delta, context sentence, tag | n/a |
 | What's still developing? | StoryList: New / Ongoing / Resolved word chips, tagged figures | n/a |
 

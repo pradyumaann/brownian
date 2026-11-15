@@ -524,3 +524,83 @@ ul.list.list-cont { border-top: 0; }
   .terrain .tb.down { transform-origin: center top; }
   .rise .terrain .tb { animation: bw-grow-y .8s cubic-bezier(.2,.7,.2,1) calc(var(--r, 0) * 60ms) backwards; }
 }
+
+/* ---- Indicators to watch: the indicator field (components/charts/IndicatorField.tsx) and the release bars
+   (components/charts/ReleaseBars.tsx). Field colours come from the spec ramp, so a column's colour is its rank. ---- */
+.ifield-lede { max-width: 72ch; margin-bottom: var(--space-4); }
+.ifield svg { display: block; }
+.if-floor { fill: var(--plot-grid); stroke: none; opacity: .55; }
+.if-face { fill: var(--c); }
+.if-lid { fill: color-mix(in oklab, var(--c) 72%, #fff); }
+.if-side { fill: color-mix(in oklab, var(--c) 52%, var(--plot)); }
+.if-bar.is-todate .if-face { fill-opacity: .55; stroke: var(--c); stroke-width: .8px; }
+.if-bar { outline: none; cursor: crosshair; }
+.if-bar:focus-visible > rect[fill="transparent"] { stroke: var(--focus); stroke-width: 1.5px; }
+.if-bar:hover .if-face, .if-bar:focus-visible .if-face { fill: var(--plot-ink); }
+.if-v { fill: var(--plot-ink); font-size: 12px; }
+.if-ch { fill: var(--plot-muted); font-size: 10px; }
+:root[data-theme="paper"] .if-lid { fill: color-mix(in oklab, var(--c) 70%, var(--plot)); }
+:root[data-theme="paper"] .if-side { fill: color-mix(in oklab, var(--c) 72%, var(--plot-ink)); }
+:root[data-theme="paper"] .if-bars { filter: none; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="night"]) .if-lid { fill: color-mix(in oklab, var(--c) 70%, var(--plot)); }
+  :root:not([data-theme="night"]) .if-side { fill: color-mix(in oklab, var(--c) 72%, var(--plot-ink)); }
+  :root:not([data-theme="night"]) .if-bars { filter: none; }
+}
+.ifield-key { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--hairline); }
+.ifield-key li { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: var(--space-3) var(--space-3) var(--space-3) 0; font-size: 13px; }
+.ifield-key li + li { padding-left: var(--space-3); border-left: 1px solid var(--hairline); }
+.ifield-key b { font-weight: 500; }
+.ifield-key .bw-mono { font-size: 15px; color: var(--ink); }
+.ifield-key .m { font-size: 12px; color: var(--ink-muted); }
+.ifield-key .bw-chip { margin-top: var(--space-1); }
+.rb-head { margin-top: var(--space-12); }
+
+.rbars { padding: var(--space-3) var(--space-4) var(--space-2); container-type: inline-size; }
+.rb-key { display: flex; gap: var(--space-4); flex-wrap: wrap; font: 400 11px var(--font-mono); color: var(--ink-muted); padding-bottom: var(--space-2); border-bottom: 1px solid var(--hairline); }
+.rb-key span { display: inline-flex; align-items: center; gap: 6px; }
+.rb-sw { display: inline-block; width: 16px; height: 6px; }
+.rb-row { display: grid; grid-template-columns: minmax(150px, 1.1fr) minmax(0, 2fr) minmax(170px, 1fr) 140px; gap: var(--space-2) var(--space-4); align-items: center; padding: var(--space-3) 0; border-bottom: 1px solid var(--hairline); }
+.rb-row:last-child { border-bottom: 0; }
+.rb-name b { font-weight: 500; font-size: 14px; }
+.rb-basis { display: block; font: 400 11px var(--font-mono); color: var(--ink-faint); margin-top: 2px; }
+.rb-lane { position: relative; height: 44px; }
+.rb-zero { position: absolute; top: -2px; bottom: -2px; width: 0; border-left: 1px solid var(--plot-muted); opacity: .6; }
+.rb-bar { position: absolute; display: block; height: 7px; cursor: crosshair; }
+.rb-bar.is-prior { top: 3px; }
+.rb-bar.is-fc { top: 13px; }
+.rb-bar.is-latest { top: 23px; }
+.rb-lane:has(.rb-slot) .rb-bar.is-fc { top: 13px; }
+.rb-bar:focus { outline: none; } .rb-bar:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* Previous, forecast, latest: older to newer runs dim violet to bright gold on the spec ramp. The forecast is a hollow bar. */
+.rb-bar.is-prior, .rb-sw.is-prior { background: var(--spec-2); }
+.rb-bar.is-fc, .rb-sw.is-fc { background: transparent; box-shadow: inset 0 0 0 1.25px var(--plot-ink); }
+.rb-bar.is-latest, .rb-sw.is-latest { background: var(--spec-5); }
+.rb-bar.is-latest { box-shadow: 0 0 10px 1px color-mix(in srgb, var(--spec-5) 55%, transparent); }
+:root[data-theme="paper"] .rb-bar.is-latest { box-shadow: none; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="night"]) .rb-bar.is-latest { box-shadow: none; } }
+.rb-slot { position: absolute; left: 6px; top: 21px; font: 400 11px/1.2 var(--font-mono); color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 6px); }
+.rb-slot.is-due { padding-left: 8px; border-left: 1px dashed var(--plot-muted); }
+.rb-vals { display: flex; flex-direction: column; gap: 2px; font-family: var(--font-mono); }
+.rb-latest { font-size: 16px; color: var(--ink); }
+.rb-cmp { display: flex; flex-direction: column; font-size: 11px; color: var(--ink-muted); }
+.rb-impact { font-size: 13px; }
+.rb-impact.tone-mixed { color: var(--ink-muted); }
+@container (max-width: 620px) {
+  .rb-row { grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2) var(--space-3); }
+  .rb-name { grid-column: 1; }
+  .rb-impact { grid-column: 2; grid-row: 1; text-align: right; font-size: 12px; }
+  .rb-lane { grid-column: 1 / -1; }
+  .rb-vals { grid-column: 1 / -1; flex-direction: row; align-items: baseline; flex-wrap: wrap; gap: 2px var(--space-3); }
+  .rb-cmp { flex-direction: row; flex-wrap: wrap; gap: 0 var(--space-3); }
+}
+@media (max-width: 900px) { .ifield-key { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ifield-key li:nth-child(3) { padding-left: 0; border-left: 0; } .ifield-key li:nth-child(n+3) { border-top: 1px solid var(--hairline); } }
+@media (max-width: 620px) {
+  .rbars { padding: var(--space-2) var(--space-3); }
+  .rb-head { margin-top: var(--space-10, 40px); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* Entrance: the field rises row by row, back to front, sweeping left to right; the release bars grow from zero. */
+  .rise .if-bar { transform-box: fill-box; transform-origin: center bottom; animation: bw-grow-y .7s cubic-bezier(.2,.7,.2,1) calc(var(--row, 0) * 140ms + var(--i, 0) * 700ms) backwards; }
+  .rise .rb-bar { transform-origin: left center; animation: bw-grow .6s ease-out calc(var(--i, 0) * 120ms) backwards; }
+}
