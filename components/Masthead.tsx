@@ -56,6 +56,7 @@ export function Masthead(p: MastProps) {
           <p className="mast-tag">Markets wander. You don&apos;t have to.</p>
         </div>
         <Bars bars={p.bars} />
+        <Bars bars={p.bars} compact />
       </div>
     </header>
   );
@@ -77,20 +78,25 @@ function Field() {
 }
 
 /** The Wander Index for the last five sessions as five bars on a 0–100 scale from zero (a taller bar is a higher
- *  reading). Each bar is labelled with its day and value, so the colours only tell the days apart. */
-function Bars({ bars }: { bars: MastProps["bars"] }) {
-  const W = 480, H = 200, bw = W / 5;
+ *  reading). Each bar is labelled with its day and value, so the colours only tell the days apart.
+ *  Two variants share the data: the wide one (480×200) beside the words, and under 620px a `compact` strip (480×150,
+ *  larger in-SVG text so it still reads at phone width). CSS shows one and `display: none` hides the other, which also
+ *  removes it from the accessibility tree, so the bars are announced once and tabbed once. */
+function Bars({ bars, compact = false }: { bars: MastProps["bars"]; compact?: boolean }) {
+  const W = 480, H = compact ? 150 : 200, bw = W / 5;
   const dow = (d: string) => DAY[new Date(d + "T00:00:00Z").getUTCDay()];
   return (
-    <svg className="mast-art" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMaxYMax meet" role="img"
+    <svg className={compact ? "mast-art mast-art-c" : "mast-art mast-art-w"} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio={compact ? "xMidYMax meet" : "xMaxYMax meet"} role="img"
       aria-label={`Wander Index, last five sessions: ${bars.map((b) => `${dow(b.date)} ${b.date.slice(8)} ${Math.round(b.score)}`).join(", ")}`}>
       {bars.map((b, i) => {
         const h = (b.score / 100) * H;
+        // Compact: the value sits at the top of its bar, but never lower than the day label's line.
+        const vy = compact ? Math.min(H - h + 26, H - 38) : H - h + 20;
         return (
           <g key={b.date} className="mast-bar" style={{ "--i": i } as React.CSSProperties} tabIndex={0} data-tip-v={`${Math.round(b.score)}`} data-tip-l={`Wander Index · ${dow(b.date)} ${Number(b.date.slice(8))}`}>
             <rect x={i * bw} y={H - h} width={bw} height={h} fill={FILL[i]} />
-            <text x={i * bw + 10} y={H - h + 20} className="mast-val" fill={INK[i]}>{Math.round(b.score)}</text>
-            <text x={i * bw + 10} y={H - 8} className="mast-day" fill={INK[i]}>{dow(b.date)} {Number(b.date.slice(8))}</text>
+            <text x={i * bw + 10} y={vy} className="mast-val" fill={INK[i]}>{Math.round(b.score)}</text>
+            <text x={i * bw + 10} y={H - (compact ? 10 : 8)} className="mast-day" fill={INK[i]}>{dow(b.date)} {Number(b.date.slice(8))}</text>
           </g>
         );
       })}

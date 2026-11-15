@@ -60,13 +60,24 @@ function pctSeries(raw: (number | null)[], lookback: number, min: number) {
 const turbPct = pctSeries(turbRaw, TURB_WINDOW, 250);
 const arPct = pctSeries(arRaw, TURB_WINDOW, 250);
 
-export interface RiskPoint { date: string; turbulence: number | null; turbPct: number | null; absorption: number | null; arPct: number | null }
+/** Turbulence is persistent and one day jumps about, so the page charts the mean of the raw distance over the last 20
+ *  sessions (at least 15 readings) and ranks that average, not the daily percentiles, against the previous (up to) 750
+ *  such averages (at least 250), with no look-ahead. Ranking the average keeps the bands calibrated: averaging
+ *  percentiles would pile the readings up around the middle. */
+const TURB_AVG = 20, TURB_AVG_MIN = 15;
+const turbAvg20: (number | null)[] = turbRaw.map((_, i) => {
+  const w = turbRaw.slice(Math.max(0, i - TURB_AVG + 1), i + 1).filter((x): x is number => x != null);
+  return w.length >= TURB_AVG_MIN ? w.reduce((a, b) => a + b, 0) / w.length : null;
+});
+const turbAvgPct = pctSeries(turbAvg20, TURB_WINDOW, 250);
+
+export interface RiskPoint { date: string; turbulence: number | null; turbPct: number | null; turbAvgPct: number | null; absorption: number | null; arPct: number | null }
 export function riskSeries(upTo: string): RiskPoint[] {
-  return days.map((d, i) => ({ date: d, turbulence: turbRaw[i], turbPct: turbPct[i], absorption: arRaw[i], arPct: arPct[i] }))
+  return days.map((d, i) => ({ date: d, turbulence: turbRaw[i], turbPct: turbPct[i], turbAvgPct: turbAvgPct[i], absorption: arRaw[i], arPct: arPct[i] }))
     .filter((p) => p.date <= upTo && (p.turbPct != null || p.arPct != null));
 }
 
-/** Turbulence is persistent, so the page also shows its 20-session average percentile. */
+/** The day's readings. `turbPct20` (average of daily percentiles) is kept for reference; the page uses `turbAvgPct`. */
 export function riskOn(date: string) {
   const i = days.indexOf(date);
   const tp = turbPct.slice(Math.max(0, i - 19), i + 1).filter((x): x is number => x != null);
@@ -76,8 +87,8 @@ export function riskOn(date: string) {
   const sd = Math.sqrt(m(ar.map((v) => (v - m(ar)) ** 2)));
   return {
     date, sectors: SECTOR_IDS.length,
-    turbulence: turbRaw[i], turbPct: turbPct[i], turbPct20: tp.length === 20 ? m(tp) : null,
+    turbulence: turbRaw[i], turbPct: turbPct[i], turbAvg20: turbAvg20[i], turbAvgPct: turbAvgPct[i], turbPct20: tp.length === 20 ? m(tp) : null,
     absorption: arRaw[i], arPct: arPct[i], arShift: ar.length >= 250 && sd > 0 ? (m(ar15) - m(ar)) / sd : null,
-    windows: { turbulence: TURB_WINDOW, absorption: AR_WINDOW, halfLife: AR_HALFLIFE, factors: AR_FACTORS },
+    windows: { turbAvg: TURB_AVG, turbulence: TURB_WINDOW, absorption: AR_WINDOW, halfLife: AR_HALFLIFE, factors: AR_FACTORS },
   };
 }
