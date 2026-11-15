@@ -119,7 +119,7 @@
   /* ---------------------------------------------------------------- Strand Flow
      A Sankey whose bands are made of UNIT STRANDS: one hairline per `unit` of money.
      Band width is exactly proportional to value; strands are counted, never decorative.
-     opts: { columns:[[{id,label}]], links:[{source,target,value}], unit, width, height,
+     opts: { columns:[[{id,label}]], links:[{source,target,value,color?}], unit, width, height,
              format(v)->string, colorBy:'source'|'target', seed } */
   function strands(svg, o) {
     var w = o.width || 720, h = o.height || 380, padT = 24, padB = 24, gap = o.gap || 14;
@@ -146,14 +146,14 @@
     o.links.forEach(function (l) {
       var s = nodes[l.source], t = nodes[l.target], bw = l.value * scale;
       var count = Math.max(1, Math.round(l.value / o.unit));
-      var color = css(o.colorBy === 'target' ? t.cat : s.cat);
+      var color = l.color || css(o.colorBy === 'target' ? t.cat : s.cat);
       var x0 = s.x + nodeW, x1 = t.x, mx = (x0 + x1) / 2;
-      var g = el('g', { 'data-link': l.source + '>' + l.target }, gStr);
+      var g = el('g', { 'data-link': l.source + '>' + l.target, style: '--d:' + (o.links.indexOf(l) * 0.07).toFixed(2) + 's' }, gStr);
       tip(g, (o.format || String)(l.value), s.n.label + ' \u2192 ' + t.n.label);
       for (var i = 0; i < count; i++) {
         var f = (i + 0.5) / count, y0 = s.outY + f * bw, y1 = t.inY + f * bw;
         var j = (r() - 0.5) * Math.min(18, bw * 0.6); // mid-curve drift only; endpoints stay exact
-        el('path', { d: 'M' + x0 + ' ' + y0.toFixed(2) + 'C' + (mx + j).toFixed(1) + ' ' + y0.toFixed(2) + ' ' + (mx - j).toFixed(1) + ' ' + y1.toFixed(2) + ' ' + x1 + ' ' + y1.toFixed(2), stroke: color, 'class': 'bw-strand' }, g);
+        el('path', { d: 'M' + x0 + ' ' + y0.toFixed(2) + 'C' + (mx + j).toFixed(1) + ' ' + y0.toFixed(2) + ' ' + (mx - j).toFixed(1) + ' ' + y1.toFixed(2) + ' ' + x1 + ' ' + y1.toFixed(2), stroke: color, pathLength: 1, 'class': 'bw-strand' }, g);
       }
       s.outY += bw; t.inY += bw;
     });
@@ -248,67 +248,102 @@
   }
 
 
+  /* Glow and gradients (the "Hyper Charts" look). Each chart gets its own ids so several can share a page.
+     Glow only ever sits on marks that already encode a value; it never stands alone as decoration. */
+  var uidN = 0;
+  function uid(p) { uidN += 1; return (p || 'bw') + '-' + uidN + '-' + Math.random().toString(36).slice(2, 6); }
+  function glow(svg, sd) {
+    var id = uid('glow'), d = svg.querySelector('defs') || el('defs', {}, svg);
+    var f = el('filter', { id: id, x: '-60%', y: '-200%', width: '220%', height: '500%' }, d);
+    el('feGaussianBlur', { 'in': 'SourceGraphic', stdDeviation: sd || 3.2, result: 'b' }, f);
+    var m = el('feMerge', {}, f); el('feMergeNode', { 'in': 'b' }, m); el('feMergeNode', { 'in': 'SourceGraphic' }, m);
+    return 'url(#' + id + ')';
+  }
+  function grad(svg, stops, x2, y2, units) {
+    var id = uid('grad'), d = svg.querySelector('defs') || el('defs', {}, svg);
+    var g = el('linearGradient', { id: id, x1: 0, y1: 0, x2: x2 == null ? 1 : x2, y2: y2 || 0, gradientUnits: units }, d);
+    stops.forEach(function (s) { el('stop', { offset: s[0], style: 'stop-color:' + s[1] + ';stop-opacity:' + (s[2] == null ? 1 : s[2]) }, g); });
+    return 'url(#' + id + ')';
+  }
+
   /* ---------------------------------------------------------------- Diverge (signed bars from a zero line)
-     The plain workhorse for "how much did each thing move": sectors, indices, flows.
-     opts: { rows:[{label, value:number|null, src?:'S1'|..., note?}], width, rowH (default 26),
+     The plain workhorse for "how much did each thing move": sectors, indices, flows. Drawn as glowing pills that
+     brighten from the zero line out to their value, over a faint full-width track.
+     opts: { rows:[{label, value:number|null, to?:number, src?:'S1'|..., note?}], width, rowH (default 30),
              format(v)->string, labelWidth, domain? (symmetric max; default = max |value|) }
-     null values render as "n/a" with no bar — never estimated. */
+     null values render as "n/a" with no bar — never estimated. Where sources disagree, `to` is the other
+     end of the reported range: the bar runs to `value`, a faint extension runs on to `to`, and both are printed. */
   function diverge(svg, o) {
-    var rows = o.rows, w = o.width || 560, rh = o.rowH || 26, lw = o.labelWidth || 120, vw = o.valueWidth || 92;
-    var h = rows.length * rh + 24;
+    var rows = o.rows, w = o.width || 560, rh = o.rowH || 30, lw = o.labelWidth || 120, vw = o.valueWidth || 92, bh = Math.min(12, Math.round(rh * 0.36));
+    var h = rows.length * rh + 26;
     clear(svg, w, h);
-    // size the label column to the longest label so nothing clips on a 400px phone
     var probe = text(svg, 0, -10, '', 'bw-label'), need = 0;
     rows.forEach(function (r) { probe.textContent = r.label; need = Math.max(need, probe.getComputedTextLength ? probe.getComputedTextLength() : r.label.length * 6.2); });
     svg.removeChild(probe);
     lw = Math.min(Math.max(lw, need + 18), Math.round(w * 0.42));
-    var max = o.domain || Math.max.apply(null, rows.map(function (r) { return r.value == null ? 0 : Math.abs(r.value); })) || 1;
-    var x0 = lw + (w - lw - vw) / 2, half = (w - lw - vw) / 2 - 4;
-    el('line', { x1: x0, x2: x0, y1: 4, y2: h - 18, 'class': 'bw-base' }, svg);
+    var max = o.domain || Math.max.apply(null, rows.map(function (r) { return r.value == null ? 0 : Math.max(Math.abs(r.value), r.to == null ? 0 : Math.abs(r.to)); })) || 1;
+    var x0 = lw + (w - lw - vw) / 2, half = (w - lw - vw) / 2 - 6;
+    var gl = glow(svg, 3);
+    var gGain = grad(svg, [[0, 'var(--plot-gain)', 0.08], [0.6, 'var(--plot-gain)', 0.55], [1, 'var(--plot-gain)', 1]]);
+    var gLoss = grad(svg, [[0, 'var(--plot-loss)', 1], [0.4, 'var(--plot-loss)', 0.55], [1, 'var(--plot-loss)', 0.08]]);
+    rows.forEach(function (r, i) {
+      var y = 10 + i * rh + rh / 2;
+      el('rect', { x: lw, y: y - bh / 2, width: w - vw - lw, height: bh, rx: bh / 2, 'class': 'bw-track' }, svg);
+    });
+    el('line', { x1: x0, x2: x0, y1: 4, y2: h - 20, 'class': 'bw-base' }, svg);
     text(svg, x0, h - 4, '0', 'bw-tick', 'middle');
     rows.forEach(function (r, i) {
-      var y = 8 + i * rh + rh / 2;
+      var y = 10 + i * rh + rh / 2;
       text(svg, lw - 12, y + 4, r.label, 'bw-label', 'end');
-      el('line', { x1: lw, x2: w - vw, y1: y + rh / 2 - 1, y2: y + rh / 2 - 1, 'class': 'bw-grid' }, svg);
       if (r.value == null) { text(svg, w - 8, y + 4, 'n/a', 'bw-tick', 'end'); return; }
       var len = Math.abs(r.value) / max * half, up = r.value >= 0;
-      var bar = el('rect', { x: up ? x0 : x0 - len, y: y - 5, width: Math.max(1, len), height: 10, 'class': 'bw-bar ' + (up ? 'is-gain' : 'is-loss') }, svg);
-      el('circle', { cx: up ? x0 + len : x0 - len, cy: y, r: 2.5, 'class': up ? 'bw-dot is-gain' : 'bw-dot is-loss' }, svg);
-      var f = (o.format || function (v) { return fmt.pct(v); })(r.value);
+      var F = o.format || function (v) { return fmt.pct(v); }, f = F(r.value);
+      if (r.to != null && (r.to >= 0) === up && Math.abs(r.to) > Math.abs(r.value)) {
+        var len2 = Math.abs(r.to) / max * half;
+        el('rect', { x: up ? x0 + len - bh / 2 : x0 - len2, y: y - bh / 2, width: len2 - len + bh / 2, height: bh, rx: bh / 2, 'class': 'bw-bar is-range ' + (up ? 'is-gain' : 'is-loss') }, svg);
+        f = f + ' to ' + F(r.to);
+      }
+      var bar = el('rect', { x: up ? x0 : x0 - len, y: y - bh / 2, width: Math.max(bh, len), height: bh, rx: bh / 2, fill: up ? gGain : gLoss, filter: gl, 'class': 'bw-bar is-lit ' + (up ? 'is-gain' : 'is-loss') }, svg);
+      el('circle', { cx: up ? x0 + Math.max(bh, len) - bh / 2 : x0 - Math.max(bh, len) + bh / 2, cy: y, r: bh / 2 - 1.5, 'class': 'bw-core' }, svg);
       tip(bar, f, r.label + (r.src ? ' [' + r.src + ']' : ''));
       text(svg, w - 8, y + 4, (up ? '▲ ' : '▼ ') + f, 'bw-val ' + (up ? 'is-gain' : 'is-loss'), 'end');
     });
   }
 
   /* ---------------------------------------------------------------- Dial (Mood Index)
-     A 180° instrument: 0–100 scale in hairline ticks, band edges as long ticks with their names along the arc,
-     the score as one dawn needle, and each component as a dot on an inner track at its own score.
-     Colour does not encode fear/greed — the band WORD does.
+     A 180° gauge of 50 segments. Segments light up from 0 to the score, each in the `spec` colour of its own
+     position (violet at 0 → gold at 100), so the lit length and colour both encode the score; the rest stay dark.
+     Band edges are longer ticks with the band names outside the ring; the score is a dawn needle; each component
+     is a dot on an inner track at its own score. The band WORD names the reading, not the colour alone.
      opts: { score, bands:[{from,to,name}], components:[{name, score}], width, height } */
   function dial(svg, o) {
-    var w = o.width || 520, h = o.height || Math.round(w * 0.62), cx = w / 2, cy = h - 34, R = Math.min(w / 2 - 34, h - 60);
+    var w = o.width || 520, h = o.height || Math.round(w * 0.62), cx = w / 2, cy = h - 30, R = Math.min(w / 2 - 40, h - 64);
     clear(svg, w, h);
     var A = function (v) { return Math.PI * (1 - v / 100); };
     var pt = function (v, r) { return [cx + Math.cos(A(v)) * r, cy - Math.sin(A(v)) * r]; };
-    for (var v = 0; v <= 100; v += 2) {
-      var edge = o.bands.some(function (b) { return b.from === v; }) || v === 100;
-      var a = pt(v, R), b = pt(v, R - (edge ? 18 : v % 10 === 0 ? 9 : 5));
-      el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], 'class': edge ? 'bw-tickline is-edge' : 'bw-tickline' }, svg);
+    var gl = glow(svg, 4), segs = 50, thick = Math.max(10, R * 0.11), r0 = R - thick, gap = 0.9;
+    for (var i = 0; i < segs; i++) {
+      var a0 = i * 100 / segs + gap / 2, a1 = (i + 1) * 100 / segs - gap / 2, lit = (i + 0.5) * 100 / segs <= o.score;
+      var p1 = pt(a0, R), p2 = pt(a1, R), p3 = pt(a1, r0), p4 = pt(a0, r0);
+      el('path', { d: 'M' + p1.join(' ') + 'A' + R + ' ' + R + ' 0 0 1 ' + p2.join(' ') + 'L' + p3.join(' ') + 'A' + r0 + ' ' + r0 + ' 0 0 0 ' + p4.join(' ') + 'Z',
+        fill: lit ? ramp('spec', 0.2 + 0.8 * (i + 0.5) / segs) : css('plot-grid'), filter: lit ? gl : null, style: '--i:' + i, 'class': lit ? 'bw-seg is-lit' : 'bw-seg' }, svg);
     }
-    [0, 25, 50, 75, 100].forEach(function (v) { var p = pt(v, R + 12); text(svg, p[0], p[1] + 3, String(v), 'bw-tick', v < 50 ? 'end' : v > 50 ? 'start' : 'middle'); });
     o.bands.forEach(function (b) {
-      var mid = (b.from + b.to) / 2, p = pt(mid, R - 30);
-      var t = text(svg, p[0], p[1] + 3, b.name, 'bw-band' + (o.score >= b.from && o.score < b.to ? ' is-on' : ''), 'middle');
+      if (b.from > 0) { var a = pt(b.from, R + 4), c = pt(b.from, r0 - 6); el('line', { x1: a[0], y1: a[1], x2: c[0], y2: c[1], 'class': 'bw-tickline is-edge' }, svg); }
+      var mid = (b.from + Math.min(100, b.to)) / 2, end = b.from === 0 ? 0 : b.to >= 100 ? 100 : null;
+      var p = end == null ? pt(mid, R + 16) : [pt(end, R - thick / 2)[0], cy + 22];
+      text(svg, p[0], end == null ? p[1] + 3 : p[1], b.name, 'bw-band' + (o.score >= b.from && o.score < b.to ? ' is-on' : ''), end != null ? 'middle' : mid < 40 ? 'end' : mid > 60 ? 'start' : 'middle');
     });
-    var trackR = R * 0.52;
+    [0, 50, 100].forEach(function (v) { var p = pt(v, r0 - 14); text(svg, p[0], p[1] + 3, String(v), 'bw-tick', v < 50 ? 'start' : v > 50 ? 'end' : 'middle'); });
+    var trackR = r0 * 0.62;
     el('path', { d: 'M' + pt(0, trackR).join(' ') + 'A' + trackR + ' ' + trackR + ' 0 0 1 ' + pt(100, trackR).join(' '), 'class': 'bw-grid' }, svg);
     (o.components || []).forEach(function (c) {
       var p = pt(c.score, trackR);
       tip(el('circle', { cx: p[0], cy: p[1], r: 4, 'class': 'bw-comp' }, svg), c.score.toFixed(0), c.name);
     });
-    var n = pt(o.score, R - 4);
-    el('line', { x1: cx, y1: cy, x2: n[0], y2: n[1], 'class': 'bw-needle' }, svg);
-    el('circle', { cx: cx, cy: cy, r: 4, 'class': 'bw-now' }, svg);
+    var n = pt(o.score, r0 - 4);
+    el('line', { x1: cx, y1: cy, x2: n[0], y2: n[1], 'class': 'bw-needle', filter: gl }, svg);
+    el('circle', { cx: cx, cy: cy, r: 5, 'class': 'bw-now', filter: gl }, svg);
   }
 
   /* Redraw on container resize so every chart fits its column (400px phones included, no sideways scroll). */
@@ -337,5 +372,8 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') box.hidden = true; });
   }
 
-  window.Brownian = { css: css, rng: rng, ramp: ramp, fmt: fmt, spark: spark, ridgeline: ridgeline, strands: strands, field: field, fringe: fringe, diverge: diverge, dial: dial, fit: fit, tip: tip, readout: readout, crosshairs: crosshairs };
+  var api = { glow: glow, grad: grad, css: css, rng: rng, ramp: ramp, fmt: fmt, spark: spark, ridgeline: ridgeline, strands: strands, field: field, fringe: fringe, diverge: diverge, dial: dial, fit: fit, tip: tip, readout: readout, crosshairs: crosshairs };
+  // Classic <script> on reference pages; CommonJS module in the Next.js app (nothing touches the DOM at load).
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (typeof window !== 'undefined') window.Brownian = api;
 })();
