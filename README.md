@@ -46,6 +46,7 @@ npm run history:verify   # coverage, consistency, NSE vs Yahoo cross-check, impl
 | `indices.csv` | 22 NSE indices incl. 15 sectors and India VIX, daily OHLC, P/E, P/B | NSE archives (D1) | Nov 2021 |
 | `breadth.csv` | Advances, declines, 52-week highs and lows, illiquidity | NSE cash bhavcopy (D2) | Nov 2023 |
 | `options.csv` | Nifty options put and call volume and open interest | NSE F&O bhavcopy (D3) | Nov 2024 |
+| `participant_oi.csv` | Index futures and options positions by participant (Client, DII, FII, Pro); stored, not yet used by any view | NSE participant-wise open interest | Nov 2016 |
 | `fpi.csv` | FPI net investment: equity, debt, index futures | NSDL daily (D4) | Nov 2021 |
 | `sector_flows.csv` | FPI net equity investment and holdings by sector, fortnightly | NSDL (D4) | Aug 2024 |
 | `world.csv` | 15 overseas and cross-asset series | Yahoo Finance (D5) | Nov 2021 |
@@ -56,7 +57,7 @@ npm run history:verify   # coverage, consistency, NSE vs Yahoo cross-check, impl
 |---|---|---|
 | Markets, Overnight | `/` | The day in under a minute: Wander Index, macro pressure, your holdings, six key numbers, takeaways, the next 7 days |
 | Portfolio Lens | `/portfolio` | Impact of today's news on the user's holding types, plus a watchlist |
-| Wander Index | `/wander` | 0–100 sentiment index from 6 components with visible formulas and research, kept separate from macro pressure |
+| Wander Index | `/wander` | 0–100 sentiment index from 7 components with visible formulas and research, kept separate from macro pressure |
 | Flow Map | `/flows` | FII/DII flows and sector rotation |
 | India Markets | `/india` | Indices, sectors, movers, MCX, rupee, after-hours |
 | Global Cues | `/global` | World indices, cross-asset macro, US sectors, after-hours |
@@ -69,7 +70,7 @@ npm run history:verify   # coverage, consistency, NSE vs Yahoo cross-check, impl
 
 1. **Web app.** Next.js, confirmed. All 10 views are built in the design language; next: PWA install, then native iOS/Android later.
 2. **Daily ingestion.** Parse each morning's brief into structured data (one record per day), keep history, and render the views from it. This unlocks trends: FII flows by day, Wander Index over the week, story day-counts.
-3. **Wander Index and research indexes.** Done: eight components scored against history; turbulence, fragility, global spillover, FPI flow persistence and liquidity stress. Parked: Baker–Wurgler composite (India inputs unconfirmed). Gap: DII history has no free daily source.
+3. **Wander Index and research indexes.** Done: seven components scored against history (put/call ratio dropped 15 Nov 2026; FII index-futures long share tested and not added); turbulence, fragility, global spillover, FPI flow persistence and liquidity stress. Parked: Baker–Wurgler composite (India inputs unconfirmed). Gap: DII history has no free daily source.
 4. **Ask Brownian.** An AI analyst users can question, answering only from cited sources.
 5. **Accounts.** Holdings and watchlist are device-only today.
 

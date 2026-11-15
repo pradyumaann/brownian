@@ -1,5 +1,8 @@
-// Wander Index, server-side. Eight components, each scored as the percentile of today's reading among its own
+// Wander Index, server-side. Seven components, each scored as the percentile of today's reading among its own
 // previous five years (at least 250 trading days), then averaged. Scores use only data up to each day, never later.
+// 15 Nov 2026: the put/call volume ratio was dropped (see MISSING) and both VIX readings are taken against their own
+// 50-day average. FII long share of index futures (participant_oi.csv) was tested as a replacement and not added:
+// its fit with the other components fell from 0.65 to 0.20 between halves, and its level has drifted to record lows.
 import { B } from "@/data";
 import type { Tone } from "@/data/types";
 import { BANDS, QUADS, bandOf, fillWith, type MoodVars } from "./bands";
@@ -36,13 +39,18 @@ const avg = (a: Raw, i: number, n: number) => {
   return s / n;
 };
 const breadthOf = (f: (b: NonNullable<ReturnType<typeof h.breadth.get>>) => number | null): Raw => days.map((d) => { const b = h.breadth.get(d); return b ? f(b) : null; });
-const pct1 = (v: number) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(v * 100).toFixed(1)}%`;
+const vix = indexSeries("indiavix").values, usvix = worldOnNseDays("usvix").values;
+/** A reading against its own n-day average (today included), as CNN scores the VIX: removes slow drift in the level. */
+const vsAvg = (a: Raw, n: number): Raw => a.map((x, i) => { const m = avg(a, i, n); return x != null && m ? x / m - 1 : null; });
+const aboveBelow = (v: number) => `${Math.abs(v * 100).toFixed(1)}% ${v >= 0 ? "above" : "below"}`;
+const pct1 = (v: number) =>`${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(v * 100).toFixed(1)}%`;
 
 const DEFS: Def[] = [
   {
-    id: "vol", name: "Volatility", metric: "India VIX close", term: "vix", papers: ["whaley2000"], src: ["D1"], dir: -1,
-    how: "100 − percentile of India VIX among the previous five years", raw: () => indexSeries("indiavix").values,
-    show: (v) => `India VIX ${v.toFixed(2)}`,
+    id: "vol", name: "Volatility", metric: "India VIX against its 50-day average", term: "vix", papers: ["whaley2000"], src: ["D1"], dir: -1,
+    how: "100 − percentile of India VIX ÷ its 50-day average − 1, as CNN scores the VIX",
+    raw: () => vsAvg(vix, 50),
+    show: (v, t) => `India VIX ${vix[t]!.toFixed(2)}, ${aboveBelow(v)} its 50-day average`,
   },
   {
     id: "breadth", name: "Market breadth", metric: "Share of NSE stocks that rose, 5-day average", term: "breadth", papers: [], src: ["D2"], dir: 1,
@@ -62,13 +70,6 @@ const DEFS: Def[] = [
     show: (v) => `Nifty 50 ${Math.abs(v * 100).toFixed(1)}% ${v >= 0 ? "above" : "below"} its 200-day average`,
   },
   {
-    id: "pcr", name: "Put/call ratio", metric: "Nifty options put volume ÷ call volume, 5-day average", term: "pcr", papers: ["pp2006"], src: ["D3"], dir: -1,
-    how: "100 − percentile of the 5-day average put/call volume ratio",
-    raw: () => { const a = days.map((d) => { const o = h.options.get(d); return o && o.callVol ? o.putVol / o.callVol : null; }); return days.map((_, i) => avg(a, i, 5)); },
-    show: (v) => `Put/call volume ratio ${v.toFixed(2)}, 5-day average`,
-    gap: "options history starts November 2024",
-  },
-  {
     id: "haven", name: "Safe-haven demand", metric: "Nifty 50 minus gold (in ₹), 20-session returns", term: "haven", papers: [], src: ["D1", "D5"], dir: 1,
     basis: "Practitioner measure: CNN's index compares stocks with bonds; Tickertape's Market Mood Index uses gold for India; no single paper",
     how: "Percentile of the 20-session return gap between Nifty 50 and gold priced in rupees",
@@ -80,9 +81,10 @@ const DEFS: Def[] = [
     show: (v) => `Stocks ${v >= 0 ? "ahead of" : "behind"} gold by ${Math.abs(v * 100).toFixed(1)} pts over 20 sessions`,
   },
   {
-    id: "gvol", name: "Global risk appetite", metric: "US VIX close", term: "vix", papers: ["whaley2000"], src: ["D5"], dir: -1,
-    how: "100 − percentile of the US VIX among the previous five years", raw: () => worldOnNseDays("usvix").values,
-    show: (v) => `US VIX ${v.toFixed(2)}`,
+    id: "gvol", name: "Global risk appetite", metric: "US VIX against its 50-day average", term: "vix", papers: ["whaley2000"], src: ["D5"], dir: -1,
+    how: "100 − percentile of the US VIX ÷ its 50-day average − 1, as CNN scores the VIX",
+    raw: () => vsAvg(usvix, 50),
+    show: (v, t) => `US VIX ${usvix[t]!.toFixed(2)}, ${aboveBelow(v)} its 50-day average`,
   },
   {
     id: "fii", name: "Foreign flows", metric: "FPI net equity buying, 20 sessions", term: "fii", papers: ["fos2001"], src: ["D4"], dir: 1,
@@ -143,10 +145,12 @@ export const scoreRaw = scored.reduce((a, c) => a + c.score, 0) / scored.length;
 export const score = Math.round(scoreRaw);
 export const band = bandOf(score).name;
 
-/** Daily Wander Index for the chart: days with at least five scored components. */
+/** A day enters the chart once most components score: at least 60% of them (5 of 7 or 8). */
+const MIN_COMPS = Math.ceil(DEFS.length * 0.6);
+/** Daily Wander Index for the chart: days with at least MIN_COMPS scored components. */
 export const moodSeries = days.map((d, i) => {
   const s = computed.map((c) => c.score[i]).filter((x): x is number => x != null);
-  return s.length >= 5 ? { date: d, score: Math.round(s.reduce((a, b) => a + b, 0) / s.length * 10) / 10, n: s.length } : null;
+  return s.length >= MIN_COMPS ?{ date: d, score: Math.round(s.reduce((a, b) => a + b, 0) / s.length * 10) / 10, n: s.length } : null;
 }).filter((x): x is { date: string; score: number; n: number } => !!x && x.date <= asOf);
 
 /** Nifty 50 closes on each day of a Wander Index series, for the overlay. */
@@ -195,5 +199,6 @@ export const fill = (t: string) => fillWith(t, vars);
 
 export const MISSING: [string, string][] = [
   ["Valuation", "Nifty P/E against its own history. Not a sentiment input in CNN's index, but useful context; NSE publishes it daily (D1)."],
+  ["Put/call ratio", "Removed on 15 Nov 2026. Nifty options volume changed character when SEBI's index-derivative rules took effect on 20 Nov 2024 (one weekly expiry per exchange, larger contracts), and it is dominated by retail and proprietary expiry-day trading rather than hedging. Ranked against that short, broken history it read fear most days and moved against the other components."],
 ];
-export const METHOD = { lookbackYears: 5, minDays: MIN };
+export const METHOD = { lookbackYears: 5, minDays: MIN, minComps: MIN_COMPS };

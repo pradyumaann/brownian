@@ -59,6 +59,24 @@ if (br.length) {
 const op = await loadTable("options.csv");
 if (op.length) log(`options: ${op.length} days from ${op[0].date}; put/call volume ratio on the last day ${(op.at(-1).put_vol / op.at(-1).call_vol).toFixed(2)}`);
 
+// Participant OI: four participants a day, and every futures contract has a buyer and a seller, so index-futures
+// longs and shorts must balance across Client, DII, FII and Pro (NSE's own file is off by one contract on three
+// days in 2018, so a gap of up to 10 contracts passes). No trading day after the first may be missing.
+const po = await loadTable("participant_oi.csv");
+if (po.length) {
+  const byDay = new Map();
+  for (const r of po) (byDay.get(r.date) ?? byDay.set(r.date, []).get(r.date)).push(r);
+  const short4 = [...byDay].filter(([, rs]) => rs.length !== 4).length;
+  if (short4) fail(`participant OI: ${short4} days without exactly four participants`);
+  const unbalanced = [...byDay].filter(([, rs]) => Math.abs(rs.reduce((s, r) => s + +r.fut_idx_long - +r.fut_idx_short, 0)) > 10).length;
+  if (unbalanced) fail(`participant OI: ${unbalanced} days where index-futures longs and shorts differ by more than 10 contracts`);
+  const first = [...byDay.keys()].sort()[0];
+  const gaps = open.filter((d) => d >= first && !byDay.has(d));
+  if (gaps.length) fail(`participant OI: missing ${gaps.length} trading days (${gaps.slice(0, 3).join(", ")})`);
+  const last = byDay.get([...byDay.keys()].sort().at(-1)).find((r) => r.participant === "FII");
+  log(`participant OI: ${byDay.size} days from ${first}; FII index-futures long share on the last day ${(last.fut_idx_long / (+last.fut_idx_long + +last.fut_idx_short) * 100).toFixed(1)}%`);
+}
+
 // FPI flows: NSDL reporting days. A single day beyond ±₹30,000 cr of equity has never happened; it means a parse error.
 const fpi = await loadTable("fpi.csv");
 if (fpi.length) {
