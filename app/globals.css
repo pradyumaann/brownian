@@ -674,6 +674,20 @@ ul.list.list-cont { border-top: 0; }
 .hd .hd-n { grid-column: 1 / -1; color: var(--ink); }
 .hd .hd-v { font-family: var(--font-mono); font-size: 12px; }
 .mixday ~ .more, .note.after-plot + .more { margin-top: var(--space-6); }
+/* Your mix over the year: the mix line takes the first categorical colour, Nifty 50 stays the quiet ink line. */
+.bl-mix { stroke: var(--cat-1); }
+.bl-key-mix { background: var(--cat-1); }
+.bl-cursor { fill: var(--plot-ink); stroke: var(--plot); stroke-width: 2px; }
+.yfacts { margin: var(--space-4) 0 var(--space-3); }
+.yfacts .nv { font-family: var(--font-mono); font-size: 13px; }
+.yfacts .dts { display: block; font-size: 12px; color: var(--ink-muted); }
+/* Events for what you own: neutral relevance chips under an event, and the empty state. */
+.rail-ev + .bw-meta { margin-top: var(--space-6); }
+.ev-for { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); margin-top: var(--space-2); font-size: 12px; color: var(--ink-muted); }
+.ev-for .why { flex-basis: 100%; }
+/* Watchlist results dates. */
+.wrow .rd { display: block; margin-top: 2px; font-size: 13px; color: var(--ink); }
+.wrow .rd.none { color: var(--ink-faint); }
 @media (max-width: 900px) { .how-types { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 620px) {
   .mixrow { grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--space-2); padding: var(--space-3) 0; }
