@@ -8,6 +8,12 @@ import { chromium } from "playwright-core";
 
 const ROOT = resolve("out");
 const ROUTES = ["/", "/portfolio/", "/wander/", "/flows/", "/india/", "/global/", "/macro/", "/earnings/", "/developing/", "/learn/"];
+// Populated-state passes (a saved mix, and older picks only) so the portfolio charts are audited with data.
+const SEEDS = {
+  mix: { port3: { v: 1, w: { index: 30, fin: 15, mid: 10, it: 10, gold: 10, silver: 5, debt: 20 } } },
+  migrate: { held2: ["index", "fin", "gold", "debt"] },
+};
+const SEEDED = [["/portfolio/", "mix"], ["/", "mix"], ["/portfolio/", "migrate"]];
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".txt": "text/plain" };
 const server = createServer(async (req, res) => {
   let p = decodeURIComponent(new URL(req.url, "http://x").pathname);
@@ -24,8 +30,12 @@ for (const theme of ["night", "paper"]) {
     const ctx = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: "reduce" });
     await ctx.addInitScript((t) => localStorage.setItem("bw:theme", t), theme);
     const page = await ctx.newPage();
-    for (const route of ROUTES) {
+    for (const [route, seed] of [...ROUTES.map((x) => [x, null]), ...SEEDED]) {
       await page.goto(base + route, { waitUntil: "networkidle" });
+      if (seed) {
+        await page.evaluate((s) => { localStorage.removeItem("ii:port3"); localStorage.removeItem("ii:held2"); for (const [k, v] of Object.entries(s)) localStorage.setItem("ii:" + k, JSON.stringify(v)); }, SEEDS[seed]);
+        await page.reload({ waitUntil: "networkidle" });
+      }
       await page.waitForTimeout(250);
       const found = await page.evaluate(() => {
         const ground = getComputedStyle(document.body).backgroundColor, out = [];
@@ -47,7 +57,7 @@ for (const theme of ["night", "paper"]) {
         return { n: document.querySelectorAll(".bw-plot").length, out };
       });
       plots += found.n;
-      for (const f of found.out) { problems++; console.log(`FAIL ${theme} ${width} ${route} · ${f.name}\n     ${f.issues.join("\n     ")}`); }
+      for (const f of found.out) { problems++; console.log(`FAIL ${theme} ${width} ${route}${seed ? " (" + seed + ")" : ""} · ${f.name}\n     ${f.issues.join("\n     ")}`); }
     }
     await ctx.close();
   }

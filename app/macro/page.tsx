@@ -58,7 +58,6 @@ export default function Macro() {
 
       <Section title={<>Indicators to <S>watch</S></>} meta="Where each reading sits in its own five years, the releases against forecast, and what's next" ix="01">
         <h3 className="sub">Four market indicators against their own five years<Src k={["D5", "D4"]} /></h3>
-        <p className="note ifield-lede">Each row is one indicator; each column a week (a month on phones). A column&apos;s height and colour are one number: how much of the indicator&apos;s own five years it sits above, from 0 (its five-year low) to 100 (its high). The brightest peaks are each one&apos;s highs.</p>
         <IndicatorField rows={field.rows} from={field.from} to={field.to} />
         <ul className="ifield-key">
           {field.rows.map((r) => {
@@ -73,7 +72,7 @@ export default function Macro() {
             );
           })}
         </ul>
-        <p className="bw-meta after-plot">Yahoo Finance and NSDL closes, {dmy(field.from)} to {dmy(field.to)}; levels are ranked among the window&apos;s daily closes, flows among its weeks or months, and a week or month still open is marked to date. They can differ from the brief&apos;s provisional figures in the table below (USD/INR {fxBrief?.[2]} in the brief<Src k={fxBrief?.[8] ? [fxBrief[8]] : []} />). Arrow keys move along a row; up and down change rows.</p>
+        <p className="bw-meta after-plot">Yahoo Finance and NSDL closes, {dmy(field.from)} to {dmy(field.to)}; levels are ranked among the window&apos;s daily closes, flows among its weeks or months, and a week or month still open is marked to date. They can differ from the brief&apos;s provisional figures in the table below (USD/INR {fxBrief?.[2]} in the brief<Src k={fxBrief?.[8] ? [fxBrief[8]] : []} />).</p>
 
         <h3 className="sub rb-head">Releases: latest against forecast and the previous print<Src k={["W8", "W11", "W13", "W15", "S11"]} /></h3>
         <ReleaseMetrics rows={B.releases} />

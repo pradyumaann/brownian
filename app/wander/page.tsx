@@ -56,7 +56,7 @@ export default function Wander() {
       <div className="two">
         <div>
           <Dial score={scoreRaw} comps={scored.map((c) => ({ name: c.name, score: c.score }))} label={`Wander Index ${score} of 100, ${band}. Components: ${scored.map((c) => `${c.name} ${Math.round(c.score)}`).join(", ")}`} />
-          <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Each dot on the dial is one component; hover, tap or tab to read it.</p>
+          <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Each dot on the dial is one component.</p>
         </div>
         <div className="stack">
           <div>

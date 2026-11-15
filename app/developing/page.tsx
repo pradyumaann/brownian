@@ -9,7 +9,7 @@ export default function Developing() {
   return (
     <>
       <ViewHead title={<>Still <S>developing</S></>} feature="Developing"
-        lede="Stories that carry over from day to day, with what to watch next. Day counts build up as briefs accumulate." />
+        lede="Stories that carry over from day to day, with what to watch next." />
       <ol className="st">
         {B.stories.map((s) => (
           <li key={s.t}>
