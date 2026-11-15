@@ -28,8 +28,7 @@ function DayLine({ dateLabel, open, close }: Omit<MastProps, "bars">) {
 }
 
 /** The Brownian header. On Markets, Overnight it is the full header of the device showcase: the day line, the
- *  wordmark, the tagline, a hairline and the descriptor, with the Wander Index's last five sessions as five bars
- *  beside it on wider screens. Every other view gets a compact bar: wordmark, day line and the theme switch. */
+ *  wordmark and the tagline, with the Wander Index's last five sessions as five bars beside them on wider screens. Every other view gets a compact bar: wordmark, day line and the theme switch. */
 export function Masthead(p: MastProps) {
   const path = usePathname() ?? "/";
   const home = path === "/" || path === "";
@@ -52,8 +51,6 @@ export function Masthead(p: MastProps) {
         <div className="mast-text">
           <p className="mast-mark">Brownian</p>
           <p className="mast-tag">Markets wander. You don&apos;t have to.</p>
-          <hr className="mast-rule" />
-          <p className="mast-desc"><b>Market intelligence for long-term Indian investors,</b> read before the {p.open} IST open.</p>
         </div>
         <Bars bars={p.bars} />
       </div>

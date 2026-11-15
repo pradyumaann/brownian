@@ -1,143 +1,208 @@
 "use client";
 import { useEffect, useRef } from "react";
-import Brownian from "@/design/brownian-charts";
 import { crore } from "@/lib/format";
-import { usePlot, useWidth } from "./usePlot";
+import { useWidth } from "./usePlot";
 
-interface Node { id: string; label: string; value: number; cat?: string }
+export interface FlowItem { label: string; value: number }
+interface FNode { label: string; value: number; members?: FlowItem[]; kind: "sector" | "group" | "net" }
 
-/** Each sector thread has its own bright colour: warm for sectors FPIs sold, cool for sectors they bought, a pale one
- *  for the grouped rest, dawn for net new money and grey for a net withdrawal. Night and Paper each have their own
- *  values (design/brownian.css, --flow-*). Colour tells the threads apart; the side and the label name direction. */
-const colourOf = (n: Node, i: number, side: "s" | "b") =>
-  n.id === "NEW" ? "var(--plot-dawn)" : n.id === "OUT" ? "var(--plot-muted)" : /other sectors$/.test(n.label) ? `var(--flow-${side}0)` : `var(--flow-${side}${(i % 6) + 1})`;
+/** Warm to cool, left to right: red, coral, orange, amber, pale yellow, white (design/brownian.css, --flow-s1…6).
+ *  With more sources than stops, a source takes the mix between its two nearest stops. Net new money is dawn. */
+const tone = (i: number, n: number) => {
+  const t = n <= 1 ? 0 : (i / (n - 1)) * 5, k = Math.min(4, Math.floor(t)), f = Math.round((t - k) * 100);
+  return f === 0 ? `var(--flow-s${k + 1})` : f === 100 ? `var(--flow-s${k + 2})` : `color-mix(in oklab, var(--flow-s${k + 1}) ${100 - f}%, var(--flow-s${k + 2}))`;
+};
 
-/** Where foreign money went, as unit strands (one hairline = `unit` ₹ crore). Wide screens read left to right:
- *  sectors sold → FPI equity → sectors bought. Phones read top to bottom (a trunk, after the Flow inspiration): sold
- *  sectors enter from the left at the top, pool in the FPI equity trunk, and leave to the right for the sectors bought,
- *  so every label stays horizontal and every sector gets its own row. Hover, tap or tab to a thread for its value. */
-export function Strands({ left, right, unit, label }: { left: Node[]; right: Node[]; unit: number; label: string }) {
+/** A small seeded random source, so every thread falls the same way on every render. */
+const rng = (seed: number) => () => { seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+
+/** Name the largest items (up to `max`, each at least `share` of the side) and group the rest into one node. */
+function group(xs: FlowItem[], max: number, share: number, total: number): FNode[] {
+  const named = xs.filter((x, i) => i < max && x.value >= total * share);
+  const rest = xs.slice(named.length);
+  const out: FNode[] = named.map((x) => ({ ...x, kind: "sector" }));
+  if (rest.length === 1) out.push({ ...rest[0], kind: "sector" });
+  else if (rest.length) out.push({ label: `${rest.length} other sectors`, value: rest.reduce((s, x) => s + x.value, 0), members: rest, kind: "group" });
+  return out;
+}
+
+const UNITS = [10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 20000, 25000, 50000];
+const CH = 6.3; // average glyph width at the label sizes, for fitting labels
+
+/** Where foreign money went, after a woven flow map: the sectors FPIs net sold sit across the top as bars whose width
+ *  is the amount, and hairlines fall from them in long curves to the sectors they net bought (and to the net outflow)
+ *  scattered below. One hairline is a fixed ₹ amount, stated under the chart. A sector's selling is shared out over the
+ *  destinations in proportion to their size: it is an allocation, not traced trades. Each destination carries a row of
+ *  squares, one per source, sized (by area) by the amount allocated from that source. Hover, tap or tab to a sector
+ *  for its value; the other threads dim. */
+export function Strands({ sold, bought, net, month, label }: { sold: FlowItem[]; bought: FlowItem[]; net: number; month: string; label: string }) {
   const { ref, w } = useWidth<HTMLDivElement>();
+  const svg = useRef<SVGSVGElement>(null);
+  useFocus(svg);
+  const W = w || 960, phone = W < 560;
+  const fmt = (v: number) => crore(v, false);
+
+  // ---- Nodes ------------------------------------------------------------------------------------------------
+  const soldT = sold.reduce((s, x) => s + x.value, 0), boughtT = bought.reduce((s, x) => s + x.value, 0);
+  const src = group(sold, phone ? 7 : 10, phone ? 0.03 : 0.02, soldT);
+  if (net > 0) src.push({ label: "Net new money", value: net, kind: "net" });
+  const dst = group(bought, phone ? 3 : 6, phone ? 0.04 : 0.01, boughtT);
+  if (net < 0) dst.push({ label: "Net outflow", value: -net, kind: "net" });
+  const T = src.reduce((s, x) => s + x.value, 0) || 1;
+  const nSec = src.filter((n) => n.kind !== "net").length;
+  const colour = src.map((n, i) => (n.kind === "net" ? "var(--plot-dawn)" : tone(i, nSec)));
+
+  // ---- Unit and threads: one hairline = `unit` ₹ crore, split over the pairs by largest remainder -----------
+  const unit = UNITS.find((u) => T / u <= (phone ? 340 : 1150)) ?? 100000;
+  const pairs = src.flatMap((s, i) => dst.map((d, j) => ({ i, j, amt: (s.value * d.value) / T })));
+  const N = Math.round(T / unit);
+  const base = pairs.map((p) => Math.floor(p.amt / unit));
+  let left = N - base.reduce((a, b) => a + b, 0);
+  [...pairs.keys()].sort((a, b) => (pairs[b].amt / unit - base[b]) - (pairs[a].amt / unit - base[a])).forEach((k) => { if (left > 0) { base[k]++; left--; } });
+
+  // ---- Sources across the top --------------------------------------------------------------------------------
+  const pad = phone ? 10 : 20, gap = phone ? 3 : 5, barH = phone ? 9 : 12;
+  const span = W - 2 * pad - gap * (src.length - 1), k = span / T;
+  let x = pad;
+  const sx = src.map((n) => { const r = { x, w: Math.max(1, n.value * k) }; x += r.w + gap; return r; });
+  const srcText = (n: FNode) => [n.label, fmt(n.value)];
+  const labLen = Math.max(...src.map((n) => srcText(n).join("  ").length * CH));
+  const top = Math.ceil(labLen) + 18, y0 = top + barH;
+  // Rotated labels: centred on their bar, then pushed apart (at least one line height) and kept inside the panel.
+  const LS = 13, lx = sx.map((r) => r.x + r.w / 2);
+  for (let a = 1; a < lx.length; a++) lx[a] = Math.max(lx[a], lx[a - 1] + LS);
+  lx[lx.length - 1] = Math.min(lx[lx.length - 1], W - pad / 2 - 4);
+  for (let a = lx.length - 2; a >= 0; a--) lx[a] = Math.min(lx[a], lx[a + 1] - LS);
+
+  // ---- Destinations scattered below: fixed slots by size, nudged down until no two boxes overlap -------------
+  const sqMax = phone ? 12 : 16, maxPair = Math.max(...pairs.map((p) => p.amt));
+  const side = (amt: number) => (amt <= 0 ? 0 : Math.max(2, Math.sqrt(amt / maxPair) * sqMax));
+  const field = phone ? 470 : Math.max(470, Math.min(640, W * 0.52));
+  const SLOTS = phone
+    ? [[0.5, 0.92], [0.06, 0.42], [0.94, 0.3], [0.1, 0.72], [0.9, 0.62], [0.5, 0.55]]
+    : [[0.5, 0.94], [0.1, 0.36], [0.86, 0.26], [0.28, 0.7], [0.74, 0.6], [0.04, 0.9], [0.95, 0.86], [0.5, 0.45]];
+  const order = [...dst.keys()].sort((a, b) => dst[b].value - dst[a].value);
+  const boxes: { x: number; y: number; w: number; h: number; base: number; sq: { i: number; x: number; s: number }[] }[] = [];
+  for (const [rank, j] of order.entries()) {
+    const d = dst[j], sizes = src.map((_, i) => side(pairs[i * dst.length + j].amt));
+    const rowW = sizes.reduce((a, s) => a + s + (s ? 2 : 0), 0);
+    const tw = Math.max(d.label.length, (fmt(d.value) + (d.kind === "net" ? " left India" : " bought")).length) * CH;
+    const bw = Math.max(rowW, tw), bh = sqMax + 34;
+    const [fx, fy] = SLOTS[rank % SLOTS.length];
+    const bx = pad + fx * (W - 2 * pad - bw);
+    let by = y0 + 70 + fy * (field - 70 - bh);
+    const hit = (y: number) => boxes.some((b) => bx < b.x + b.w + 16 && bx + bw + 16 > b.x && y < b.y + b.h + 12 && y + bh + 12 > b.y);
+    while (hit(by)) by += 8;
+    let cx = bx;
+    const sq = sizes.map((s, i) => { const r = { i, x: cx, s }; cx += s + (s ? 2 : 0); return r; });
+    boxes[j] = { x: bx, y: by, w: bw, h: bh, base: by + sqMax, sq };
+  }
+  const H = Math.ceil(Math.max(y0 + field, ...boxes.map((b) => b.y + b.h)) + 10);
+
+  // ---- Threads ------------------------------------------------------------------------------------------------
+  // Each source's threads leave its bar evenly spaced across its width, in a fixed shuffled order so the bundles
+  // interleave, then fall in long curves that sweep in from the side of their source onto the square for that
+  // source in the destination's row. The crossings make the woven texture.
+  const threads = pairs.map((p, n) => ({ ...p, c: base[n], paths: [] as string[] }));
+  src.forEach((_, i) => {
+    const mine = threads.filter((t) => t.i === i && t.c > 0);
+    const total = mine.reduce((s, t) => s + t.c, 0), shuffle = rng(i * 31 + 7);
+    const slot = Array.from({ length: total }, (_, q) => q);
+    for (let q = total - 1; q > 0; q--) { const z = Math.floor(shuffle() * (q + 1)); [slot[q], slot[z]] = [slot[z], slot[q]]; }
+    let q = 0;
+    for (const t of mine) {
+      const r = rng(i * 7919 + t.j * 104729 + 1), b = boxes[t.j], sq = b.sq[i];
+      for (let m = 0; m < t.c; m++, q++) {
+        const xs = sx[i].x + ((slot[q] + 0.5) / total) * sx[i].w;
+        const xe = sq.x + (0.1 + 0.8 * r()) * Math.max(sq.s, 1), ye = b.base - sq.s;
+        const dy = ye - y0, sideways = xs - xe;
+        const c1x = xs + (r() - 0.5) * 36, c1y = y0 + dy * (0.3 + 0.45 * r());
+        const c2x = xe + sideways * (0.25 + 0.6 * r()), c2y = ye - dy * (-0.12 + 0.4 * r());
+        t.paths.push(`M${xs.toFixed(1)} ${y0}C${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${xe.toFixed(1)} ${ye.toFixed(1)}`);
+      }
+    }
+  });
+
+  const tipSrc = (n: FNode) => n.kind === "net" ? "Net new money into Indian equities" : n.members ? `Net sold · ${n.label}: ${n.members.map((m) => m.label).join(", ")}` : `Net sold · ${n.label}`;
+  const tipDst = (n: FNode) => n.kind === "net" ? "Net outflow from Indian equities" : n.members ? `Net bought · ${n.label}: ${n.members.map((m) => m.label).join(", ")}` : `Net bought · ${n.label}`;
   return (
     <div ref={ref}>
-      {w && w < 560 ? <Vertical left={left} right={right} unit={unit} label={label} w={w} /> : <Horizontal left={left} right={right} unit={unit} label={label} />}
+      <div className="bw-plot fm">
+        <svg ref={svg} viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={`${label} One hairline is ₹${unit.toLocaleString("en-IN")} crore.`}>
+          <g className="fm-threads">
+            {threads.filter((t) => t.c > 0).map((t) => (
+              <g key={`${t.i}-${t.j}`} className="fm-pair" data-pair={`${t.i}-${t.j}`} style={{ color: colour[t.i], "--d": `${(t.i * 0.09).toFixed(2)}s` } as React.CSSProperties}
+                data-tip-v={fmt(t.amt)} data-tip-l={`${src[t.i].label} → ${dst[t.j].label}, allocated in proportion`}>
+                {t.paths.map((d, m) => <path key={m} d={d} pathLength={1} className="fm-thread" />)}
+              </g>
+            ))}
+          </g>
+          {src.map((n, i) => (
+            <g key={n.label} className="fm-src" data-sn={i} tabIndex={0} style={{ color: colour[i] }} data-tip-v={fmt(n.value)} data-tip-l={`${tipSrc(n)}, ${month}`}>
+              <rect x={sx[i].x} y={top} width={sx[i].w} height={barH} className="fm-bar" />
+              {Math.abs(lx[i] - (sx[i].x + sx[i].w / 2)) > Math.max(2, sx[i].w / 2) &&
+                <path d={`M${sx[i].x + sx[i].w / 2} ${top - 1}L${lx[i]} ${top - 9}`} className="fm-leader" />}
+              <text transform={`translate(${(lx[i] + 4).toFixed(1)} ${top - 10}) rotate(-90)`} className="bw-label fm-slab">
+                {n.label}<tspan className="fm-sval" dx={6}>{fmt(n.value)}</tspan>
+              </text>
+            </g>
+          ))}
+          {dst.map((n, j) => {
+            const b = boxes[j];
+            return (
+              <g key={n.label} className="fm-dst" data-dn={j} tabIndex={0} data-tip-v={fmt(n.value)} data-tip-l={`${tipDst(n)}, ${month}`}>
+                <rect x={b.x - 4} y={b.y - 4} width={b.w + 8} height={b.h + 4} fill="transparent" />
+                {b.sq.filter((s) => s.s > 0).map((s) => (
+                  <rect key={s.i} x={s.x} y={b.base - s.s} width={s.s} height={s.s} className="fm-sq" style={{ color: colour[s.i] }}
+                    data-sq={`${s.i}-${j}`} data-tip-v={fmt(pairs[s.i * dst.length + j].amt)} data-tip-l={`${src[s.i].label} → ${n.label}, allocated in proportion`} />
+                ))}
+                <text x={b.x} y={b.base + 15} className="bw-label fm-dlab">{n.label}</text>
+                <text x={b.x} y={b.base + 28} className="bw-tick">{fmt(n.value)}{n.kind === "net" ? " left India" : " bought"}</text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+      <p className="fm-key">
+        <span><i className="fm-key-line" aria-hidden="true" />One hairline = ₹{unit.toLocaleString("en-IN")} crore</span>
+        <span><i className="fm-key-bar" aria-hidden="true" />Top: sectors net sold, bar width is the amount</span>
+        <span><i className="fm-key-sq" aria-hidden="true" />Below: where it went, one square per source, area is the amount</span>
+      </p>
     </div>
   );
 }
 
-/** Hovering or focusing one thread dims the others, so a single sector can be followed across the chart. */
-function useFocusThreads(svg: React.RefObject<SVGSVGElement | null>) {
+/** Hovering, tapping or focusing a source, a destination, a square or a thread lights its threads and dims the rest.
+ *  Leaving with the pointer keeps the highlight of whatever still has keyboard focus. */
+function useFocus(svg: React.RefObject<SVGSVGElement | null>) {
   useEffect(() => {
     const s = svg.current;
     if (!s) return;
-    const on = (e: Event) => {
-      const g = (e.target as Element).closest?.("[data-link]"), root = s.querySelector(".bw-strands");
-      if (!root) return;
-      root.querySelectorAll(".is-focus").forEach((n) => n.classList.remove("is-focus"));
-      root.classList.toggle("has-focus", !!g);
-      g?.classList.add("is-focus");
+    const light = (t: Element | null) => {
+      const g = t?.closest?.("[data-sn],[data-dn],[data-sq],[data-pair]") ?? null;
+      const keys = new Set<string>();
+      if (g) {
+        const all = [...s.querySelectorAll<SVGElement>("[data-pair]")].map((e) => e.dataset.pair!);
+        const sn = g.getAttribute("data-sn"), dn = g.getAttribute("data-dn"), one = g.getAttribute("data-sq") ?? g.getAttribute("data-pair");
+        for (const k of all) { const [i, j] = k.split("-"); if ((sn != null && i === sn) || (dn != null && j === dn) || k === one) keys.add(k); }
+        if (one) keys.add(one);
+      }
+      s.classList.toggle("has-focus", !!g);
+      const ins = new Set([...keys].map((k) => k.split("-")[0])), outs = new Set([...keys].map((k) => k.split("-")[1]));
+      s.querySelectorAll<SVGElement>("[data-pair]").forEach((e) => e.classList.toggle("is-focus", keys.has(e.dataset.pair!)));
+      s.querySelectorAll<SVGElement>("[data-sq]").forEach((e) => e.classList.toggle("is-focus", keys.has(e.dataset.sq!)));
+      s.querySelectorAll<SVGElement>("[data-sn]").forEach((e) => e.classList.toggle("is-focus", ins.has(e.dataset.sn!)));
+      s.querySelectorAll<SVGElement>("[data-dn]").forEach((e) => e.classList.toggle("is-focus", outs.has(e.dataset.dn!)));
     };
+    const on = (e: Event) => light(e.target as Element);
     const off = (e: Event) => {
-      // Leaving with the mouse keeps the highlight of a thread that has keyboard focus.
-      if (e.type === "pointerleave" && (document.activeElement as Element | null)?.closest?.("[data-link]") && s.contains(document.activeElement)) { on({ target: document.activeElement } as unknown as Event); return; }
-      const root = s.querySelector(".bw-strands"); root?.classList.remove("has-focus"); root?.querySelectorAll(".is-focus").forEach((n) => n.classList.remove("is-focus")); };
+      const a = document.activeElement;
+      if (e.type === "pointerleave" && a && s.contains(a)) { light(a); return; }
+      if (e.type === "focusout" && s.contains((e as FocusEvent).relatedTarget as Node | null)) return;
+      light(null);
+    };
     s.addEventListener("pointerover", on); s.addEventListener("focusin", on);
     s.addEventListener("pointerleave", off); s.addEventListener("focusout", off);
     return () => { s.removeEventListener("pointerover", on); s.removeEventListener("focusin", on); s.removeEventListener("pointerleave", off); s.removeEventListener("focusout", off); };
   }, [svg]);
-}
-
-function Horizontal({ left, right, unit, label }: { left: Node[]; right: Node[]; unit: number; label: string }) {
-  const { box, svg } = usePlot((s, w) => {
-    const total = left.reduce((a, n) => a + n.value, 0);
-    Brownian.strands(s, {
-      columns: [left.map(({ id, label }) => ({ id, label })), [{ id: "FPI", label: "FPI equity" }], right.map(({ id, label }) => ({ id, label }))],
-      links: [
-        ...left.map((n, i) => ({ source: n.id, target: "FPI", value: n.value, color: colourOf(n, i, "s") })),
-        ...right.map((n, i) => ({ source: "FPI", target: n.id, value: n.value, color: colourOf(n, i, "b") })),
-      ],
-      unit, width: w, height: Math.max(380, Math.min(600, Math.round(w * 0.6))), labelWidth: 150, gap: 22,
-      format: (v) => crore(v, false), seed: Math.round(total) % 997,
-    });
-  }, [JSON.stringify(left), JSON.stringify(right), unit]);
-  useFocusThreads(svg);
-  return (
-    <div className="bw-plot pad flow-neon" ref={box}>
-      <svg ref={svg} role="img" aria-label={label} />
-    </div>
-  );
-}
-
-function Vertical({ left, right, unit, label, w: W }: { left: Node[]; right: Node[]; unit: number; label: string; w: number }) {
-  const svg = useRef<SVGSVGElement>(null);
-  useFocusThreads(svg);
-  const LW = 112, xl = LW, xr = W - LW, total = left.reduce((a, n) => a + n.value, 0) || 1;
-  const TW = Math.round((xr - xl) * 0.6), tx0 = (xl + xr) / 2 - TW / 2, scale = TW / total, gap = 12, bend = 40, trunkH = 56;
-  // Rows: each node gets at least room for its two label lines.
-  const place = (ns: Node[], y0: number) => {
-    let y = y0;
-    return ns.map((n) => { const band = n.value * scale, row = Math.max(band, 30), r = { n, y: y + (row - band) / 2, band }; y += row + gap; return r; });
-  };
-  const top = place(left, 14), TT = (top.at(-1) ? top.at(-1)!.y + top.at(-1)!.band : 14) + bend, TB = TT + trunkH;
-  const bot = place(right, TB + bend), H = Math.round((bot.at(-1) ? bot.at(-1)!.y + bot.at(-1)!.band : TB) + 22);
-  // Slices of the trunk: the first node on each side takes the rightmost slice, so no two threads cross.
-  const slice = (rows: { band: number }[]) => { let x = tx0 + TW; return rows.map((r) => { const right = x; x -= r.band; return right; }); };
-  const sTop = slice(top), sBot = slice(bot);
-  const strands = (count: number) => Array.from({ length: count }, (_, j) => (j + 0.5) / count);
-  const fmt = (v: number) => crore(v, false);
-  const nTrunk = Math.max(1, Math.round(total / unit));
-  return (
-    <div className="bw-plot pad flow-neon">
-      <svg ref={svg} viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={label}>
-        <g className="bw-strands">
-          {top.map((r, i) => {
-            const c = colourOf(r.n, i, "s"), k = Math.max(1, Math.round(r.n.value / unit));
-            return (
-              <g key={r.n.id} data-link={`${r.n.id}>FPI`} style={{ color: c, "--d": `${(i * 0.08).toFixed(2)}s` } as React.CSSProperties} tabIndex={0}
-                data-tip-v={fmt(r.n.value)} data-tip-l={`${r.n.label} → FPI equity`}>
-                {strands(k).map((f) => {
-                  const y = r.y + f * r.band, xs = sTop[i] - f * r.band;
-                  return <path key={f} d={`M${xl + 2} ${y.toFixed(2)}C${xs.toFixed(2)} ${y.toFixed(2)} ${xs.toFixed(2)} ${y.toFixed(2)} ${xs.toFixed(2)} ${TT}`} stroke={c} pathLength={1} className="bw-strand" />;
-                })}
-              </g>
-            );
-          })}
-          {bot.map((r, i) => {
-            const c = colourOf(r.n, i, "b"), k = Math.max(1, Math.round(r.n.value / unit));
-            return (
-              <g key={r.n.id} data-link={`FPI>${r.n.id}`} style={{ color: c, "--d": `${((top.length + i) * 0.08).toFixed(2)}s` } as React.CSSProperties} tabIndex={0}
-                data-tip-v={fmt(r.n.value)} data-tip-l={`FPI equity → ${r.n.label}`}>
-                {strands(k).map((f) => {
-                  const y = r.y + f * r.band, xs = sBot[i] - f * r.band;
-                  return <path key={f} d={`M${xs.toFixed(2)} ${TB}C${xs.toFixed(2)} ${y.toFixed(2)} ${xs.toFixed(2)} ${y.toFixed(2)} ${xr} ${y.toFixed(2)}`} stroke={c} pathLength={1} className="bw-strand" />;
-                })}
-              </g>
-            );
-          })}
-        </g>
-        {/* The trunk: every unit of FPI equity flow for the month, between what was sold and what was bought. */}
-        {Array.from({ length: nTrunk }, (_, j) => { const x = tx0 + ((j + 0.5) / nTrunk) * TW; return <line key={j} x1={x} x2={x} y1={TT} y2={TB} className="flow-trunk" />; })}
-        <rect x={tx0} y={TT} width={TW} height={1} className="bw-node" />
-        <rect x={tx0} y={TB - 1} width={TW} height={1} className="bw-node" />
-        <text x={Math.min(tx0 + TW + 8, W - 92)} y={(TT + TB) / 2 - 1} className="bw-label">FPI equity</text>
-        <text x={Math.min(tx0 + TW + 8, W - 92)} y={(TT + TB) / 2 + 11} className="bw-tick">{fmt(total)}</text>
-        {top.map((r) => (
-          <g key={r.n.id}>
-            <rect x={xl} y={r.y} width={2} height={Math.max(1, r.band)} className="bw-node" />
-            <text x={xl - 8} y={r.y + r.band / 2 - 1} textAnchor="end" className="bw-label">{r.n.label}</text>
-            <text x={xl - 8} y={r.y + r.band / 2 + 11} textAnchor="end" className="bw-tick">{fmt(r.n.value)}</text>
-          </g>
-        ))}
-        {bot.map((r) => (
-          <g key={r.n.id}>
-            <rect x={xr} y={r.y} width={2} height={Math.max(1, r.band)} className="bw-node" />
-            <text x={xr + 8} y={r.y + r.band / 2 - 1} className="bw-label">{r.n.label}</text>
-            <text x={xr + 8} y={r.y + r.band / 2 + 11} className="bw-tick">{fmt(r.n.value)}</text>
-          </g>
-        ))}
-        <text x={8} y={TT + trunkH / 2 - 1} className="bw-tick">Sold ↑</text>
-        <text x={8} y={TT + trunkH / 2 + 11} className="bw-tick">Bought ↓</text>
-      </svg>
-    </div>
-  );
 }

@@ -33,7 +33,7 @@ CSS custom properties from `design/brownian.css`. `data-theme="night"` is the br
 - **Direction:** `--gain` (teal) and `--loss` (ember) for text; `--plot-gain` and `--plot-loss` in plots.
 - **Ramps (plot only):** `--spec-0…6` (violet → ember → light gold) for elevation, density, yields and drawdown depth (the brightest mark is the highest value). `--tide-0…4` for liquidity.
 - **Categorical:** `--cat-1…6` in order, at most six per view, labelled directly.
-- **Flow threads (plot only):** `--flow-s1…6` (warm, sectors sold), `--flow-b1…6` (cool, sectors bought), `--flow-s0` / `--flow-b0` for the grouped rest. **Diverging heat:** `--div-loss`, `--div-mid`, `--div-gain`, mixed by magnitude (the terrain).
+- **Flow threads (plot only):** `--flow-s1…6` (red, coral, orange, amber, pale yellow, white: the sectors sold, left to right; the last is the grouped rest). **Terrain ramp:** `--neon-0…6` (violet → magenta → orange → yellow → white on Night; the same hues, darker, on Paper), by size of flow.
 - **Type:** Onest (`--font-sans`, UI and display), Instrument Serif (`--font-serif`, now unused in the app; `.bw-serif` renders upright sans), JetBrains Mono (`--font-mono`, every number, tag and tick; tabular).
   Classes: `.t-display-xl` 96 · `.t-display-l` 56 · `.t-headline` 28 · `.t-title` 18 · `.t-body` 15 (max 64ch) · `.t-meta` 13 · `.t-label` 12 · `.t-num-l` 24 · `.t-num` 13 · `.t-tick` 10 (minimum) · `.t-source` 10 uppercase · `.t-tag` 10.
 - **Space (4px base):** `--space-1…24` = 4 · 8 · 12 · 16 · 24 · 32 · 48 · 64 · 96. **Radius:** `--radius-none` for plots and data marks · `-xs` 2 for chips and tags · `-sm` 6 · `-md` 14 for panels · `-pill` for buttons. **Stroke:** `--stroke-hair` 0.6px · `-thin` 1px · `-mark` 1.5px.
@@ -44,8 +44,8 @@ CSS custom properties from `design/brownian.css`. `data-theme="night"` is the br
 |---|---|---|
 | How did each sector, index or flow move? | Signed bars from a zero line, value printed, `null` → n/a | `diverge` |
 | How is sentiment reading, and why? | 0–100 dial with bands named, the score as a dawn needle, components as dots | `dial` |
-| Where did money go? (SIP look-through, sector flows) | Sankey of unit strands, 1 strand = a fixed ₹ amount stated on screen, nodes balance. Left to right on wide screens; on phones (< 560px) a vertical trunk, sold sectors entering from the top left and bought sectors leaving at the bottom right, so labels stay horizontal and each sector has its own row. Sector threads use the bright `--flow-*` colours | `strands` / `Strands.tsx` |
-| How did flows move across sectors and time? | Terrain: sector × quarter columns in a hand-rolled 3D projection (SVG), height and diverging `--div-*` colour both from net buying (+) or selling (−). Drag to turn, pinch or buttons to zoom, keyboard cursor with a live readout, the full table one tap away | `Terrain.tsx` |
+| Where did money go? (sector flows) | Woven flow map, vertical at every width: the sectors FPIs net sold across the top as bars whose width is the amount (largest first, "N other sectors" last, labels rotated), hairlines falling from them in long curves onto the sectors net bought and the net-outflow node, scattered at fixed, deterministic positions below, each with a row of squares (one per source, area is the amount). 1 hairline = a fixed ₹ amount stated on screen. A sector's selling is shared over the destinations in proportion to their size, so it is an allocation, not traced trades (said on screen). Sources run warm to cool (`--flow-s1…6`). Hover, tap or tab on a source, destination or thread dims the rest. Phones group more sectors and draw fewer hairlines | `Strands.tsx` |
+| How did flows move across sectors and time? | Terrain: sector × fortnight bars in an oblique 3D projection (SVG). Bars rise above the floor for net buying and hang below it for net selling, so direction is never colour alone; colour runs the neon ramp (`--neon-0…6`, violet → magenta → orange → yellow → white) by size. Hover or tap a bar for its value, tab to a sector row for its two-year total; phones draw the eight largest sectors | `Terrain.tsx` |
 | Is today unusual? (needs history) | Stacked ridges on ONE shared scale | `ridgeline` |
 | How far from the peak? | Drawdown lines hanging from the running peak, linear % | `fringe` |
 | What does the yield curve look like through time? | Isometric wireframe, always beside a 2-D table | `field` |
@@ -58,7 +58,7 @@ Bars start at zero. Log axes say "log". At most 3 annotations per figure, on lea
 
 ## Brief layout (in order)
 
-1. Brownian header (the device showcase hero, 15 Nov 2026), a dark window in both themes: the day line in mono (date · brief time · open · close IST, all from the day's record), the wordmark (Onest 600, −0.045em), the mono tagline, a hairline and the descriptor "Market intelligence for long-term Indian investors, read before the 09:15 IST open.", with the Wander Index's last five sessions as five bars beside it on wider screens. Phones keep the words only. Every other view has a compact bar: wordmark, day line and the theme switch, in the page's colours.
+1. Brownian header (the device showcase hero, 15 Nov 2026), a dark window in both themes: the day line in mono (date · brief time · open · close IST, all from the day's record) with the theme switch, the wordmark (Onest 600, −0.045em) and the mono tagline, with the Wander Index's last five sessions as five bars beside it on wider screens. There is no descriptor sentence. Phones keep the words only. Every other view has a compact bar: wordmark, day line and the theme switch, in the page's colours.
 2. A `.t-display-l` title with a 2–3 sentence tagged lede.
 3. Hero row: up to 4 KPIs divided by hairlines (2×2 on phones).
 4. Wander Index (dial + component table + "Interpretation, not a forecast.").
@@ -71,9 +71,9 @@ Each section opens with a heading, a `.bw-meta` line (context, tags, and "NN · 
 
 ## Motion and states
 
-Each chart plays one entrance when it first scrolls into view (`riseOnView` adds `.rise`): lines draw along their length, strands draw link by link, the dial ring lights segment by segment and then the needle sweeps, terrain rows rise back to front, bars grow from zero. Two quiet loops run: the masthead's plus marks and the "now" dot. All of it sits in `prefers-reduced-motion: no-preference`, and every mark is fully drawn without it.
+Each chart plays one entrance when it first scrolls into view (`riseOnView` adds `.rise`): lines draw along their length, strands draw link by link, the dial ring lights segment by segment and then the needle sweeps, terrain bars rise back to front, bars grow from zero. Two quiet loops run: the masthead's plus marks and the "now" dot. All of it sits in `prefers-reduced-motion: no-preference`, and every mark is fully drawn without it.
 
-The glow ("Hyper Charts" look) is allowed only on marks that encode a value. The sector-flow threads ("Where foreign money went") are the one place for bright, saturated strokes (15 Nov 2026, overriding the earlier "no neon glow" for this chart): a restrained 2.5px glow on Night, none on Paper, where the `--flow-*` values are darker and crisp.
+The glow ("Hyper Charts" look) is allowed only on marks that encode a value. Two charts on the Flow Map use bright neon (15 Nov 2026): the sector-flow map ("Where foreign money went": hairlines that screen into each other on Night, dark multiplied threads on Paper) and the terrain ("Two years of sector flows": a restrained glow on the bars on Night, none and darker values on Paper).
 
 Each section opens with `--space-16` above it and keeps `--space-6`–`--space-8` inside, so the gap between sections is always the largest on the page; a section's heading rule is never doubled by its first block's own top rule.
 
