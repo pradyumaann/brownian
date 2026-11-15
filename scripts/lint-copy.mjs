@@ -32,7 +32,7 @@ let hits = 0;
 for (const f of files) {
   readFileSync(join(ROOT, f), "utf8").split(/\r?\n/).forEach((line, i) => {
     if (line.includes("lint-copy: ok")) return;
-    let s = line;
+    let s = line.replace(/\.reduce(?:Right)?\(/g, ".fold(");  // Array.reduce is code, not copy
     for (const a of ALLOW) s = s.split(a).join(" ".repeat(a.length));
     for (const re of BANNED) {
       const m = s.match(re);

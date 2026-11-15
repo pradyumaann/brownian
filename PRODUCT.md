@@ -42,7 +42,7 @@ Confirmed features and names:
 - Markets, Overnight: the daily overview (the front page; renamed from “Brief”, 14 Nov 2026)
 - Wander Index: Brownian's own name (14 Nov 2026; was “Mood Index”) for its sentiment index, 0–100, seven equal-weighted components each ranked against its own five-year history (15 Nov 2026: put/call ratio dropped, both VIX readings taken against their 50-day average), with visible methods and papers; shown beside Macro pressure (0–100, from the brief's seven indicators); plus risk readings (turbulence, fragility, global spillover, liquidity stress). Name not yet cleared: check docs/name-clearance.md before relying on it.
 - Flow Map: FII/DII flows and sector rotation
-- Portfolio Lens: impact on the user's holding types, plus a watchlist
+- Portfolio Lens: impact on the user's holding types, plus a watchlist. Built in Phase 1 (15 Nov 2026): a weight per holding type, the day's blended move, exposure by factor, concentration facts and "how it is worked out"; facts only, no suggestions or scoring, data on the device only. Later phases (blend history, events for what you own, since-last-visit, export) are not built.
 - India Markets: indices, sectors, movers, commodities, rupee, after-hours
 - Global Cues: world indices, cross-asset macro, US sectors and after-hours
 - Macro Watch: economic indicators and the event calendar
@@ -61,7 +61,7 @@ Constraints:
 
 Data (14 Nov 2026): history comes from free public sources (NSE archive files, NSDL, Yahoo Finance) into a daily store in the repo. NSE's and Yahoo's terms on automated download and redistribution must be checked before Brownian is public; a licensed feed is the fallback.
 
-Open decisions: parsing the morning brief into the daily record; account model; AI analyst scope.
+Open decisions: parsing the morning brief into the daily record; account model; AI analyst scope; securities counsel's opinion on the weight-based Portfolio Lens before any public launch (questions in docs/portfolio-counsel-questions.md; the repo holds no legal analysis).
 
 ## Brand Commitments
 
