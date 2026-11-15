@@ -25,7 +25,7 @@ export function TimeLine({ points, bands = [], label: aria, unit = "", decimals 
   points: { date: string; value: number | null }[]; bands?: Band[]; label: string; unit?: string; decimals?: number; overlay?: Overlay;
 }) {
   const { ref, w } = useWidth<HTMLDivElement>();
-  const W = w || 640, H = W < 480 ? 220 : 260, l = W < 480 ? 84 : 92, r = overlay ? (W < 480 ? 44 : 56) : 16, t = 14, b = 30;
+  const W = w || 640, H = W < 480 ? 220 : 260, l = W < 480 ? 90 : 92, r = overlay ? (W < 480 ? 44 : 56) : 16, t = 14, b = 30;
   const n = points.length, X = (i: number) => l + (i / Math.max(1, n - 1)) * (W - l - r), Y = (v: number) => t + (1 - v / 100) * (H - t - b);
   // Overlay scale: its own min–max with a little room, ticks at round numbers. Linear, not log.
   const ov = overlay?.values.filter((v): v is number => v != null) ?? [];

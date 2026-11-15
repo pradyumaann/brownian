@@ -254,7 +254,7 @@ body { margin: 0; background: var(--ground); color: var(--ink); font-family: var
 .bw-loss { color: var(--loss); }
 
 /* Plot window: dark in every theme, square corners, a hairline frame. */
-.bw-plot { background: var(--plot); border: 1px solid var(--hairline); border-radius: var(--radius-none); position: relative; }
+.bw-plot { background: var(--plot); border: 0; border-radius: var(--radius-none); position: relative; }
 .bw-plot svg { display: block; width: 100%; height: auto; overflow: visible; }
 
 /* SVG marks drawn by bundle.js */
