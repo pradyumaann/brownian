@@ -1,13 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { B } from "@/data";
-import { Freshness } from "@/components/Freshness";
 import { Masthead } from "@/components/Masthead";
 import { Nav } from "@/components/Nav";
 import { Readout } from "@/components/Readout";
 import { Sheet } from "@/components/Sheet";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { vars } from "@/lib/mood";
+import { hours } from "@/lib/market";
+import { moodSeries, vars } from "@/lib/mood";
 import { DATA_SOURCES, PAPERS } from "@/lib/papers";
 
 export const metadata: Metadata = {
@@ -28,15 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <a className="skip" href="#main">Skip to content</a>
         <div className="page">
-          <header className="bar">
-            <div className="st">
-              <span>{B.dateLabel}</span>
-              <Freshness />
-              <span>Open 09:15 · Close 15:30</span>
-              <ThemeToggle />
-            </div>
-          </header>
-          <Masthead />
+          <Masthead bars={moodSeries.slice(-5).map((p) => ({ date: p.date, score: p.score }))} dateLabel={B.dateLabel} open={hours.open} close={hours.close} />
           <Nav />
           <main id="main" tabIndex={-1}>{children}</main>
           <footer className="foot">

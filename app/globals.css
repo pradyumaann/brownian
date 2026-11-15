@@ -27,11 +27,7 @@ svg text { pointer-events: none; }
 .skip:focus { left: var(--space-4); z-index: 30; background: var(--surface-raised); color: var(--ink); padding: 8px 12px; border: 1px solid var(--hairline-strong); border-radius: var(--radius-sm); }
 main:focus { outline: none; }
 
-/* Top bar and views */
-.bar { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); min-height: 64px; flex-wrap: wrap; padding-top: env(safe-area-inset-top, 0px); }
-.bar .mark { font: 600 18px/1 var(--font-sans); letter-spacing: -0.02em; text-decoration: none; }
-.bar .st { display: flex; gap: var(--space-4); align-items: center; flex-wrap: wrap; font: 400 12px var(--font-mono); color: var(--ink-faint); }
-.bar .st .live { color: var(--dawn-ink); }
+/* Views */
 .nav { border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); overflow-x: auto; scrollbar-width: none; margin: 0 calc(-1 * var(--space-2)); }
 .nav::-webkit-scrollbar { display: none; }
 .tabs { display: flex; min-width: max-content; }
@@ -242,9 +238,6 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
   .rise .bw-bar.is-range { animation-delay: .3s; }
   .rise .bw-dot, .rise .bw-val, .rise .bw-comp { animation: bw-fade .6s ease-out backwards; }
   .rise .bw-needle { animation: bw-sweep .6s ease-out backwards; }
-  .terrain .tb { transform-box: fill-box; animation: bw-grow-y .6s ease-out backwards; }
-  .terrain .tb.up { transform-origin: center bottom; }
-  .terrain .tb.down { transform-origin: center top; }
   @keyframes bw-grow-y { from { transform: scaleY(0); } }
   main > * { animation: bw-in .25s ease-out; }
   @keyframes bw-grow { from { transform: scaleX(0); } }
@@ -270,8 +263,6 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
   .srcs ol, .srcs ul { columns: 1; }
 }
 @media (max-width: 620px) {
-  .bar { min-height: 56px; }
-  .bar .st > span:nth-child(3) { display: none; }
   .nav { -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
   .tabs { padding-right: var(--space-12); }
   .vh h1 { font-size: 40px; }
@@ -324,21 +315,13 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
 .pressure-read { border-top: 1px solid var(--hairline); padding-top: var(--space-4); }
 @media (max-width: 620px) { .duo .score .n { font-size: 44px; } .duo .score .w { font-size: 18px; } }
 
-/* Masthead: the wordmark and the Wander Index's last five sessions, in a dark plot window like every chart */
-.bar { justify-content: flex-end; min-height: 52px; }
-.mast { position: relative; display: flex; align-items: stretch; justify-content: space-between; gap: var(--space-4); height: 168px; overflow: hidden; background: var(--plot); color: var(--plot-ink); border: 1px solid var(--hairline); }
-.mast-text { display: flex; flex-direction: column; justify-content: center; gap: var(--space-3); padding: var(--space-6) var(--space-8); min-width: 0; }
-.mast-mark { font: 600 clamp(44px, 7.4vw, 84px)/0.9 var(--font-sans); letter-spacing: -0.04em; color: var(--plot-ink); text-decoration: none; }
-.mast-tag { font: 400 13px/1.4 var(--font-mono); color: var(--plot-muted); letter-spacing: 0.01em; }
-.mast-art { flex: 0 1 480px; align-self: stretch; width: 480px; max-width: 54%; height: 100%; display: block; }
+/* Brownian header: the full header on Markets, Overnight (see the masthead block at the end) */
 .mast-plus { stroke: var(--plot-muted); stroke-width: 1; fill: none; opacity: .75; }
 .mast-val { font: 500 13px var(--font-mono); font-variant-numeric: tabular-nums; }
 .mast-day { font: 400 10px var(--font-mono); letter-spacing: .02em; }
 .mast-bar:focus-visible rect { stroke: var(--focus); stroke-width: 2; }
 .mast-bar { outline: none; }
 @media (prefers-reduced-motion: no-preference) { .mast-bar rect { transform-box: fill-box; transform-origin: center bottom; animation: bw-grow-y .6s ease-out backwards; } }
-@media (max-width: 900px) { .mast { height: 132px; } .mast-text { padding: var(--space-4) var(--space-4); } .mast-tag { font-size: 11px; } }
-@media (max-width: 620px) { .mast { height: 112px; } .mast-mark { font-size: 36px; } .mast-tag { font-size: 10px; max-width: 18ch; } .mast-art { max-width: 58%; } .mast-day { font-size: 9px; } .mast-val { font-size: 11px; } }
 
 /* Time line with an overlay (Wander Index with Nifty 50): a key naming each line and its scale */
 .tl-over { stroke: var(--plot-ink); opacity: .7; }
@@ -382,8 +365,6 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
   /* The ring lights segment by segment; the needle then sweeps in from zero. */
   .rise .bw-seg.is-lit { animation: bw-light .45s ease-out calc(var(--i) * 16ms) backwards; }
   .rise .bw-needle { animation: bw-sweep 1.1s cubic-bezier(.2,.7,.2,1) .5s backwards; }
-  /* Terrain: rows rise back to front. */
-  .rise .terrain .tb { animation: bw-grow-y .8s cubic-bezier(.2,.7,.2,1) calc(var(--r, 0) * 60ms) backwards; }
   /* Segment meters and the masthead light up on load. */
   .segmeter i.is-lit { animation: bw-light .5s ease-out calc(var(--i) * 24ms) backwards; }
   .minibars rect { transform-box: fill-box; transform-origin: center bottom; animation: bw-grow-y .6s ease-out backwards; }
@@ -399,15 +380,147 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
   @keyframes bw-breathe { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.35); opacity: .7; } }
 }
 
-/* Masthead bars on a phone: the drawing is scaled to about half size, so its labels are set larger to stay readable */
-@media (max-width: 620px) { .mast-val { font-size: 25px; } .mast-day { font-size: 19px; } }
-
-/* The masthead is always a dark window (the Brownian Header design), whatever the theme */
-.mast { --plot: #050607; --plot-ink: #ece9e2; --plot-muted: #8c9097; --plot-grid: #ffffff14; --cat-1: #3fd8c6; --spec-2: #9a2b8c; --spec-3: #df4662; --spec-4: #f7823b; --spec-5: #fbc34c; }
 /* Segment meters sit on the page, not in a plot: on the light theme their glow is a soft halo, not a bloom */
 :root[data-theme="paper"] .segmeter i.is-lit { box-shadow: 0 0 6px 0 color-mix(in srgb, currentColor 40%, transparent); }
 @media (prefers-color-scheme: light) { :root:not([data-theme="night"]) .segmeter i.is-lit { box-shadow: 0 0 6px 0 color-mix(in srgb, currentColor 40%, transparent); } }
 
-/* On a light plot a glow only smudges thin marks, so the terrain's bars stay crisp */
-:root[data-theme="paper"] .terrain g { filter: none; }
-@media (prefers-color-scheme: light) { :root:not([data-theme="night"]) .terrain g { filter: none; } }
+
+/* ---- Brownian header ----------------------------------------------------------------------------------------
+   Markets, Overnight carries the full header from the device showcase: day line, wordmark, tagline, hairline and
+   descriptor, with the Wander Index's last five sessions beside it on wider screens. It is the one dark window
+   (the Brownian Header design), whatever the theme, so it carries its own night values. Other views get a compact
+   bar in the page's own colours. */
+.mast { position: relative; margin-top: var(--space-4); overflow: hidden; background: var(--plot); color: var(--plot-ink); border: 1px solid var(--hairline);
+  --plot: #050607; --plot-ink: #ece9e2; --plot-muted: #8c9097; --plot-grid: #ffffff14; --cat-1: #3fd8c6; --spec-2: #9a2b8c; --spec-3: #df4662; --spec-4: #f7823b; --spec-5: #fbc34c;
+  --ink: #f3f1ec; --ink-muted: #a4a7ad; --ink-faint: #80848c; --hairline: #ffffff1f; --hairline-strong: #ffffff3d; --surface-raised: #16191d; --ground: #07080a; --dawn-ink: #ffb547; --focus: #ffb547; --on-dawn: #1a1206;
+  color-scheme: dark; }
+.mast-top { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-8); border-bottom: 1px solid var(--hairline); }
+.mast-day-line { display: flex; flex-wrap: wrap; gap: 2px var(--space-2); margin: 0; font: 400 12px/1.5 var(--font-mono); color: var(--ink-faint); letter-spacing: .02em; }
+.mast-day-line .live { color: var(--dawn-ink); }
+.mast-hours::before { content: "· "; }
+.mast-body { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--space-8); padding: var(--space-12) 0 0 var(--space-8); }
+.mast-text { display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: var(--space-8); min-width: 0; flex: 1 1 auto; max-width: 560px; }
+.mast-mark { margin: 0; font: 600 clamp(64px, 9vw, 112px)/0.9 var(--font-sans); letter-spacing: -0.045em; color: var(--plot-ink); }
+.mast-tag { font: 400 15px/1.4 var(--font-mono); color: var(--ink-muted); letter-spacing: .01em; }
+.mast-rule { width: 100%; margin: var(--space-2) 0; border: 0; border-top: 1px solid var(--hairline-strong); }
+.mast-desc { font: 400 18px/1.5 var(--font-sans); color: var(--ink-muted); max-width: 30ch; }
+.mast-desc b { color: var(--ink); font-weight: 500; }
+.mast-art { flex: 0 1 480px; width: 480px; max-width: 46%; height: 200px; display: block; align-self: flex-end; }
+.mast-c { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2) var(--space-6); min-height: 60px; padding: calc(var(--space-2) + env(safe-area-inset-top, 0px)) 0 var(--space-2); }
+.mast-c-mark { margin-right: auto; font: 600 22px/1 var(--font-sans); letter-spacing: -0.03em; color: var(--ink); text-decoration: none; }
+.mast-c .mast-day-line { justify-content: flex-end; }
+@media (max-width: 900px) {
+  .mast-top { padding: var(--space-3) var(--space-6); }
+  .mast-body { padding: var(--space-8) 0 0 var(--space-6); gap: var(--space-6); }
+  .mast-art { max-width: 42%; height: 168px; }
+}
+@media (max-width: 620px) {
+  .mast { margin-top: var(--space-3); }
+  .mast-top { padding: var(--space-3) var(--space-4); align-items: flex-start; }
+  .mast-day-line { font-size: 11px; }
+  .mast-hours::before { content: none; }
+  .mast-body { padding: var(--space-8) var(--space-4) 0; }
+  .mast-text { gap: var(--space-3); padding-bottom: var(--space-6); }
+  .mast-mark { font-size: clamp(56px, 19vw, 84px); }
+  .mast-tag { font-size: 13px; }
+  .mast-desc { font-size: 15px; }
+  /* The five sessions are in the hero row a little further down; the phone header keeps to the words. */
+  .mast-art { display: none; }
+  .mast-c { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-1) var(--space-4); padding-top: calc(var(--space-3) + env(safe-area-inset-top, 0px)); }
+  .mast-c-mark { font-size: 20px; }
+  .mast-c .mast-day-line { grid-column: 1 / -1; grid-row: 2; justify-content: flex-start; }
+  .mast-c .tsw { grid-column: 2; grid-row: 1; }
+}
+
+/* ---- Rhythm ------------------------------------------------------------------------------------------------
+   Sections are set apart by more space than anything inside them (--space-16 between sections; --space-6 to
+   --space-8 inside), and a section's own rule is never doubled by the first block's top rule. */
+.gap-top { margin-top: var(--space-8); }
+ul.list.list-cont { border-top: 0; }
+.sh + :is(.takes, .rows, ul.list, ol.st, .tl, .rot, .comps, .impact, .gloss, .wl) { border-top: 0; }
+.sh:has(+ :is(.takes, .rows, ul.list, ol.st, .tl, .rot, .comps, .impact, .gloss, .wl)) hr { margin-bottom: 0; }
+@media (max-width: 620px) {
+  .vh { padding: var(--space-8) 0 var(--space-6); gap: var(--space-4); }
+  .vh h1 { font-size: 36px; }
+  .sec { padding-top: var(--space-16); }
+  .sh h2 { font-size: 26px; }
+  .sh .bw-meta { gap: var(--space-1) var(--space-4); margin: var(--space-2) 0 var(--space-3); }
+  .sh hr { margin-bottom: var(--space-6); }
+  .two, .pair { gap: var(--space-8); }
+  .gap-top { margin-top: var(--space-6); }
+  .take { padding: var(--space-4) 0; gap: var(--space-2); }
+  .take h3 { font-size: 18px; }
+  .take .why { order: 1; }
+  .take .take-more { order: 2; }
+  .comp { padding: var(--space-4) 0; }
+  .hero > div { padding-top: var(--space-4); padding-bottom: var(--space-4); }
+  .foot { margin-top: var(--space-12); }
+}
+
+/* ---- Progressive disclosure: on a phone secondary detail folds behind a button (components/More.tsx) -------- */
+.more-btn { display: none; appearance: none; background: none; border: 0; padding: var(--space-2) 0; min-height: 40px; align-items: center; gap: var(--space-1); cursor: pointer;
+  font: 500 13px/1.3 var(--font-sans); color: var(--ink); text-decoration: underline; text-decoration-color: var(--hairline-strong); text-underline-offset: 3px; }
+.more-btn:hover { text-decoration-color: var(--ink); }
+.more-btn.is-shown { display: inline-flex; }
+@media (max-width: 620px) {
+  .more-btn { display: inline-flex; }
+  .more:not(.is-open) > .more-body { display: none; }
+  .more.is-open > .more-body + .more-btn { margin-top: var(--space-2); }
+}
+
+/* ---- Stacked tables on phones: empty cells drop out, and each label sits inline before its value ------------ */
+@media (max-width: 620px) {
+  .bw-table.st td:empty { display: none; }
+  .bw-table.st td[data-l]:nth-child(n+3)::before { display: inline; margin: 0 var(--space-2) 0 0; font-size: 12px; }
+  .bw-table.st tr { gap: 2px var(--space-3); }
+}
+
+/* ---- Where foreign money went: bright threads, one colour per sector. A restrained glow on Night; on Paper the
+   strokes stay crisp (a glow only smudges thin lines on a light page). ----------------------------------------- */
+.flow-neon .bw-strand { stroke-width: 0.8px; opacity: .92; }
+.flow-neon .bw-strands g { filter: drop-shadow(0 0 2.5px currentColor); outline: none; }
+.flow-neon .bw-strands.has-focus g { opacity: .16; }
+.flow-neon .bw-strands.has-focus g.is-focus { opacity: 1; filter: drop-shadow(0 0 4px currentColor); }
+.flow-neon .bw-strands g:focus-visible { opacity: 1; }
+.flow-trunk { stroke: var(--plot-ink); stroke-width: var(--stroke-hair); opacity: .35; }
+:root[data-theme="paper"] .flow-neon .bw-strands g, :root[data-theme="paper"] .flow-neon .bw-strands.has-focus g.is-focus { filter: none; }
+:root[data-theme="paper"] .flow-neon .bw-strand { stroke-width: 0.9px; opacity: 1; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="night"]) .flow-neon .bw-strands g, :root:not([data-theme="night"]) .flow-neon .bw-strands.has-focus g.is-focus { filter: none; }
+  :root:not([data-theme="night"]) .flow-neon .bw-strand { stroke-width: 0.9px; opacity: 1; }
+}
+
+/* ---- Terrain in 3D (components/charts/Terrain.tsx) ---------------------------------------------------------- */
+.t3d-svg { display: block; touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; }
+.t3d-svg.is-drag { cursor: grabbing; }
+.t3d-svg:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.t3d-floor { fill: var(--plot-grid); stroke: var(--plot-muted); stroke-width: var(--stroke-hair); opacity: .6; }
+.t3d-col polygon { stroke: var(--plot); stroke-width: .4px; stroke-linejoin: round; }
+/* Faces: the lid carries the value colour; the sides are shaded from it (toward the dark page on Night, toward ink
+   on Paper, so the columns keep their depth on a light page). */
+.t3d-lid { fill: var(--c); }
+.t3d-s1 { fill: color-mix(in srgb, var(--c) 64%, var(--plot)); }
+.t3d-s2 { fill: color-mix(in srgb, var(--c) 46%, var(--plot)); }
+:root[data-theme="paper"] .t3d-s1 { fill: color-mix(in srgb, var(--c) 82%, var(--plot-ink)); }
+:root[data-theme="paper"] .t3d-s2 { fill: color-mix(in srgb, var(--c) 68%, var(--plot-ink)); }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="night"]) .t3d-s1 { fill: color-mix(in srgb, var(--c) 82%, var(--plot-ink)); }
+  :root:not([data-theme="night"]) .t3d-s2 { fill: color-mix(in srgb, var(--c) 68%, var(--plot-ink)); }
+}
+.t3d-col.is-on polygon { stroke: var(--plot-ink); stroke-width: 1.2px; }
+.t3d-on { fill: var(--plot-dawn); }
+.t3d-leader { fill: none; stroke: var(--plot-muted); stroke-width: var(--stroke-hair); opacity: .7; }
+.t3d-lab.is-on .t3d-leader { stroke: var(--plot-dawn); opacity: 1; }
+:root[data-theme="paper"] .t3d-cols { filter: none; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="night"]) .t3d-cols { filter: none; } }
+.t3d-bar { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3) var(--space-6); flex-wrap: wrap; margin-top: var(--space-3); }
+.t3d-read { font: 500 13px/1.45 var(--font-mono); color: var(--ink); min-height: 1.45em; }
+.t3d-ctl { display: flex; gap: var(--space-2); }
+.t3d-ctl .bw-pill { min-width: 36px; min-height: 36px; justify-content: center; text-align: center; font-size: 14px; }
+.t3d-key { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-3); font: 400 11px var(--font-mono); color: var(--ink-muted); }
+.t3d-ramp { flex: 1 1 auto; max-width: 240px; height: 8px; background: linear-gradient(90deg, var(--div-loss), var(--div-mid), var(--div-gain)); }
+.t3d-help { margin-top: var(--space-2); }
+@media (max-width: 620px) {
+  .t3d-key { font-size: 10px; gap: var(--space-2); }
+  .t3d-read { font-size: 12px; flex: 1 1 100%; }
+}

@@ -30,6 +30,8 @@ export interface Brief {
   session: string;
   /** ISO date of the session the brief describes (the Wander Index is read as of this day). */
   sessionDate: string;
+  /** NSE cash-session hours (IST) for the day, when they differ from the regular 09:15–15:30 (a special session). */
+  hours?: { open: string; close: string };
   lede: Rich;
   kpis: { gift: Kpi; fii: Kpi; usdinr: Kpi };
   pressure: Pressure[];

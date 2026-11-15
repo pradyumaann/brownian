@@ -23,12 +23,12 @@ export default function India() {
       <div className="pair">
         <div>
           <h3 className="sub">Headline indices and flows<Src k={["S1", "S2", "S4", "S5"]} /></h3>
-          <DataTable head={[["Index"], ["Close", "r"], ["Change", "r"], ["Note"]]}
+          <DataTable stack head={[["Index"], ["Close", "r"], ["Change", "r"], ["Note"]]}
             rows={B.india.map((r) => [indexName(r[0]), r[1] === "n/a" ? <span className="bw-na">n/a</span> : r[1], <Change key="c" v={r[2]} />, r[4]])} />
         </div>
         <div>
           <h3 className="sub">All sectors<Src k={["S1", "S2", "S3"]} /></h3>
-          <Diverge rows={B.secIndia.map(([label, value, to]) => ({ label, value, to }))} label={`NSE sectoral indices, % change, ${B.session}`} />
+          <Diverge phoneRows={8} rows={B.secIndia.map(([label, value, to]) => ({ label, value, to }))} label={`NSE sectoral indices, % change, ${B.session}`} />
           <p className="bw-meta">Faint extension: sources give a range. {B.secIndiaNa.join(" and ")}: n/a.</p>
         </div>
       </div>
@@ -48,14 +48,14 @@ export default function India() {
         <div className="pair">
           <div>
             <h3 className="sub">MCX<Src k={["S9", "S19"]} /></h3>
-            <DataTable head={[["Contract"], ["Level", "r"], ["Change", "r"], ["Note"]]}
+            <DataTable stack head={[["Contract"], ["Level", "r"], ["Change", "r"], ["Note"]]}
               rows={B.mcx.map((r) => [r[0], r[1], <Change key="c" v={r[2]} />, r[3]])} />
             <p className="bw-meta">Not available today: natural gas, copper, Nifty BeES, Bank BeES, gold and silver ETFs.</p>
             <p className="note after-plot">Bullion driver: the dollar hit a 19-month high and December Fed hike bets firmed after hot US CPI. COMEX gold then fell 2.88% overnight, so MCX bullion is likely to open lower<Src k={["S10", "S11"]} />.</p>
           </div>
           <div>
             <h3 className="sub">The rupee<Src k={["S6", "S11"]} /></h3>
-            <DataTable head={[["Pair"], ["Level", "r"], ["Change", "r"], ["Note"]]}
+            <DataTable stack head={[["Pair"], ["Level", "r"], ["Change", "r"], ["Note"]]}
               rows={B.fx.map((r) => [r[0], r[1], <Change key="c" v={r[2]} />, r[3]])} />
             <p className="bw-meta">USD/INR up means a weaker rupee. Not available today: EUR/INR, GBP/INR, JPY/INR, CNY/INR.</p>
             <ul className="list after-plot">{B.fxDrivers.map((d) => <li key={d}>{d}</li>)}</ul>
