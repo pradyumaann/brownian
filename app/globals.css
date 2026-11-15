@@ -340,6 +340,14 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
 @media (max-width: 900px) { .mast { height: 132px; } .mast-text { padding: var(--space-4) var(--space-4); } .mast-tag { font-size: 11px; } }
 @media (max-width: 620px) { .mast { height: 112px; } .mast-mark { font-size: 36px; } .mast-tag { font-size: 10px; max-width: 18ch; } .mast-art { max-width: 58%; } .mast-day { font-size: 9px; } .mast-val { font-size: 11px; } }
 
+/* Time line with an overlay (Wander Index with Nifty 50): a key naming each line and its scale */
+.tl-over { stroke: var(--plot-ink); opacity: .7; }
+.tl-key { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-6); padding: var(--space-2) var(--space-3) 0; font: 400 11px var(--font-mono); color: var(--plot-muted); }
+.tl-key span { display: inline-flex; align-items: center; gap: var(--space-2); }
+.tl-key i { display: inline-block; width: 18px; height: 2px; border-radius: 1px; }
+.tl-key-main { background: linear-gradient(90deg, var(--spec-1), var(--spec-3), var(--spec-6)); }
+.tl-key-over { background: var(--plot-ink); opacity: .7; height: 1px !important; }
+
 /* Light / dark switch */
 .tsw { appearance: none; background: none; border: 0; padding: 4px 0; display: inline-flex; align-items: center; gap: var(--space-2); cursor: pointer; color: var(--ink-faint); font: 400 12px var(--font-mono); }
 .tsw:hover { color: var(--ink); }

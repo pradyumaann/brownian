@@ -149,6 +149,36 @@ export const moodSeries = days.map((d, i) => {
   return s.length >= 5 ? { date: d, score: Math.round(s.reduce((a, b) => a + b, 0) / s.length * 10) / 10, n: s.length } : null;
 }).filter((x): x is { date: string; score: number; n: number } => !!x && x.date <= asOf);
 
+/** Nifty 50 closes on each day of a Wander Index series, for the overlay. */
+export const niftyOn = (dates: string[]) => { const ix = new Map(days.map((d, i) => [d, i])); return dates.map((d) => nifty[ix.get(d) ?? -1] ?? null); };
+
+const corr = (xs: number[], ys: number[]) => {
+  const n = xs.length; if (n < 3) return null;
+  const mx = xs.reduce((a, b) => a + b, 0) / n, my = ys.reduce((a, b) => a + b, 0) / n;
+  let sxy = 0, sxx = 0, syy = 0;
+  for (let k = 0; k < n; k++) { const dx = xs[k] - mx, dy = ys[k] - my; sxy += dx * dy; sxx += dx * dx; syy += dy * dy; }
+  return sxx && syy ? sxy / Math.sqrt(sxx * syy) : null;
+};
+
+/** How the Wander Index has lined up with Nifty 50 over a series: the 20 sessions before each reading,
+ *  and the 20 sessions after it (only readings whose next 20 sessions have closed by `asOf`). */
+export function wanderVsNifty(series: { date: string; score: number }[], horizon = 20) {
+  const ix = new Map(days.map((d, i) => [d, i]));
+  const back: [number, number][] = [], fwd: [number, number][] = [];
+  for (const p of series) {
+    const i = ix.get(p.date)!;
+    const b = ret(nifty, i, horizon); if (b != null) back.push([p.score, b]);
+    if (i + horizon <= T) { const f = ret(nifty, i + horizon, horizon); if (f != null) fwd.push([p.score, f]); }
+  }
+  const avgWhere = (f: (s: number) => boolean) => { const r = fwd.filter(([s]) => f(s)).map(([, x]) => x); return { n: r.length, avg: r.length ? r.reduce((a, b) => a + b, 0) / r.length : null }; };
+  return {
+    horizon, nBack: back.length, nFwd: fwd.length,
+    rBack: corr(back.map((x) => x[0]), back.map((x) => x[1])),
+    rFwd: corr(fwd.map((x) => x[0]), fwd.map((x) => x[1])),
+    greed: avgWhere((s) => s >= 75), fear: avgWhere((s) => s < 25), all: avgWhere(() => true),
+  };
+}
+
 // Macro pressure: a separate, fundamental reading from the brief. 0 = low, 1 = elevated, 2 = high per indicator.
 export const pressure = B.pressure.reduce((a, p) => a + p.lv, 0) / (B.pressure.length * 2);
 export const pressureName = pressure >= 0.66 ? "High" : pressure >= 0.4 ? "Elevated" : "Low";
