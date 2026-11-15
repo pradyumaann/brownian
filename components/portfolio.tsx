@@ -5,6 +5,7 @@ import { B } from "@/data";
 import type { StockNote } from "@/data/types";
 import { fillWith, type MoodVars } from "@/lib/bands";
 import { blend, fmtPct, SHORT, type MoveFact } from "@/lib/portfolioMath";
+import { buildResultIndex, resolveName, resultFor } from "@/lib/resultDates";
 import { Chip, DirChip } from "./Chip";
 import { dateOf } from "./portfolio/Day";
 import { store } from "./portfolio/store";
@@ -93,15 +94,9 @@ export function ImpactNotes({ ids, vars, example }: { ids: string[]; vars: MoodV
 
 
 const NAMES = Object.keys(B.stocks);
-function resolve(q: string): { hit?: string; raw?: string; sug?: string[] } {
-  const s = q.trim().toLowerCase();
-  if (!s) return {};
-  if (B.aliases[s]) return { hit: B.aliases[s] };
-  const exact = NAMES.find((n) => n.toLowerCase() === s);
-  if (exact) return { hit: exact };
-  const sug = NAMES.filter((n) => n.toLowerCase().includes(s) || Object.entries(B.aliases).some(([a, v]) => v === n && a.startsWith(s))).slice(0, 4);
-  return { raw: q.trim(), sug };
-}
+/** One resolver for the add box and the results-date join, so both read a name the same way (lib/resultDates.ts). */
+const resolve = (q: string) => resolveName(q, NAMES, B.aliases);
+const RESULTS = buildResultIndex({ briefDate: B.briefDate, names: NAMES, aliases: B.aliases, erToday: B.erToday, erTom: B.erTom, erUS: B.erUS, erDone: B.erDone });
 
 type Msg = { text: string; add?: string[]; anyway?: string; undo?: boolean } | null;
 
@@ -170,12 +165,14 @@ export function Watchlist() {
         <ul className="wl">
           {watch.map((n, i) => {
             const d: StockNote | undefined = B.stocks[n];
+            const rd = resultFor(RESULTS, n, NAMES, B.aliases);
             return (
               <li key={n} className="wrow">
                 <span className="nm">{n}{examples && <> <Chip>Example</Chip></>}</span>
                 <span className="mv">{d ? <WatchMove d={d} /> : <Chip>Not in brief</Chip>}</span>
                 <span className="note">
                   {d ? <>{d[2]} <span className="faint">· {d[3]}</span></> : <>Not mentioned in today&apos;s brief or results calendars. Its sector is on the <Link href="/flows/">Flow Map</Link>.</>}
+                  <span className={`rd${rd.kind === "none" ? " none" : ""}`}>{rd.text}{(rd.kind === "due" || rd.kind === "reports") && <Src k={rd.kind === "due" ? ["W1", "W2"] : ["W4", "W6", "W7"]} />}</span>
                 </span>
                 <button type="button" className="x" onClick={() => remove(i)} aria-label={`Remove ${n}`}>
                   <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
