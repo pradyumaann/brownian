@@ -1,7 +1,7 @@
 // Server-only (build time): the exposure map for Portfolio Lens. Each holding type maps to the real series in the
 // history store that drive it; for the session date it computes the 1-day and 21-session change and the day's percentile
 // against the type's own previous sessions (up to 1,250, at least 250, no look-ahead, as in lib/mood.ts).
-// A series the store does not hold is n/a; nothing is substituted or estimated. Never import from a client component.
+// A series missing from the store is n/a; nothing is substituted or estimated. Never import from a client component.
 import { B } from "@/data";
 import { history, indexSeries, worldOnNseDays } from "./history";
 import { FACTOR_OF, SHORT, HOLDING_IDS } from "./portfolioMath";
@@ -36,7 +36,7 @@ const DEFS: Def[] = [
   { id: "gold", n: "Gold ETFs, SGBs & jewellery", how: "gold", drivers: [GOLD, USDINR],
     formula: "(1 + COMEX gold change in USD) × (1 + USD/INR change) − 1.", derived: "derived; excludes duties and premiums",
     note: "An approximate rupee move from COMEX gold and USD/INR. Indian prices also carry import duty, GST and local premiums, which are not in the store." },
-  { id: "silver", n: "Silver ETFs", how: "none", drivers: [], formula: "No move: the history store holds no silver series.",
+  { id: "silver", n: "Silver ETFs", how: "none", drivers: [], formula: "No move: the history store has no silver series.",
     note: "No free silver or MCX series is in the store, so silver is n/a. It is not read from gold." },
   { id: "debt", n: "Debt funds & FDs", how: "none", drivers: [IDX("gsec10", "Nifty 10-yr G-Sec index"), WLD("us10y", "US 10-year yield", "bp")],
     formula: "No blended move: shown as the change in the Nifty 10-yr G-Sec index (%) and in the US 10-year yield (basis points).",
@@ -85,7 +85,7 @@ function build(d: Def): TypeFact {
     const vals = d.drivers.map((s) => chg(lv.get(s.id)!, i, n, false));
     if (vals.some((v) => v == null)) return null;
     if (d.how === "gold") return ((1 + vals[0]! / 100) * (1 + vals[1]! / 100) - 1) * 100;
-    return vals.reduce((s, v) => s + v!, 0) / vals.length;
+    return (vals as number[]).reduce((s, v) => s + v, 0) / vals.length;
   };
   const daily: Raw = d.how === "none" || missing.length ? [] : days.map((_, i) => move(i, 1));
   const r = daily.length ? rank(daily, T) : { p: null, n: 0 };

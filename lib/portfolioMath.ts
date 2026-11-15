@@ -99,6 +99,20 @@ export function exposure(w: Weights) {
   })).filter((f) => f.share > 0).sort((a, b) => b.share - a.share);
 }
 
+/** Share-weighted average of the types' percentiles (0-100), over the types in the mix that have one. Not the mix's own rank. */
+export function weightedRank(w: Weights, ranks: { id: string; pctl: number | null }[]): { value: number; covered: number } | null {
+  const nm = normalise(w);
+  const live = ranks.filter((r) => r.pctl != null && nm.shares[r.id] > 0);
+  const covered = live.reduce((s, r) => s + nm.shares[r.id], 0);
+  return covered > 0 ? { value: live.reduce((s, r) => s + nm.shares[r.id] * r.pctl!, 0) / covered, covered } : null;
+}
+
+const MINUS = "−";
+/** A signed percent with a true minus and en-IN grouping: +1.20%, −0.74%. */
+export const fmtPct = (v: number, dp = 2) => (v > 0 ? "+" : v < 0 ? MINUS : "") + Math.abs(v).toLocaleString("en-IN", { minimumFractionDigits: dp, maximumFractionDigits: dp }) + "%";
+/** A signed change in basis points: +6 bp, −3 bp. */
+export const fmtBp = (v: number) => (v > 0 ? "+" : v < 0 ? MINUS : "") + Math.abs(Math.round(v)).toLocaleString("en-IN") + " bp";
+
 export interface Concentration {
   count: number;
   /** Largest and second-largest type, as a share of what is allocated, in %. */

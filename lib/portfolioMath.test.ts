@@ -1,7 +1,7 @@
 // Run with: npm run test:portfolio  (node --test, Node 24 strips the types)
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { blend, concentration, equalWeights, exposure, normalise, stepWeight, type MoveFact } from "./portfolioMath.ts";
+import { blend, concentration, equalWeights, exposure, fmtBp, fmtPct, normalise, stepWeight, weightedRank, type MoveFact } from "./portfolioMath.ts";
 
 const facts: MoveFact[] = [
   { id: "index", n: "Index", d1: 1 }, { id: "fin", n: "Fin", d1: 2 }, { id: "mid", n: "Mid", d1: -1 },
@@ -101,6 +101,21 @@ test("concentration: one type, two equal types, and an uneven mix", () => {
 test("concentration is read over the allocated part, so 10% in one type alone is 100% of it", () => {
   const c = concentration({ gold: 10 });
   near(c.largest!.share, 100);
+});
+
+test("weighted rank averages the percentiles by share and skips types without one", () => {
+  const r = weightedRank({ index: 50, fin: 25, silver: 25 }, [{ id: "index", pctl: 80 }, { id: "fin", pctl: 40 }, { id: "silver", pctl: null }]);
+  near(r!.value, (50 * 80 + 25 * 40) / 75);
+  near(r!.covered, 75);
+  assert.equal(weightedRank({}, [{ id: "index", pctl: 80 }]), null);
+});
+
+test("signed formats use a true minus and en-IN grouping", () => {
+  assert.equal(fmtPct(-0.74), "−0.74%");
+  assert.equal(fmtPct(1.2), "+1.20%");
+  assert.equal(fmtPct(0), "0.00%");
+  assert.equal(fmtBp(-3.4), "−3 bp");
+  assert.equal(fmtBp(12), "+12 bp");
 });
 
 test("stepping moves 5% at a time and stays within 0 to 100", () => {
