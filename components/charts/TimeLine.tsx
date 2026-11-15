@@ -6,14 +6,38 @@ const label = (d: string) => `${Number(d.slice(8))} ${MONTHS[Number(d.slice(5, 7
 
 export interface Band { from: number; to: number; name: string }
 
+/** A second series drawn against its own scale on the right (e.g. Nifty 50 closes), aligned to `points`. */
+export interface Overlay { name: string; values: (number | null)[] }
+
+const inr = (v: number) => Math.round(v).toLocaleString("en-IN");
+/** Three or four round ticks covering [lo, hi]. */
+function niceTicks(lo: number, hi: number): number[] {
+  const raw = (hi - lo) / 3, mag = 10 ** Math.floor(Math.log10(raw)), step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw)!;
+  const out: number[] = [];
+  for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) out.push(v);
+  return out;
+}
+
 /** A 0–100 reading over time: one line, named bands as hairlines, today as the dawn dot.
- *  Every day is a hover or tap readout; the latest point is also reachable by keyboard. Gaps stay gaps. */
-export function TimeLine({ points, bands = [], label: aria, unit = "", decimals = 0 }: {
-  points: { date: string; value: number | null }[]; bands?: Band[]; label: string; unit?: string; decimals?: number;
+ *  Every day is a hover or tap readout; the latest point is also reachable by keyboard. Gaps stay gaps.
+ *  With `overlay`, a second line runs on its own right-hand scale and the readout shows both. */
+export function TimeLine({ points, bands = [], label: aria, unit = "", decimals = 0, overlay }: {
+  points: { date: string; value: number | null }[]; bands?: Band[]; label: string; unit?: string; decimals?: number; overlay?: Overlay;
 }) {
   const { ref, w } = useWidth<HTMLDivElement>();
-  const W = w || 640, H = W < 480 ? 220 : 260, l = 92, r = 16, t = 14, b = 30;
+  const W = w || 640, H = W < 480 ? 220 : 260, l = W < 480 ? 84 : 92, r = overlay ? (W < 480 ? 44 : 56) : 16, t = 14, b = 30;
   const n = points.length, X = (i: number) => l + (i / Math.max(1, n - 1)) * (W - l - r), Y = (v: number) => t + (1 - v / 100) * (H - t - b);
+  // Overlay scale: its own min–max with a little room, ticks at round numbers. Linear, not log.
+  const ov = overlay?.values.filter((v): v is number => v != null) ?? [];
+  const oLo = ov.length ? Math.min(...ov) : 0, oHi = ov.length ? Math.max(...ov) : 1, pad = (oHi - oLo) * 0.06 || 1;
+  const oMin = oLo - pad, oMax = oHi + pad, OY = (v: number) => t + (1 - (v - oMin) / (oMax - oMin)) * (H - t - b);
+  let od = "", open = false;
+  overlay?.values.forEach((v, i) => { if (v == null) { open = false; return; } od += `${open ? "L" : "M"}${X(i).toFixed(1)} ${OY(v).toFixed(1)}`; open = true; });
+  const oTicks = ov.length ? niceTicks(oMin, oMax) : [];
+  // Thousands with a k on phones so the right axis stays narrow.
+  const oTick = (v: number) => (W < 480 ? `${(v / 1000).toLocaleString("en-IN", { maximumFractionDigits: 1 })}k` : inr(v));
+  const oAt = (i: number) => overlay?.values[i];
+  const tipL = (i: number, extra = "") => { const o = oAt(i); return `${label(points[i].date)}${extra}${overlay ? ` · ${overlay.name} ${o == null ? "n/a" : inr(o)}` : ""}`; };
   // The line and the area beneath it: one run per unbroken stretch of data, so gaps stay gaps.
   let d = "", area = "", pen = false, runStart = 0;
   points.forEach((p, i) => {
@@ -30,9 +54,19 @@ export function TimeLine({ points, bands = [], label: aria, unit = "", decimals 
   const ticks = points.map((p, i) => ({ p, i })).filter(({ p, i }) => i > 0 && (p.date.slice(0, 4) !== points[i - 1].date.slice(0, 4) || (n < 400 && p.date.slice(5, 7) !== points[i - 1].date.slice(5, 7) && ["01", "04", "07", "10"].includes(p.date.slice(5, 7)))));
   const fmt = (v: number) => v.toFixed(decimals) + unit;
   const step = Math.max(1, Math.ceil(n / 260));
+  const oLast = overlay ? overlay.values[lastI] : null;
   return (
     <div className="bw-plot" ref={ref}>
-      <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={`${aria}. Latest ${last ? fmt(last.value!) + " on " + label(last.date) : "n/a"}.`}>
+      {overlay && (
+        <div className="tl-key" aria-hidden="true">
+          <span><i className="tl-key-main" />{aria.replace(/ by session$/, "")} · left scale</span>
+          <span><i className="tl-key-over" />{overlay.name} close · right scale</span>
+        </div>
+      )}
+      <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={`${aria}. Latest ${last ? fmt(last.value!) + " on " + label(last.date) : "n/a"}.${overlay ? ` ${overlay.name} on the right scale, ${oLo ? inr(oLo) : "n/a"} to ${oHi ? inr(oHi) : "n/a"} over the period${oLast != null ? `, ${inr(oLast)} on the latest day` : ""}.` : ""}`}>
+        {oTicks.map((v) => (
+          <text key={v} x={W - r + 6} y={OY(v) + 3} textAnchor="start" className="bw-tick">{oTick(v)}</text>
+        ))}
         {bands.map((bd) => (
           <g key={bd.name}>
             {bd.from > 0 && <line x1={l} x2={W - r} y1={Y(bd.from)} y2={Y(bd.from)} className="bw-grid" />}
@@ -66,12 +100,14 @@ export function TimeLine({ points, bands = [], label: aria, unit = "", decimals 
           </filter>
         </defs>
         <path d={area} fill={`url(#${gid}-area)`} className="tl-area" />
+        {/* The overlay sits under the main line, plain (no glow: its colour encodes nothing). */}
+        {od && <path d={od} fill="none" className="tl-line tl-over" strokeWidth={1} strokeLinejoin="round" pathLength={1} style={{ ["--d" as string]: "0.3s" }} />}
         <path d={d} fill="none" stroke={`url(#${gid}-line)`} strokeWidth={1.75} strokeLinejoin="round" filter={`url(#${gid}-glow)`} pathLength={1} className="tl-line" />
         {points.map((p, i) => (p.value == null || i % step ? null : (
           <rect key={p.date} x={X(i) - (W - l - r) / n * step / 2} y={t} width={Math.max(1, (W - l - r) / n * step)} height={H - t - b}
-            fill="transparent" data-tip-v={fmt(p.value)} data-tip-l={label(p.date)} />
+            fill="transparent" data-tip-v={fmt(p.value)} data-tip-l={tipL(i)} />
         )))}
-        {last && <circle cx={X(lastI)} cy={Y(last.value!)} r={4} className="bw-now" tabIndex={0} data-tip-v={fmt(last.value!)} data-tip-l={`${label(last.date)} · latest`} />}
+        {last && <circle cx={X(lastI)} cy={Y(last.value!)} r={4} className="bw-now" tabIndex={0} data-tip-v={fmt(last.value!)} data-tip-l={tipL(lastI, " · latest")} />}
       </svg>
     </div>
   );

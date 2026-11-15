@@ -9,7 +9,7 @@ import { Dial } from "@/components/charts/Dial";
 import { SegMeter } from "@/components/charts/Mini";
 import { Quadrant } from "@/components/charts/Quadrant";
 import { TimeLine } from "@/components/charts/TimeLine";
-import { BANDS, METHOD, MISSING, asOf, band, bandOf, comps, moodSeries, pressure, pressureHigh, pressureName, pressureScore, pressureTone, quad, score, scoreRaw, scored } from "@/lib/mood";
+import { BANDS, METHOD, MISSING, asOf, band, bandOf, comps, moodSeries, niftyOn, pressure, pressureHigh, pressureName, pressureScore, pressureTone, quad, score, scoreRaw, scored, wanderVsNifty } from "@/lib/mood";
 import { PAPERS } from "@/lib/papers";
 import { riskOn, riskSeries } from "@/lib/risk";
 import { SPILL, spillSeries } from "@/lib/spillover";
@@ -28,7 +28,11 @@ function Papers({ ids, basis }: { ids: (keyof typeof PAPERS)[]; basis?: string }
 export default function Wander() {
   const ext = scored.filter((c) => c.score >= 75), fear = scored.filter((c) => c.score < 45), off = comps.filter((c) => !c.available);
   const risk = riskOn(asOf), rs = riskSeries(asOf).slice(-500);
-  const series = moodSeries.slice(-500);
+  const series = moodSeries.slice(-500), vsN = wanderVsNifty(series);
+  const r2 = (r: number) => (r < 0 ? "−" : "") + Math.abs(r).toFixed(2);
+  const sgn = (x: number) => { const v = Math.abs(x * 100).toFixed(1); return `${v === "0.0" ? "" : x > 0 ? "+" : "−"}${v}%`; };
+  // An average over a handful of days says nothing, so a band needs ten readings before it gets one.
+  const after = (g: { n: number; avg: number | null }) => (g.n >= 10 && g.avg != null ? `${sgn(g.avg)} (${g.n} days)` : `too few days to average (${g.n})`);
   const spill = spillSeries().filter((p) => p.date <= asOf).slice(-500), spillNow = spill.at(-1)?.date === asOf ? spill.at(-1)! : null;
   const spillAvg = spill.reduce((a, p) => a + p.toIndia, 0) / Math.max(1, spill.length);
   const liq = liquidity(asOf);
@@ -89,8 +93,11 @@ export default function Wander() {
         <div className="missing after-plot">{MISSING.map(([b, t]) => <div key={b}><b>{b}</b><span>{t}</span></div>)}</div>
       </Section>
 
-      <Section title={<>The Wander Index over <S>time</S></>} meta={`Daily reading, last ${series.length} sessions with at least five scored components`} ix="02">
-        <TimeLine points={series.map((p) => ({ date: p.date, value: p.score }))} bands={BANDS} label="Wander Index by session" />
+      <Section title={<>The Wander Index over <S>time</S></>} meta={<>Daily reading, last {series.length} sessions with at least five scored components, with the Nifty 50 close<Src k={["D1"]} /></>} ix="02">
+        <TimeLine points={series.map((p) => ({ date: p.date, value: p.score }))} bands={BANDS} label="Wander Index by session"
+          overlay={{ name: "Nifty 50", values: niftyOn(series.map((p) => p.date)) }} />
+        <p className="note after-plot"><b>Beside the market.</b> {vsN.rBack != null ? <>Over these sessions the reading moved with the Nifty 50&apos;s previous {vsN.horizon} sessions (correlation {r2(vsN.rBack)}). Part of that is built in: momentum, trend and safe-haven demand are measured on the Nifty itself. </> : null}{vsN.rFwd != null ? <>Against the Nifty&apos;s following {vsN.horizon} sessions the correlation was {r2(vsN.rFwd)} ({vsN.nFwd} readings). </> : null}{vsN.greed.n || vsN.fear.n ? <>Average Nifty 50 move over the following {vsN.horizon} sessions: after extreme fear, {after(vsN.fear)}; after extreme greed, {after(vsN.greed)}; on all days, {after(vsN.all)}.</> : null}</p>
+        <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Neighbouring days share most of their {vsN.horizon}-session windows, so these readings overlap and are far fewer independent observations than the count suggests; one period is not evidence of a lasting pattern.</p>
         <p className="note after-plot"><b>How it&apos;s built.</b> Each component is today&apos;s reading ranked against its own previous {METHOD.lookbackYears} years: a score of 70 means the reading was more greedy than on 70% of those days. It needs at least {METHOD.minDays} trading days of history and uses nothing after the day it scores. The structure follows published fear-and-greed indices (CNN Business, Tickertape&apos;s Market Mood Index); the value is Brownian&apos;s own reading, not theirs. <b>Method change:</b> the 13 Nov brief&apos;s first version scored six components against fixed reference levels and read 69; from 14 Nov 2026 every component is ranked against history, so today&apos;s figure differs.</p>
         <p className="bw-meta">Single days are noise; the bands show where the reading spends its time. Scores before November 2025 use fewer components, because options history starts later (see each component below).</p>
       </Section>
