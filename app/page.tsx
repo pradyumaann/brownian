@@ -85,7 +85,7 @@ export default function MarketsOvernight() {
         <div className="two">
           <div>
             <Dial score={scoreRaw} comps={scored.map((c) => ({ name: c.name, score: c.score }))} label={`Wander Index ${score}, ${band}`} />
-            <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Each dot is one component; hover, tap or tab to read it.</p>
+            <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Each dot is one component.</p>
           </div>
           <div>
             <div className="duo">

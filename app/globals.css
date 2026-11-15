@@ -588,7 +588,6 @@ ul.list.list-cont { border-top: 0; }
 
 /* ---- Indicators to watch: the indicator field (components/charts/IndicatorField.tsx) and the release metrics
    (components/charts/ReleaseMetrics.tsx). Field colours come from the spec ramp, so a column's colour is its rank. ---- */
-.ifield-lede { max-width: 72ch; margin-bottom: var(--space-4); }
 .ifield svg { display: block; }
 .if-floor { fill: var(--plot-grid); stroke: none; opacity: .55; }
 .if-face { fill: var(--c); }

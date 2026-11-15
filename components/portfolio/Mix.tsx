@@ -24,7 +24,7 @@ function Stepper({ id, name, value, onStep, onZero }: { id: string; name: string
 }
 
 const NOTE: Record<Mode, string> = {
-  example: "Example mix. Set your own weights; they stay on this device.",
+  example: "Example mix. Weights you set stay on this device.",
   migrated: "Carried over from your earlier picks as equal weights. Change any weight to save it on this device.",
   saved: "Saved on this device only. Nothing is sent anywhere.",
 };
@@ -60,7 +60,7 @@ export function Mix({ port, facts }: { port: Port; facts: TypeFact[] }) {
         <button type="button" className="linkbtn" onClick={port.reset}>Reset to the example</button>
         {undo && <button type="button" className="linkbtn" onClick={port.restore}>Undo</button>}
       </div>
-      <p className="bw-meta">Equal weight splits 100% evenly across the types that already have a weight, in whole 5% steps; any remainder stays Unallocated. Your wallet is not a holding and has no weight; it is a separate note below.</p>
+      <p className="bw-meta">Your wallet is not a holding and has no weight; it is a separate note below.</p>
     </>
   );
 }

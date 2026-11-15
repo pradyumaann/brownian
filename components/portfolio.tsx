@@ -45,7 +45,7 @@ export function HoldingsToday({ moves, asOf }: { moves: MoveFact[]; asOf: string
   }
   return (
     <div>
-      <p className="bw-meta">{example ? "Example holdings. Set your own weights in Portfolio Lens." : `${list.length} holding type${list.length === 1 ? "" : "s"} you picked`}</p>
+      <p className="bw-meta">{example ? "Example holdings." : `${list.length} holding type${list.length === 1 ? "" : "s"} you picked`}</p>
       {list.length ? (
         <ul className="holdrow">
           {list.map((h) => (
@@ -76,7 +76,7 @@ export function ImpactNotes({ ids, vars, example }: { ids: string[]; vars: MoodV
   );
   return (
     <>
-      {example && <p className="bw-meta"><Chip>Example</Chip> These notes are for the example mix. Set your own weights above.</p>}
+      {example && <p className="bw-meta"><Chip>Example</Chip> These notes are for the example mix.</p>}
       {list.length ? <div className="impact">{list.map(note)}</div> : (
         <p className="empty">Give a holding type a weight above to see how today&apos;s news affects it.</p>
       )}

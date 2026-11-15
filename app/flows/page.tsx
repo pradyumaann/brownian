@@ -107,13 +107,13 @@ export default function Flows() {
       <Section title={<>Where foreign money <S>went</S></>} meta={<>FPI net equity investment by sector, {st.label}, NSDL fortnightly data<Src k={["D4"]} /></>} ix="04">
         <Strands sold={st.sold} bought={st.bought} net={st.total} month={st.label}
           label={`FPI equity flows by sector in ${st.label}. Net sold: ${st.sold.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}. Net bought: ${st.bought.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}. ${st.total < 0 ? `Net outflow ${crore(-st.total, false)}.` : `Net new money ${crore(st.total, false)}.`}`} />
-        <p className="bw-meta after-plot">Across the top, the sectors where FPIs were net sellers{st.total > 0 ? ", plus the net new money they brought in" : ""}, largest first, warm to cool. Below, the sectors where they were net buyers{st.total < 0 ? ", and the net amount they took out of Indian equities" : ""}. Net for the month: {crore(st.total)}. NSDL reports only each sector&apos;s net, so each sector&apos;s selling is shared out over the destinations in proportion to their size: an allocation, not traced trades from one sector to another.</p>
+        <p className="bw-meta after-plot">Net for the month: {crore(st.total)}. NSDL reports only each sector&apos;s net, so each sector&apos;s selling is shared out over the destinations in proportion to their size: an allocation, not traced trades from one sector to another.</p>
       </Section>
 
       <Section title={<>Two years of sector <S>flows</S></>} meta={<>Net FPI equity flow by sector and fortnight, {tr.labels[0]} to {tr.labels.at(-1)}, the {tr.sectors.length} sectors with the largest flows<Src k={["D4"]} /></>} ix="05">
         <Terrain sectors={tr.sectors} labels={tr.labels} z={tr.z}
           label={`Net FPI equity flows for ${tr.sectors.length} sectors over ${tr.labels.length} fortnights. Totals: ${tr.totals.map((t) => `${t.sector} ${crore(t.net)}`).join(", ")}.`} />
-        <p className="bw-meta after-plot">Bars rise above the floor for net buying and hang below it for net selling; colour shows size either way, from violet for small flows to white for the largest. Hover or tap a bar for its value, or tab to a sector for its two-year total. Latest fortnight: {tr.labels.at(-1)}. Phones show the eight largest sectors; the table has all {tr.sectors.length}.</p>
+        <p className="bw-meta after-plot">Colour shows size either way, from violet for small flows to white for the largest.</p>
         <More label="Every sector's total" className="after-plot">
           <DataTable head={[["Sector"], ["Two years", "r"], ["Latest fortnight", "r"]]}
             rows={[...tr.totals].sort((x, y) => y.net - x.net).map((t) => [t.sector, <Change key="n" v={crore(t.net)} />, t.last == null ? <span key="l" className="bw-na">n/a</span> : <Change key="l" v={crore(t.last)} />])} />
