@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { B } from "@/data";
 import { Chip } from "@/components/Chip";
+import { DayRail } from "@/components/DayRail";
+import { EventRail } from "@/components/EventRail";
 import { DataTable } from "@/components/DataTable";
 import { S, Section, ViewHead } from "@/components/Section";
 import { Src } from "@/components/Src";
@@ -8,7 +10,8 @@ import { Term } from "@/components/Term";
 import { CpiBand } from "@/components/charts/CpiBand";
 import { IndicatorField } from "@/components/charts/IndicatorField";
 import { fieldValue } from "@/lib/fieldValue";
-import { IMPACT, ReleaseBars } from "@/components/charts/ReleaseBars";
+import { ReleaseMetrics } from "@/components/charts/ReleaseMetrics";
+import { IMPACT } from "@/lib/impact";
 import { More } from "@/components/More";
 import { indicatorField } from "@/lib/indicatorField";
 import type { Tone } from "@/data/types";
@@ -48,8 +51,7 @@ export default function Macro() {
         </div>
         <div>
           <h3 className="sub">US October PPI and four Fed speakers<Src k={["W13", "W14"]} /></h3>
-          <DataTable stack head={[["IST"], ["Event"], ["Forecast", "r"], ["Previous", "r"]]}
-            rows={B.ppi.map((r) => [<span key="t" className="bw-mono nw">{r[0]}</span>, r[1].includes("PPI") ? <Term key="e" id="ppi">{r[1]}</Term> : r[1], r[2], r[3]])} />
+          <DayRail rows={B.ppi} briefTime={B.prepared} />
           <p className="note after-plot">A hotter-than-forecast PPI would firm up the December Fed hike, push US yields higher and add pressure on the rupee and FII flows.</p>
         </div>
       </div>
@@ -74,8 +76,8 @@ export default function Macro() {
         <p className="bw-meta after-plot">Yahoo Finance and NSDL closes, {dmy(field.from)} to {dmy(field.to)}; levels are ranked among the window&apos;s daily closes, flows among its weeks or months, and a week or month still open is marked to date. They can differ from the brief&apos;s provisional figures in the table below (USD/INR {fxBrief?.[2]} in the brief<Src k={fxBrief?.[8] ? [fxBrief[8]] : []} />). Arrow keys move along a row; up and down change rows.</p>
 
         <h3 className="sub rb-head">Releases: latest against forecast and the previous print<Src k={["W8", "W11", "W13", "W15", "S11"]} /></h3>
-        <ReleaseBars rows={B.releases} />
-        <p className="bw-meta after-plot">Each release on its own scale from zero. The words for India are the brief&apos;s reading: Interpretation, not a forecast.</p>
+        <ReleaseMetrics rows={B.releases} />
+        <p className="bw-meta after-plot">The words for India are the brief&apos;s reading: Interpretation, not a forecast.</p>
 
         <More label="All 13 indicators, with what's next" className="ind-more">
           <DataTable stack head={[["Indicator"], ["Latest", "r"], ["Previous"], ["Detail"], ["Next"], ["How to read it"], ["Region"]]}
@@ -87,17 +89,7 @@ export default function Macro() {
       </Section>
 
       <Section title={<>Dates that can move your <S>portfolio</S></>} meta="Calendar · IST · ● today" ix="02">
-        <ul className="tl">
-          {B.events.map((e) => (
-            <li key={e.w + e.t} className={e.today ? "today" : undefined}>
-              <span className="when">{e.w}</span>
-              <div>
-                <div className="t">{e.t}{e.chip && <Chip tone={e.chip[1]}>{e.chip[0]}</Chip>}</div>
-                {e.d && <p className="d">{e.d}</p>}
-              </div>
-            </li>
-          ))}
-        </ul>
+        <EventRail events={B.events} briefDate={B.briefDate} />
         <p className="bw-meta">Dates from the brief and web calendars<Src k={["W1", "W13", "W15", "W16", "W17", "W19"]} />.</p>
       </Section>
     </>

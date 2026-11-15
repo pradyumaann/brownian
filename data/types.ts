@@ -10,7 +10,9 @@ export type Rich = Array<string | { b: string } | { src: string[] } | { term: st
 export interface Pressure { k: string; v: string; lv: 0 | 1 | 2; why: string }
 export interface Kpi { label: string; term?: string; v: string; unit?: string; d: string; dNote: string; src: string[] }
 export interface Takeaway { chip: [string, Tone]; h: string; p: string; why: string; src: string[] }
-export interface CalendarItem { w: string; t: string; d?: string; today?: boolean; chip?: [string, Tone] }
+/** A dated row. `date` (ISO start) and `end` (ISO, a range's last day) are set only for firm dates; a row with
+ *  neither is never plotted on a time line and nothing is estimated for it. */
+export interface CalendarItem { w: string; t: string; d?: string; date?: string; end?: string; today?: boolean; chip?: [string, Tone] }
 export interface Holding { id: string; n: string; d: "up" | "down" | "mixed"; h: string; w: string; t: string; src: string[] }
 /** [move, tone, note, sector] */
 export type StockNote = [string, Tone, string, string];
@@ -38,6 +40,8 @@ export interface Brief {
   dateLabel: string;
   dateShort: string;
   prepared: string;
+  /** The brief's own date (ISO). Every "days from today" distance counts from here, never from the build clock. */
+  briefDate: string;
   session: string;
   /** ISO date of the session the brief describes (the Wander Index is read as of this day). */
   sessionDate: string;
