@@ -14,8 +14,14 @@ const ROUTES = ["/", "/portfolio/", "/wander/", "/flows/", "/india/", "/global/"
 const SEEDS = {
   mix: { port3: { v: 1, w: { index: 30, fin: 15, mid: 10, it: 10, gold: 10, silver: 5, debt: 20 } } },
   migrate: { held2: ["index", "fin", "gold", "debt"] },
+  // Phase 2: only types with no year-long series; weights over 100%; types no event is tagged to; a typed watchlist.
+  left: { port3: { v: 1, w: { silver: 50, debt: 50 } } },
+  over: { port3: { v: 1, w: { index: 60, fin: 60, it: 30 } } },
+  noev: { port3: { v: 1, w: { gold: 50, mid: 30 } } },
+  watch: { port3: { v: 1, w: { index: 40, it: 30, consumer: 30 } }, watch2: ["Eicher Motors", "Infosys", "NVDA (Nvidia)", "Alkem Labs", "Walmart"] },
 };
-const SEEDED = [["/portfolio/", "mix"], ["/", "mix"], ["/portfolio/", "migrate"], ["/", "migrate"]];
+const SEEDED = [["/portfolio/", "mix"], ["/", "mix"], ["/portfolio/", "migrate"], ["/", "migrate"],
+  ["/portfolio/", "left"], ["/portfolio/", "over"], ["/portfolio/", "noev"], ["/portfolio/", "watch"]];
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".svg": "image/svg+xml", ".woff2": "font/woff2", ".txt": "text/plain" };
 
 const server = createServer(async (req, res) => {
@@ -46,13 +52,20 @@ for (const theme of ["night", "paper"]) {
       errors.length = 0;
       await page.goto(base + r, { waitUntil: "networkidle" });
       if (seed) {
-        await page.evaluate((s) => { localStorage.removeItem("ii:port3"); localStorage.removeItem("ii:held2"); for (const [k, v] of Object.entries(s)) localStorage.setItem("ii:" + k, JSON.stringify(v)); }, SEEDS[seed]);
+        await page.evaluate((s) => { localStorage.removeItem("ii:port3"); localStorage.removeItem("ii:held2"); localStorage.removeItem("ii:watch2"); for (const [k, v] of Object.entries(s)) localStorage.setItem("ii:" + k, JSON.stringify(v)); }, SEEDS[seed]);
         await page.reload({ waitUntil: "networkidle" });
       }
       await page.waitForTimeout(150);
       const { sw, vw } = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, vw: window.innerWidth }));
       const name = `${theme}-${width}-${r === "/" ? "brief" : r.replaceAll("/", "")}${seed ? "-" + seed : ""}`;
       await page.screenshot({ path: join(SHOTS, name + ".png"), fullPage: true });
+      // Phase 2 text expectations on the seeded Portfolio Lens passes.
+      const EXPECT = { left: ["None of the types in your mix has a year-long series"], noev: ["No dated events in the brief are tagged to the types in your mix."],
+        watch: ["Results due Fri 13 Nov, per today's brief", "No result date in today's brief", "Reported", "Reports Tue 17 Nov"], mix: ["Interpretation, not a forecast."] };
+      if (seed && r === "/portfolio/") {
+        const body = await page.evaluate(() => document.body.innerText);
+        for (const t of EXPECT[seed] ?? []) if (!body.includes(t)) errors.push(`missing text: ${t}`);
+      }
       const bad = sw > vw || errors.length;
       if (bad) failures++;
       console.log(`${bad ? "FAIL" : "ok  "} ${name.padEnd(28)} scroll ${sw}/${vw}${errors.length ? "  errors: " + errors.join(" | ") : ""}`);

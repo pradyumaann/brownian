@@ -33,6 +33,19 @@ Windows: "1 day" is the change on the session; "21 sessions" is the change over 
 | realty: Real estate stocks & REITs | realty (D1) | Nifty Realty change | REITs are not in the index; Nifty Realty covers listed developers. |
 | wallet (not a holding) | none | none | Excluded from weights. Stays a separate household-costs note from the brief. |
 
+## Year-long blend (Phase 2)
+
+`lib/portfolioSeries.ts` builds, for the 250 NSE sessions ending 12 Nov 2026 (`asOf`: the last session on or before `B.sessionDate`, not the last stored day, 13 Nov), each type's daily % change from the same definitions as the table above (`DEFS`, `mover()` in `lib/portfolioFacts.ts`), 3 decimals, 249 changes after the base session. Only that window is sent to `/portfolio` (about 14 KB); the front page does not receive it.
+
+| Type | In the year-long blend | Notes |
+|---|---|---|
+| index, fin, mid, it, oil, consumer, realty | Yes | Same drivers and averaging as the day's move. |
+| gold | Yes, labelled approximate | (1 + COMEX gold) × (1 + USD/INR) − 1 each day; excludes duties and premiums; COMEX trades on US hours and carried-over closes give no change on a US holiday. |
+| silver | No (left out and named) | No series in the store. |
+| debt | No (left out and named) | No move is estimated (duration unknown). |
+
+A type with a missing change on any day of the window is left out as a whole (named on the page), never part-filled; nothing is interpolated. The blend re-weights the covered types to 100%, holds weights constant each day, compounds the changes and rebases to 100 on the first session. Volatility is the sample standard deviation (n − 1) of the daily changes × √250. It will differ from "Your day" on the last session whenever part of the mix is Unallocated or left out. Nifty 50 beside it is the `nifty50` index series (D1).
+
 ## What the build produced for 12 Nov 2026 (check against the brief)
 
 One-day: index +0.18%, fin +1.25% (Bank +1.19%, Financial Services +1.42%, Private Bank +0.87%, PSU Bank +1.51%), mid +0.98% (Midcap +0.85%, Smallcap +1.12%), it −0.35% (Nifty IT −0.41%, Nasdaq −0.39%, USD/INR −0.24%), gold −3.11% (COMEX −2.88%, USD/INR −0.24%), oil +0.78% (Oil & Gas −0.54%, Energy −0.42%, Brent +3.30%), consumer −0.88% (Auto −1.02%, FMCG −0.74%), realty +4.51%. Silver and debt: no move; US 10-year +10.5 bp, Nifty 10-yr G-Sec index −0.15%. These match the figures quoted in the brief's holding notes (for example Bank Nifty +1.20%, PSU Bank +1.51%, Realty +4.50%) to within rounding of the underlying closes.

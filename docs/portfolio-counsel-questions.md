@@ -9,7 +9,8 @@ Portfolio Lens (Phase 1) lets a reader set a percentage weight against ten broad
 - the day's blended move: the weights times each type's move, where a type's move is the plain average of its listed index or market drivers;
 - the share of the mix in each factor (India large-cap equity, mid and small cap, IT and US, gold, rates, oil and commodities, real estate);
 - concentration facts: largest share, top-two share, and a Herfindahl figure in plain words;
-- where today's move sits against the same measure's own previous five years.
+- where today's move sits against the same measure's own previous five years;
+- (Phase 2) the same blend replayed over the last 250 sessions beside Nifty 50, the dated events the brief ties to the types in the mix, and results dates for watchlist names.
 
 Design limits already built in: no instruments, no rupee amounts, no age, goals or risk-profile questions, no "good" or "bad" scoring, no suggestions, nothing leaves the device (browser local storage), no account. Interpretive lines are labelled "Interpretation, not a forecast." and the footer reads "For information only; not investment advice."
 
@@ -22,9 +23,10 @@ Design limits already built in: no instruments, no rupee amounts, no age, goals 
 5. [LAWYER] Are the existing Wander Index (a published-method sentiment reading, labelled interpretation) and the per-type impact notes ("Tailwind", "Headwind", "Mixed") already within the same analysis, or do they need separate review?
 6. [LAWYER] Does any registration, exemption or educational carve-out apply to a free, ad-free product? Does the answer change if the product is later paid or sponsored?
 
-## 2. If watch items are added later
+## 2. Watch items (Phase 2 built; alerts and the assistant still ideas)
 
 7. [LAWYER] Phase 2 would show dated events and results dates that touch the types or names the reader chose ("events for what you own"), and a Phase 4 idea is threshold alerts stated as facts. Does joining a reader's own inputs to upcoming events change the answer to questions 1 to 4?
+7b. [LAWYER] Phase 2 is built (16 Nov 2026) and adds three things to the facts above. (a) "Events for what you own" lists dated events that the brief's own text ties to a holding type carrying a weight, with a neutral "Tagged to" chip; the tags are editorial choices, each backed by one quoted sentence (`docs/portfolio-event-tags.md`), and no effect, direction or weight is shown. Is choosing which events to tag, and omitting the rest, an act of selection that matters? (b) "Your mix over the year" draws a blend of index moves for the types in the mix, weights held constant each day, beside Nifty 50, with the change over 250 sessions, annualised volatility, the largest fall from a peak and the worst day. It is not the reader's own holdings' returns and is labelled so, but it is a backward-looking personalised series: does a historical figure for the reader's own weights change the answer to questions 1 to 4? Gold is approximate (COMEX gold × USD/INR); silver and debt are left out and named. (c) The watchlist shows a results date only where today's brief lists the company, and "No result date in today's brief" otherwise. Does a date beside a name the reader typed count as a personalised statement?
 8. [LAWYER] Does a fixed-rule alert (for example "your mix moved more than a set amount in a day") differ from a generic notification? Who sets the amount, and does that choice matter?
 9. [LAWYER] A planned "Ask Brownian" assistant restricted to the reader's portfolio facts: what controls (retrieval limits, refusal rules, logging, review) would counsel need to see before this is considered?
 
@@ -56,4 +58,4 @@ Design limits already built in: no instruments, no rupee amounts, no age, goals 
 24. [LAWYER] Please list the conditions under which counsel would sign off Phase 1 as it stands, and any change that would make that view void.
 25. [LAWYER] Should the terms of use and privacy notice be drafted before or after your review of the screens? Which screens would you want to see?
 
-Reference for counsel: the build is on branch `feature-portfolio-v1`; rules are in `AGENTS.md` ("Portfolio mix") and `PRODUCT.md`; the exposure mapping is in `docs/portfolio-exposure-map.md`.
+Reference for counsel: Phase 1 is on branch `feature-portfolio-v1` and Phase 2 on `feature-portfolio-v2`; rules are in `AGENTS.md` ("Portfolio mix") and `PRODUCT.md`; the exposure mapping is in `docs/portfolio-exposure-map.md`.
