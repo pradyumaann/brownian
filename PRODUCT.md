@@ -40,7 +40,7 @@ Research-based and transparent, not a tips app. Every number shows its source; w
 
 Confirmed features and names:
 - Markets, Overnight: the daily overview (the front page; renamed from “Brief”, 14 Nov 2026)
-- Wander Index: Brownian's own name (14 Nov 2026; was “Mood Index”) for its sentiment index, 0–100, eight equal-weighted components each ranked against its own five-year history, with visible methods and papers; shown beside Macro pressure (0–100, from the brief's seven indicators); plus risk readings (turbulence, fragility, global spillover, liquidity stress). Name not yet cleared: check docs/name-clearance.md before relying on it.
+- Wander Index: Brownian's own name (14 Nov 2026; was “Mood Index”) for its sentiment index, 0–100, seven equal-weighted components each ranked against its own five-year history (15 Nov 2026: put/call ratio dropped, both VIX readings taken against their 50-day average), with visible methods and papers; shown beside Macro pressure (0–100, from the brief's seven indicators); plus risk readings (turbulence, fragility, global spillover, liquidity stress). Name not yet cleared: check docs/name-clearance.md before relying on it.
 - Flow Map: FII/DII flows and sector rotation
 - Portfolio Lens: impact on the user's holding types, plus a watchlist
 - India Markets: indices, sectors, movers, commodities, rupee, after-hours
