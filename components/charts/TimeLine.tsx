@@ -25,7 +25,7 @@ export function TimeLine({ points, bands = [], label: aria, unit = "", decimals 
   points: { date: string; value: number | null }[]; bands?: Band[]; label: string; unit?: string; decimals?: number; overlay?: Overlay;
 }) {
   const { ref, w } = useWidth<HTMLDivElement>();
-  const W = w || 640, H = W < 480 ? 220 : 260, l = W < 480 ? 84 : 92, r = overlay ? (W < 480 ? 44 : 56) : 16, t = 14, b = 30;
+  const W = w || 640, H = W < 480 ? 220 : 260, l = W < 480 ? 90 : 92, r = overlay ? (W < 480 ? 44 : 56) : 16, t = 14, b = 30;
   const n = points.length, X = (i: number) => l + (i / Math.max(1, n - 1)) * (W - l - r), Y = (v: number) => t + (1 - v / 100) * (H - t - b);
   // Overlay scale: its own min–max with a little room, ticks at round numbers. Linear, not log.
   const ov = overlay?.values.filter((v): v is number => v != null) ?? [];
@@ -51,7 +51,10 @@ export function TimeLine({ points, bands = [], label: aria, unit = "", decimals 
   const gid = `tl-${aria.replace(/[^a-z]/gi, "").slice(0, 24)}`;
   const lastI = points.findLastIndex((p) => p.value != null), last = points[lastI];
   // One tick at the first session of each year; quarters too when the window is short.
-  const ticks = points.map((p, i) => ({ p, i })).filter(({ p, i }) => i > 0 && (p.date.slice(0, 4) !== points[i - 1].date.slice(0, 4) || (n < 400 && p.date.slice(5, 7) !== points[i - 1].date.slice(5, 7) && ["01", "04", "07", "10"].includes(p.date.slice(5, 7)))));
+  // On a phone, quarter ticks give way to years, and no two ticks sit closer than 56px.
+  const ticks = points.map((p, i) => ({ p, i })).filter(({ p, i }) => i > 0 && (p.date.slice(0, 4) !== points[i - 1].date.slice(0, 4) || (n < 400 && p.date.slice(5, 7) !== points[i - 1].date.slice(5, 7) && ["01", "04", "07", "10"].includes(p.date.slice(5, 7)))))
+    .filter((tk) => W >= 480 || n >= 400 || tk.p.date.slice(5, 7) === "01" || tk.p.date.slice(5, 7) === "07")
+    .reduce<{ p: (typeof points)[number]; i: number }[]>((kept, tk) => (kept.length && X(tk.i) - X(kept.at(-1)!.i) < (W < 480 ? 56 : 40) ? kept : [...kept, tk]), []);
   const fmt = (v: number) => v.toFixed(decimals) + unit;
   const step = Math.max(1, Math.ceil(n / 260));
   const oLast = overlay ? overlay.values[lastI] : null;

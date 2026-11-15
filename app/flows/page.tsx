@@ -11,6 +11,7 @@ import { FlowLines } from "@/components/charts/FlowLines";
 import { MiniBars } from "@/components/charts/Mini";
 import { Strands } from "@/components/charts/Strands";
 import { Terrain } from "@/components/charts/Terrain";
+import { More } from "@/components/More";
 import { strandShape, terrainShape } from "@/lib/sectorFlows";
 import { crore, pct } from "@/lib/format";
 import { flowContext, fpiDaily } from "@/lib/flows";
@@ -61,14 +62,14 @@ export default function Flows() {
             );
           })}
         </div>
-        <div className="pair" style={{ marginTop: "var(--space-8)" }}>
+        <More label="What sits behind the numbers" bodyClassName="pair" className="gap-top">
           <p className="note">Every share bought is sold by someone. When FIIs and DIIs together are net buyers, everyone else (retail, HNIs, promoters, prop desks) was a net seller by the same amount, counting exchange cash trades only.</p>
           <ul className="list">{read.map(([b, t]) => <li key={b}><b>{b}</b> {t}</li>)}</ul>
-        </div>
+        </More>
       </Section>
 
       <Section title={<>From selling to record <S>buying</S></>} meta={<>FPI net equity investment by month, ₹ crore, NSDL reporting days<Src k={["D4"]} /></>} ix="02">
-        <Diverge format="crore" valueWidth={132} rows={last12.map((m) => ({ label: m.label, value: m.value }))}
+        <Diverge format="crore" valueWidth={132} phoneRows={6} phoneKeep="last" rows={last12.map((m) => ({ label: m.label, value: m.value }))}
           label={`FPI net equity investment by month: ${last12.map((m) => `${m.label} ${crore(m.value)}`).join(", ")}`} />
         <p className="bw-meta">NSDL counts custodian-confirmed trades, so its November figure ({crore(last12.at(-1)!.value)} to date) differs from the brief&apos;s exchange provisional FII figure ({crore(mtd.fii)}<Src k={["S5"]} />). DII history has no free daily source yet: n/a.</p>
       </Section>
@@ -93,36 +94,40 @@ export default function Flows() {
           </div>
           <div className="take">
             <h3>Persistence {ctx.persistence == null ? "n/a" : ctx.persistence.toFixed(2)}</h3>
-            <p>Correlation of each day&apos;s FPI equity flow with the next day&apos;s, over the last 250 reporting days. Above 0 means buying tends to follow buying, as <a href={PAPERS.fos2001.url} target="_blank" rel="noopener noreferrer">Froot, O&apos;Connell &amp; Seasholes (2001)</a> found for international flows.</p>
+            <More label="What it measures"><p>Correlation of each day&apos;s FPI equity flow with the next day&apos;s, over the last 250 reporting days. Above 0 means buying tends to follow buying, as <a href={PAPERS.fos2001.url} target="_blank" rel="noopener noreferrer">Froot, O&apos;Connell &amp; Seasholes (2001)</a> found for international flows.</p></More>
           </div>
           <div className="take">
             <h3>Feedback {ctx.feedback == null ? "n/a" : ctx.feedback.toFixed(2)}</h3>
-            <p>Correlation of daily FPI equity flows with Nifty 50&apos;s return over the previous 20 sessions. Above 0 means foreign money has been chasing recent gains, the positive-feedback pattern in the same paper.</p>
+            <More label="What it measures"><p>Correlation of daily FPI equity flows with Nifty 50&apos;s return over the previous 20 sessions. Above 0 means foreign money has been chasing recent gains, the positive-feedback pattern in the same paper.</p></More>
           </div>
         </div>
         <p className="bw-disclaimer after-plot">Interpretation, not a forecast. NSDL reporting days lag the trade date by one session.</p>
       </Section>
 
       <Section title={<>Where foreign money <S>went</S></>} meta={<>FPI net equity investment by sector, {st.label}, NSDL fortnightly data<Src k={["D4"]} /></>} ix="04">
-        <Strands left={st.left} right={st.right} unit={st.unit}
-          label={`FPI equity flows by sector in ${st.label}. Sold: ${st.left.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}. Bought: ${st.right.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}.`} />
-        <p className="bw-meta">One hairline = ₹{st.unit.toLocaleString("en-IN")} crore. Left: sectors where FPIs were net sellers{st.total > 0 ? ", plus the net new money they brought in" : ""}. Right: sectors where they were net buyers{st.total < 0 ? ", plus the net amount they took out of India" : ""}. Net for the month: {crore(st.total)}. Sector flows net within each sector; they are not traced trades from one sector to another.</p>
+        <Strands sold={st.sold} bought={st.bought} net={st.total} month={st.label}
+          label={`FPI equity flows by sector in ${st.label}. Net sold: ${st.sold.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}. Net bought: ${st.bought.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}. ${st.total < 0 ? `Net outflow ${crore(-st.total, false)}.` : `Net new money ${crore(st.total, false)}.`}`} />
+        <p className="bw-meta after-plot">Across the top, the sectors where FPIs were net sellers{st.total > 0 ? ", plus the net new money they brought in" : ""}, largest first, warm to cool. Below, the sectors where they were net buyers{st.total < 0 ? ", and the net amount they took out of Indian equities" : ""}. Net for the month: {crore(st.total)}. NSDL reports only each sector&apos;s net, so each sector&apos;s selling is shared out over the destinations in proportion to their size: an allocation, not traced trades from one sector to another.</p>
       </Section>
 
       <Section title={<>Two years of sector <S>flows</S></>} meta={<>Net FPI equity flow by sector and fortnight, {tr.labels[0]} to {tr.labels.at(-1)}, the {tr.sectors.length} sectors with the largest flows<Src k={["D4"]} /></>} ix="05">
-        <Terrain sectors={tr.sectors} labels={tr.labels} z={tr.z} label={`Net FPI equity flows for ${tr.sectors.length} sectors over ${tr.labels.length} fortnights. Totals: ${tr.totals.map((t) => `${t.sector} ${crore(t.net)}`).join(", ")}.`} />
-        <p className="bw-meta">Height and colour both show the flow: bars rise for net buying and hang below the floor for net selling; colour runs from the largest sale (dark violet) to the largest purchase (light gold). Hover or tap a bar for its value; the table gives every total. Latest fortnight: {tr.labels.at(-1)}.</p>
-        <div className="after-plot" />
-        <DataTable head={[["Sector"], ["Two years", "r"], ["Latest fortnight", "r"]]}
-          rows={[...tr.totals].sort((x, y) => y.net - x.net).map((t) => [t.sector, <Change key="n" v={crore(t.net)} />, t.last == null ? <span key="l" className="bw-na">n/a</span> : <Change key="l" v={crore(t.last)} />])} />
+        <Terrain sectors={tr.sectors} labels={tr.labels} z={tr.z}
+          label={`Net FPI equity flows for ${tr.sectors.length} sectors over ${tr.labels.length} fortnights. Totals: ${tr.totals.map((t) => `${t.sector} ${crore(t.net)}`).join(", ")}.`} />
+        <p className="bw-meta after-plot">Bars rise above the floor for net buying and hang below it for net selling; colour shows size either way, from violet for small flows to white for the largest. Hover or tap a bar for its value, or tab to a sector for its two-year total. Latest fortnight: {tr.labels.at(-1)}. Phones show the eight largest sectors; the table has all {tr.sectors.length}.</p>
+        <More label="Every sector's total" className="after-plot">
+          <DataTable head={[["Sector"], ["Two years", "r"], ["Latest fortnight", "r"]]}
+            rows={[...tr.totals].sort((x, y) => y.net - x.net).map((t) => [t.sector, <Change key="n" v={crore(t.net)} />, t.last == null ? <span key="l" className="bw-na">n/a</span> : <Change key="l" v={crore(t.last)} />])} />
+        </More>
       </Section>
 
       <Section title={<>Into financials, out of <S>consumption</S></>} meta={<><Term id="rotation">Sector rotation</Term> · India, theme average of its NSE sectors, {B.session}<Src k={["S3"]} /></>} ix="06">
         <div className="two">
           <Diverge rows={themes.map((t) => ({ label: t.n, value: Math.round(t.avg * 100) / 100 }))} label={`Theme averages: ${themes.map((t) => `${t.n} ${pct(t.avg)}`).join(", ")}`} labelWidth={170} />
-          <ul className="list">
-            {themes.map((t) => <li key={t.n}><b>{t.n}</b> {t.s.map(([n, v]) => `${n} ${pct(v)}`).join(" · ")}</li>)}
-          </ul>
+          <More label="Sectors in each theme">
+            <ul className="list">
+              {themes.map((t) => <li key={t.n}><b>{t.n}</b> {t.s.map(([n, v]) => `${n} ${pct(v)}`).join(" · ")}</li>)}
+            </ul>
+          </More>
         </div>
       </Section>
 
@@ -144,11 +149,11 @@ export default function Flows() {
         <div className="pair">
           <div>
             <p className="cap">India<Src k={["S1", "S2", "S3"]} /></p>
-            <Diverge rows={B.secIndia.map(([label, value, to]) => ({ label, value, to }))} label={`NSE sector changes, ${B.session}`} />
+            <Diverge phoneRows={8} rows={B.secIndia.map(([label, value, to]) => ({ label, value, to }))} label={`NSE sector changes, ${B.session}`} />
           </div>
           <div>
             <p className="cap">United States<Src k={["S11"]} /></p>
-            <Diverge rows={B.secUS.map(([label, value]) => ({ label, value }))} label={`S&P 500 sector changes, ${B.session}`} />
+            <Diverge phoneRows={6} rows={B.secUS.map(([label, value]) => ({ label, value }))} label={`S&P 500 sector changes, ${B.session}`} />
           </div>
         </div>
       </Section>

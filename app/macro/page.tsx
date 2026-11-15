@@ -1,13 +1,30 @@
 import type { Metadata } from "next";
 import { B } from "@/data";
 import { Chip } from "@/components/Chip";
+import { DayRail } from "@/components/DayRail";
+import { EventRail } from "@/components/EventRail";
 import { DataTable } from "@/components/DataTable";
 import { S, Section, ViewHead } from "@/components/Section";
 import { Src } from "@/components/Src";
 import { Term } from "@/components/Term";
 import { CpiBand } from "@/components/charts/CpiBand";
+import { IndicatorField } from "@/components/charts/IndicatorField";
+import { fieldValue } from "@/lib/fieldValue";
+import { ReleaseMetrics } from "@/components/charts/ReleaseMetrics";
+import { IMPACT } from "@/lib/impact";
+import { More } from "@/components/More";
+import { indicatorField } from "@/lib/indicatorField";
+import type { Tone } from "@/data/types";
 
 export const metadata: Metadata = { title: "Macro Watch" };
+
+const field = indicatorField(B.sessionDate);
+// The brief's own reading of each field indicator (its tone in the indicators table), written out in words.
+const FIELD_ROW: Record<string, string> = { usdinr: "USD/INR", fpi: "FII net flows", us10y: "10Y Treasury", brent: "Brent" };
+const fieldTone = (id: string): Tone | undefined => B.indicators.find((r) => r[1].startsWith(FIELD_ROW[id]))?.[7];
+const fxBrief = B.indicators.find((r) => r[1] === "USD/INR");
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const dmy = (d: string) => `${Number(d.slice(8))} ${MON[Number(d.slice(5, 7)) - 1]} ${d.slice(0, 4)}`;
 
 const indName = (n: string) =>
   n.startsWith("CPI") ? <Term id="cpi">{n}</Term>
@@ -34,32 +51,45 @@ export default function Macro() {
         </div>
         <div>
           <h3 className="sub">US October PPI and four Fed speakers<Src k={["W13", "W14"]} /></h3>
-          <DataTable stack head={[["IST"], ["Event"], ["Forecast", "r"], ["Previous", "r"]]}
-            rows={B.ppi.map((r) => [<span key="t" className="bw-mono nw">{r[0]}</span>, r[1].includes("PPI") ? <Term key="e" id="ppi">{r[1]}</Term> : r[1], r[2], r[3]])} />
+          <DayRail rows={B.ppi} briefTime={B.prepared} />
           <p className="note after-plot">A hotter-than-forecast PPI would firm up the December Fed hike, push US yields higher and add pressure on the rupee and FII flows.</p>
         </div>
       </div>
 
-      <Section title={<>Indicators to <S>watch</S></>} meta="Latest reading, what's next, and how to read it" ix="01">
-        <DataTable stack head={[["Indicator"], ["Latest", "r"], ["Previous"], ["Detail"], ["Next"], ["How to read it"], ["Region"]]}
-          rows={B.indicators.map((r) => [
-            <b key="n">{indName(r[1])}<Src k={r[8] ? [r[8]] : []} /></b>,
-            na(r[2]), na(r[3]), na(r[4]), na(r[5]), r[6], <Chip key="r">{r[0]}</Chip>,
-          ])} />
+      <Section title={<>Indicators to <S>watch</S></>} meta="Where each reading sits in its own five years, the releases against forecast, and what's next" ix="01">
+        <h3 className="sub">Four market indicators against their own five years<Src k={["D5", "D4"]} /></h3>
+        <p className="note ifield-lede">Each row is one indicator; each column a week (a month on phones). A column&apos;s height and colour are one number: how much of the indicator&apos;s own five years it sits above, from 0 (its five-year low) to 100 (its high). The brightest peaks are each one&apos;s highs.</p>
+        <IndicatorField rows={field.rows} from={field.from} to={field.to} />
+        <ul className="ifield-key">
+          {field.rows.map((r) => {
+            const t = fieldTone(r.id);
+            return (
+              <li key={r.id}>
+                <b>{r.name}</b>
+                <span className="bw-mono">{fieldValue(r.kind, r.last.v)}<Src k={r.src} /></span>
+                <span className="m">{r.kind === "crore" ? `${r.last.label} to ${dmy(r.last.date)}` : `close ${dmy(r.last.date)}`} · above {Math.round(r.last.rank)}% of five years</span>
+                {t && IMPACT[t] && <Chip tone={t}>{IMPACT[t]}</Chip>}
+              </li>
+            );
+          })}
+        </ul>
+        <p className="bw-meta after-plot">Yahoo Finance and NSDL closes, {dmy(field.from)} to {dmy(field.to)}; levels are ranked among the window&apos;s daily closes, flows among its weeks or months, and a week or month still open is marked to date. They can differ from the brief&apos;s provisional figures in the table below (USD/INR {fxBrief?.[2]} in the brief<Src k={fxBrief?.[8] ? [fxBrief[8]] : []} />). Arrow keys move along a row; up and down change rows.</p>
+
+        <h3 className="sub rb-head">Releases: latest against forecast and the previous print<Src k={["W8", "W11", "W13", "W15", "S11"]} /></h3>
+        <ReleaseMetrics rows={B.releases} />
+        <p className="bw-meta after-plot">The words for India are the brief&apos;s reading: Interpretation, not a forecast.</p>
+
+        <More label="All 13 indicators, with what's next" className="ind-more">
+          <DataTable stack head={[["Indicator"], ["Latest", "r"], ["Previous"], ["Detail"], ["Next"], ["How to read it"], ["Region"]]}
+            rows={B.indicators.map((r) => [
+              <b key="n">{indName(r[1])}<Src k={r[8] ? [r[8]] : []} /></b>,
+              na(r[2]), na(r[3]), na(r[4]), na(r[5]), r[6], <Chip key="r">{r[0]}</Chip>,
+            ])} />
+        </More>
       </Section>
 
       <Section title={<>Dates that can move your <S>portfolio</S></>} meta="Calendar · IST · ● today" ix="02">
-        <ul className="tl">
-          {B.events.map((e) => (
-            <li key={e.w + e.t} className={e.today ? "today" : undefined}>
-              <span className="when">{e.w}</span>
-              <div>
-                <div className="t">{e.t}{e.chip && <Chip tone={e.chip[1]}>{e.chip[0]}</Chip>}</div>
-                {e.d && <p className="d">{e.d}</p>}
-              </div>
-            </li>
-          ))}
-        </ul>
+        <EventRail events={B.events} briefDate={B.briefDate} />
         <p className="bw-meta">Dates from the brief and web calendars<Src k={["W1", "W13", "W15", "W16", "W17", "W19"]} />.</p>
       </Section>
     </>

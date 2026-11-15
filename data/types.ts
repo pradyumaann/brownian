@@ -10,7 +10,9 @@ export type Rich = Array<string | { b: string } | { src: string[] } | { term: st
 export interface Pressure { k: string; v: string; lv: 0 | 1 | 2; why: string }
 export interface Kpi { label: string; term?: string; v: string; unit?: string; d: string; dNote: string; src: string[] }
 export interface Takeaway { chip: [string, Tone]; h: string; p: string; why: string; src: string[] }
-export interface CalendarItem { w: string; t: string; d?: string; today?: boolean; chip?: [string, Tone] }
+/** A dated row. `date` (ISO start) and `end` (ISO, a range's last day) are set only for firm dates; a row with
+ *  neither is never plotted on a time line and nothing is estimated for it. */
+export interface CalendarItem { w: string; t: string; d?: string; date?: string; end?: string; today?: boolean; chip?: [string, Tone] }
 export interface Holding { id: string; n: string; d: "up" | "down" | "mixed"; h: string; w: string; t: string; src: string[] }
 /** [move, tone, note, sector] */
 export type StockNote = [string, Tone, string, string];
@@ -20,6 +22,17 @@ export interface Rotation { lane: string; out: [string, string][]; into: [string
 export type TrendRow = [string, string, string, string, Tone, string];
 /** label, value, optional other end of a range reported by another source */
 export type SectorMove = [string, number | null, number?];
+/** One scheduled release: name, region, basis (y/y, m/m), latest, forecast and previous print in %, null = n/a. */
+export interface Release {
+  n: string; region: string; basis?: string; latest: number | null; forecast: number | null; prior: number | null;
+  /** What the previous print refers to ("Sep"), or "previous". */
+  priorLabel: string;
+  /** When a release not yet out is due (IST). */
+  due?: string;
+  /** What the brief says about a release whose figure it does not give. */
+  note?: string;
+  tone: Tone; src: string[];
+}
 export interface Story { t: string; st: "NEW" | "ONGOING"; day: string; p: string; m: string; w: string; src: string[] }
 
 export interface Brief {
@@ -27,9 +40,13 @@ export interface Brief {
   dateLabel: string;
   dateShort: string;
   prepared: string;
+  /** The brief's own date (ISO). Every "days from today" distance counts from here, never from the build clock. */
+  briefDate: string;
   session: string;
   /** ISO date of the session the brief describes (the Wander Index is read as of this day). */
   sessionDate: string;
+  /** NSE cash-session hours (IST) for the day, when they differ from the regular 09:15–15:30 (a special session). */
+  hours?: { open: string; close: string };
   lede: Rich;
   kpis: { gift: Kpi; fii: Kpi; usdinr: Kpi };
   pressure: Pressure[];
@@ -76,6 +93,9 @@ export interface Brief {
   ppi: [string, string, string, string][];
   /** [region, indicator, latest, previous, detail, next, how to read, tone, source] */
   indicators: [string, string, string, string, string, string, string, Tone, string][];
+  /** The scheduled releases among the indicators, as numbers for the release bars (all in %). A null is n/a;
+   *  a null `latest` with `due` set is a release not out yet when the brief was prepared. */
+  releases: Release[];
   events: CalendarItem[];
   erDeadline: string;
   /** [company, sector, context] */

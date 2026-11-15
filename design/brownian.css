@@ -41,6 +41,30 @@
   --cat-4: #d77be0;
   --cat-5: #79a8ff;
   --cat-6: #d8d2c4;
+  --flow-s1: #ff2e3e;
+  --flow-s2: #ff6a52;
+  --flow-s3: #ff9a36;
+  --flow-s4: #ffc443;
+  --flow-s5: #ffe79c;
+  --flow-s6: #f6f3ec;
+  --neon-0: #3a1d96;
+  --neon-1: #7b2ff0;
+  --neon-2: #d62bc0;
+  --neon-3: #ff4f4a;
+  --neon-4: #ff9a26;
+  --neon-5: #ffe048;
+  --neon-6: #fffaf0;
+
+  --mast-1: #3fd8c6;
+  --mast-2: #9a2b8c;
+  --mast-3: #df4662;
+  --mast-4: #f7823b;
+  --mast-5: #fbc34c;
+  --mast-ink-1: #1a1206;
+  --mast-ink-2: #ece9e2;
+  --mast-ink-3: #1a1206;
+  --mast-ink-4: #1a1206;
+  --mast-ink-5: #1a1206;
   color-scheme: dark;
 }
 [data-theme="paper"] {
@@ -81,6 +105,30 @@
   --cat-5: #2f62c9;
   --cat-6: #6b6558;
   --plot-dawn: #a85a00;
+  --flow-s1: #b3121f;
+  --flow-s2: #c2391f;
+  --flow-s3: #b25000;
+  --flow-s4: #8f5c00;
+  --flow-s5: #5f4a12;
+  --flow-s6: #26231e;
+  --neon-0: #a99be6;
+  --neon-1: #7440cf;
+  --neon-2: #a81a8c;
+  --neon-3: #c9301f;
+  --neon-4: #b65600;
+  --neon-5: #8a6200;
+  --neon-6: #2a1f08;
+
+  --mast-1: #00a3ff;
+  --mast-2: #8a2bff;
+  --mast-3: #ff2d8a;
+  --mast-4: #ff6a00;
+  --mast-5: #00c853;
+  --mast-ink-1: #111214;
+  --mast-ink-2: #ffffff;
+  --mast-ink-3: #111214;
+  --mast-ink-4: #111214;
+  --mast-ink-5: #111214;
   color-scheme: light;
 }
 @media (prefers-color-scheme: light) {
@@ -122,6 +170,30 @@
     --cat-5: #2f62c9;
     --cat-6: #6b6558;
     --plot-dawn: #a85a00;
+    --flow-s1: #b3121f;
+    --flow-s2: #c2391f;
+    --flow-s3: #b25000;
+    --flow-s4: #8f5c00;
+    --flow-s5: #5f4a12;
+    --flow-s6: #26231e;
+    --neon-0: #a99be6;
+    --neon-1: #7440cf;
+    --neon-2: #a81a8c;
+    --neon-3: #c9301f;
+    --neon-4: #b65600;
+    --neon-5: #8a6200;
+    --neon-6: #2a1f08;
+
+    --mast-1: #00a3ff;
+    --mast-2: #8a2bff;
+    --mast-3: #ff2d8a;
+    --mast-4: #ff6a00;
+    --mast-5: #00c853;
+    --mast-ink-1: #111214;
+    --mast-ink-2: #ffffff;
+    --mast-ink-3: #111214;
+    --mast-ink-4: #111214;
+    --mast-ink-5: #111214;
     color-scheme: light;
   }
 }
@@ -182,7 +254,7 @@ body { margin: 0; background: var(--ground); color: var(--ink); font-family: var
 .bw-loss { color: var(--loss); }
 
 /* Plot window: dark in every theme, square corners, a hairline frame. */
-.bw-plot { background: var(--plot); border: 1px solid var(--hairline); border-radius: var(--radius-none); position: relative; }
+.bw-plot { background: var(--plot); border: 0; border-radius: var(--radius-none); position: relative; }
 .bw-plot svg { display: block; width: 100%; height: auto; overflow: visible; }
 
 /* SVG marks drawn by bundle.js */

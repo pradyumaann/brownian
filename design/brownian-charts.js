@@ -148,7 +148,7 @@
       var count = Math.max(1, Math.round(l.value / o.unit));
       var color = l.color || css(o.colorBy === 'target' ? t.cat : s.cat);
       var x0 = s.x + nodeW, x1 = t.x, mx = (x0 + x1) / 2;
-      var g = el('g', { 'data-link': l.source + '>' + l.target, style: '--d:' + (o.links.indexOf(l) * 0.07).toFixed(2) + 's' }, gStr);
+      var g = el('g', { 'data-link': l.source + '>' + l.target, style: '--d:' + (o.links.indexOf(l) * 0.07).toFixed(2) + 's;color:' + color }, gStr);
       tip(g, (o.format || String)(l.value), s.n.label + ' \u2192 ' + t.n.label);
       for (var i = 0; i < count; i++) {
         var f = (i + 0.5) / count, y0 = s.outY + f * bw, y1 = t.inY + f * bw;

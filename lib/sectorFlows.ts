@@ -1,4 +1,4 @@
-// FPI equity flows by sector (NSDL fortnightly), shaped for the strand flow and the terrain. Server-side.
+// FPI equity flows by sector (NSDL fortnightly), shaped for the flow map and the terrain. Server-side.
 import { history } from "./history";
 
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -25,25 +25,13 @@ export function lastMonth() {
   return { label: `${MON[Number(ym.slice(5)) - 1]} ${ym.slice(0, 4)}`, list, total: list.reduce((s, x) => s + x.net, 0) };
 }
 
-/** Strand-flow shape: sectors FPIs sold (left) → FPI equity → sectors they bought (right), plus the net new money
- *  (or net withdrawal) that balances the two sides. The largest six on each side are named; the rest are grouped. */
+/** Flow-map shape: every sector FPIs net sold (largest first) and every sector they net bought, each as a positive
+ *  amount, plus the month's net. The chart groups the smaller sectors itself, to suit the width it is drawn at. */
 export function strandShape() {
-  const m = lastMonth(), TOP = 6;
-  const sold = m.list.filter((x) => x.net < 0).sort((a, b) => a.net - b.net), bought = m.list.filter((x) => x.net > 0);
-  // Name a sector only if it is among the six largest on its side and carries at least 4% of the month's gross flow,
-  // so labels never crowd; the rest are grouped.
-  const gross = m.list.reduce((s, x) => s + Math.abs(x.net), 0);
-  const group = (xs: typeof sold) => {
-    const named = xs.filter((x, i) => i < TOP && Math.abs(x.net) >= gross * 0.04), rest = xs.slice(named.length);
-    return rest.length ? [...named, { sector: rest.length === 1 ? rest[0].sector : `${rest.length} other sectors`, net: rest.reduce((s, x) => s + x.net, 0) }] : named;
-  };
-  const left = group(sold).map((x, i) => ({ id: "L" + i, label: x.sector, value: -x.net, cat: "cat-3" }));
-  const right = group(bought).map((x, i) => ({ id: "R" + i, label: x.sector, value: x.net }));
-  if (m.total > 0) left.push({ id: "NEW", label: "Net inflow", value: m.total, cat: "cat-2" });
-  else if (m.total < 0) right.push({ id: "OUT", label: "Net outflow", value: -m.total });
-  const sideTotal = left.reduce((s, x) => s + x.value, 0);
-  const unit = [100, 200, 250, 500, 1000, 2000, 2500, 5000].find((u) => sideTotal / u <= 160) ?? 10000;
-  return { ...m, left, right, unit };
+  const m = lastMonth();
+  const sold = m.list.filter((x) => x.net < 0).map((x) => ({ label: x.sector, value: -x.net })).sort((a, b) => b.value - a.value);
+  const bought = m.list.filter((x) => x.net > 0).map((x) => ({ label: x.sector, value: x.net })).sort((a, b) => b.value - a.value);
+  return { ...m, sold, bought };
 }
 
 /** Terrain shape: the sectors with the largest gross flows, by fortnight. */

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { B } from "@/data";
 import { Chip } from "@/components/Chip";
 import { CountUp } from "@/components/CountUp";
+import { More } from "@/components/More";
 import { S, Section, ViewHead } from "@/components/Section";
 import { Src } from "@/components/Src";
 import { Term } from "@/components/Term";
@@ -24,6 +25,9 @@ function Papers({ ids, basis }: { ids: (keyof typeof PAPERS)[]; basis?: string }
   if (!ids.length) return <>{basis}</>;
   return <>{ids.map((id, i) => <span key={id}>{i ? "; " : ""}<a href={PAPERS[id].url} target="_blank" rel="noopener noreferrer">{PAPERS[id].cite}</a>, <i>{PAPERS[id].title}</i></span>)}</>;
 }
+
+const TURB_BANDS = [{ from: 0, to: 50, name: "Calm" }, { from: 50, to: 80, name: "Elevated" }, { from: 80, to: 95, name: "Unusual" }, { from: 95, to: 100, name: "Extreme" }];
+const turbBand = (p: number) => TURB_BANDS.find((b) => p < b.to)?.name ?? "Extreme";
 
 export default function Wander() {
   const ext = scored.filter((c) => c.score >= 75), fear = scored.filter((c) => c.score < 45), off = comps.filter((c) => !c.available);
@@ -91,7 +95,7 @@ export default function Wander() {
             <p className="bw-disclaimer after-plot">Interpretation, not a forecast.</p>
           </div>
         </div>
-        <div className="missing after-plot">{MISSING.map(([b, t]) => <div key={b}><b>{b}</b><span>{t}</span></div>)}</div>
+        <More label="What the brief does not cover" className="after-plot" bodyClassName="missing">{MISSING.map(([b, t]) => <div key={b}><b>{b}</b><span>{t}</span></div>)}</More>
       </Section>
 
       <Section title={<>The Wander Index over <S>time</S></>} meta={<>Daily reading, last {series.length} sessions with at least {METHOD.minComps} scored components, with the Nifty 50 close<Src k={["D1"]} /></>} ix="02">
@@ -99,8 +103,10 @@ export default function Wander() {
           overlay={{ name: "Nifty 50", values: niftyOn(series.map((p) => p.date)) }} />
         <p className="note after-plot"><b>Beside the market.</b> {vsN.rBack != null ? <>Over these sessions the reading moved with the Nifty 50&apos;s previous {vsN.horizon} sessions (correlation {r2(vsN.rBack)}). Part of that is built in: momentum, trend and safe-haven demand are measured on the Nifty itself. </> : null}{vsN.rFwd != null ? <>Against the Nifty&apos;s following {vsN.horizon} sessions the correlation was {r2(vsN.rFwd)} ({vsN.nFwd} readings). </> : null}{vsN.greed.n || vsN.fear.n ? <>Average Nifty 50 move over the following {vsN.horizon} sessions: after extreme fear, {after(vsN.fear)}; after extreme greed, {after(vsN.greed)}; on all days, {after(vsN.all)}.</> : null}</p>
         <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Neighbouring days share most of their {vsN.horizon}-session windows, so these readings overlap and are far fewer independent observations than the count suggests; one period is not evidence of a lasting pattern.</p>
+        <More label="How it&apos;s built">
         <p className="note after-plot"><b>How it&apos;s built.</b> Each component is today&apos;s reading ranked against its own previous {METHOD.lookbackYears} years: a score of 70 means the reading was more greedy than on 70% of those days. It needs at least {METHOD.minDays} trading days of history and uses nothing after the day it scores. The structure follows published fear-and-greed indices (CNN Business, Tickertape&apos;s Market Mood Index); the value is Brownian&apos;s own reading, not theirs. <b>Method change:</b> the 13 Nov brief&apos;s first version scored six components against fixed reference levels and read 69; from 14 Nov 2026 every component is ranked against history, so today&apos;s figure differs.</p>
         <p className="bw-meta">Single days are noise; the bands show where the reading spends its time. Scores before {longDate(lastIn.since!)} use fewer components, because {lastIn.name.toLowerCase()} history starts later (see each component below).</p>
+        </More>
       </Section>
 
       <Section title={<>What each one <S>measures</S></>} meta="Today's reading, how it is scored, and the research behind it" ix="03">
@@ -120,7 +126,7 @@ export default function Wander() {
                 )}
                 <p className="note">{c.available ? c.read : c.reason}</p>
               </div>
-              <div className="stack">
+              <More label="How it is scored" bodyClassName="stack">
                 <dl className="kv">
                   <dt>Measures</dt><dd>{c.metric}</dd>
                   <dt>Today</dt><dd className="bw-mono">{c.value}<Src k={c.src} /></dd>
@@ -128,7 +134,7 @@ export default function Wander() {
                   <dt>History</dt><dd>{c.history ? `${c.history.toLocaleString("en-IN")} prior sessions` : "none yet"}{c.since ? `; scored since ${longDate(c.since)}` : ""}</dd>
                   <dt>Basis</dt><dd><Papers ids={c.papers} basis={c.basis} /></dd>
                 </dl>
-              </div>
+              </More>
             </div>
           ))}
         </div>
@@ -138,9 +144,10 @@ export default function Wander() {
         <div className="pair">
           <div>
             <h3 className="sub">Turbulence</h3>
-            <div className="score"><span className="n">{risk.turbPct == null ? "n/a" : ord(risk.turbPct)}</span><span className="w plain">percentile</span></div>
-            <TimeLine points={rs.map((p) => ({ date: p.date, value: p.turbPct }))} label="Turbulence percentile by session" />
-            <p className="note after-plot">How unusual {longDate(asOf)}&apos;s mix of sector moves was against the previous {risk.windows.turbulence} sessions{risk.turbPct20 != null ? `; ${ord(risk.turbPct20)} percentile on average over 20 sessions` : ""}. Turbulence tends to persist, and returns to risk have been lower in turbulent periods.</p>
+            <div className="score"><span className="n">{risk.turbAvgPct == null ? "n/a" : turbBand(risk.turbAvgPct)}</span><span className="w plain">{risk.turbAvgPct == null ? "" : `${ord(risk.turbAvgPct)} percentile, 20-session average`}</span></div>
+            <p className="note">{risk.turbPct == null ? "Today alone: n/a" : `Today alone: ${ord(risk.turbPct)} percentile`}</p>
+            <TimeLine points={rs.slice(Math.max(0, rs.findIndex((p) => p.turbAvgPct != null))).map((p) => ({ date: p.date, value: p.turbAvgPct }))} bands={TURB_BANDS} label={`Turbulence, 20-session average percentile by session${risk.turbAvgPct == null ? "" : `; latest ${turbBand(risk.turbAvgPct)}, ${ord(risk.turbAvgPct)} percentile`}`} />
+            <p className="note after-plot">A single day jumps about, so the line shows the 20-session average. It is ranked against the previous {risk.windows.turbulence} such averages, so a high reading means {longDate(asOf)}&apos;s run of sector moves was unusual for the last three years. Turbulence tends to persist, and returns to risk have been lower in turbulent periods.</p>
             <p className="bw-meta"><Papers ids={["kl2010"]} />. Squared Mahalanobis distance of daily sector returns; mean and covariance from the previous {risk.windows.turbulence} sessions.</p>
           </div>
           <div>
@@ -167,7 +174,7 @@ export default function Wander() {
             <p className="bw-meta"><Papers ids={["amihud2002"]} />. Median of |return| ÷ turnover across NSE stocks trading at least ₹1 crore a day.</p>
           </div>
         </div>
-        <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Turbulence, fragility and liquidity charts show the percentile against each measure&apos;s own previous three years.</p>
+        <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Turbulence shows the percentile of its 20-session average; fragility and liquidity show the percentile against each measure&apos;s own previous three years. Bands: Calm below 50, Elevated 50–80, Unusual 80–95, Extreme 95 and above.</p>
       </Section>
 
       <Section title={<>Reading it <S>rationally</S></>} meta="Sentiment is a contrarian signal, not a timing tool" ix="05">

@@ -3,6 +3,7 @@ import { B } from "@/data";
 import { Chip } from "@/components/Chip";
 import { CountUp } from "@/components/CountUp";
 import { HoldingsToday } from "@/components/portfolio";
+import { More } from "@/components/More";
 import { Rich } from "@/components/Rich";
 import { S, Section } from "@/components/Section";
 import { Src } from "@/components/Src";
@@ -61,19 +62,20 @@ export default function MarketsOvernight() {
             <article key={t.h} className="take">
               <Chip tone={t.chip[1]}>{t.chip[0]}</Chip>
               <h3>{t.h}</h3>
-              <p>{t.p}<Src k={t.src} /></p>
+              <More label="The detail" className="take-more"><p>{t.p}<Src k={t.src} /></p></More>
               <p className="why">{t.why}</p>
             </article>
           ))}
         </div>
-        <div className="pair" style={{ marginTop: "var(--space-8)" }}>
+        <div className="pair gap-top">
           <div>
             <h3 className="sub">Your holdings today</h3>
             <HoldingsToday />
           </div>
           <div>
             <h3 className="sub">What drove the day</h3>
-            <ul className="list">{B.drove.map((d) => <li key={d}>{d}</li>)}</ul>
+            <ul className="list">{B.drove.slice(0, 2).map((d) => <li key={d}>{d}</li>)}</ul>
+            {B.drove.length > 2 && <More label={`${B.drove.length - 2} more`}><ul className="list list-cont">{B.drove.slice(2).map((d) => <li key={d}>{d}</li>)}</ul></More>}
           </div>
         </div>
       </Section>
@@ -89,13 +91,13 @@ export default function MarketsOvernight() {
               <div><p className="bw-label">Wander Index</p><div className="score"><span className="n">{score}</span><span className="w">{band}</span></div></div>
               <div><p className="bw-label">Macro pressure</p><div className="score"><span className="n">{pressureScore}</span><span className="w">{pressureName}</span></div></div>
             </div>
-            <table className="comp-tbl">
+            <More label={`All ${comps.length} components`}><table className="comp-tbl">
               <tbody>
                 {comps.map((c) => (
                   <tr key={c.id}><td>{c.name} · {c.value}<Src k={c.src} /></td><td className="v">{c.available ? Math.round(c.score) : <span className="bw-na">n/a</span>}</td></tr>
                 ))}
               </tbody>
-            </table>
+            </table></More>
             <p className="note after-plot"><b>{quad.name}.</b> {quad.short} {pressureHigh} of {B.pressure.length} macro indicators read high. <Link href="/wander/#macro-pressure">See the indicators</Link> · <Link href="/wander/">How the Wander Index is measured</Link></p>
           </div>
         </div>
@@ -117,14 +119,14 @@ export default function MarketsOvernight() {
 
       <Section title={<>Sector <S>strength</S></>} meta={<>NSE sectoral indices, {B.session} · one-day change<Src k={["S1", "S2", "S3"]} /></>} ix="04 · India Markets">
         <div className="two">
-          <Diverge rows={B.secIndia.map(([label, value, to]) => ({ label, value, to }))} label={`NSE sector changes, ${B.session}`} />
-          <div className="note">
+          <Diverge phoneRows={8} rows={B.secIndia.map(([label, value, to]) => ({ label, value, to }))} label={`NSE sector changes, ${B.session}`} />
+          <More label="Notes on the day" bodyClassName="note">
             <p><b>Financials led</b>; autos and FMCG lagged<Src k={["S5"]} />.</p>
             <p><b>Realty +4.50%</b> had no specific catalyst in the sources. HDFC Sky&apos;s close report gave +3.7%<Src k={["S1"]} />.</p>
             <p><b>Auto</b> ended an 8-session winning streak on profit-taking.</p>
             <p><b>Oil &amp; Gas</b>: sources differ, −0.50% to −0.76%, shown as a range. {B.secIndiaNa.join(" and ")}: n/a.</p>
             <p><Link href="/india/">India Markets</Link></p>
-          </div>
+          </More>
         </div>
       </Section>
 
