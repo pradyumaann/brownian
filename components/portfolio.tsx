@@ -4,17 +4,14 @@ import { useEffect, useState } from "react";
 import { B } from "@/data";
 import type { StockNote } from "@/data/types";
 import { fillWith, type MoodVars } from "@/lib/bands";
+import { blend, fmtPct, SHORT, type MoveFact } from "@/lib/portfolioMath";
 import { Chip, DirChip } from "./Chip";
+import { dateOf } from "./portfolio/Day";
+import { store } from "./portfolio/store";
+import { usePort } from "./portfolio/usePort";
 import { Src } from "./Src";
 
-// Per-viewer state lives on this device only (same keys as the prototype, so picks carry over).
-const store = {
-  get<T>(k: string): T | null { try { const v = localStorage.getItem("ii:" + k); return v ? (JSON.parse(v) as T) : null; } catch { return null; } },
-  set(k: string, v: unknown) { try { localStorage.setItem("ii:" + k, JSON.stringify(v)); } catch {} },
-  del(k: string) { try { localStorage.removeItem("ii:" + k); } catch {} },
-};
-
-/** Held holding types. `example` is true until the viewer picks their own. */
+/** Picked holding types from the older `ii:held2` key. `example` is true until the viewer picks their own. */
 function useHeld() {
   const [held, setHeld] = useState<string[]>(B.defaultHold);
   const [example, setExample] = useState(true);
@@ -22,20 +19,33 @@ function useHeld() {
     const s = store.get<string[]>("held2");
     if (s) { setHeld(s); setExample(false); }
   }, []);
-  const toggle = (id: string) => {
-    const n = held.includes(id) ? held.filter((x) => x !== id) : [...held, id];
-    setHeld(n); setExample(false); store.set("held2", n);
-  };
-  return { held, example, toggle };
+  return { held, example };
 }
 
-/** Brief: one line per holding type the viewer picked, with its direction today. */
-export function HoldingsToday() {
+/** Markets, Overnight: the blended move of the viewer's mix once weights are saved (`ii:port3`); until then the
+ *  picked types with their direction, as before (the older `ii:held2` picks, or the examples). */
+export function HoldingsToday({ moves, asOf }: { moves: MoveFact[]; asOf: string }) {
   const { held, example } = useHeld();
+  const port = usePort();
   const list = B.holdings.filter((h) => held.includes(h.id));
+  if (port.mode === "saved" && Object.keys(port.w).length) {
+    const b = blend(port.w, moves);
+    const srcs = b.rows.some((r) => r.contrib != null) ? ["D1", "D5"] : [];
+    return (
+      <div>
+        <p className="bw-meta">Your mix, weights you set · session of {dateOf(asOf)}</p>
+        <p className="mixline">
+          {b.move != null
+            ? <><span className={`bw-mono tone-${b.move > 0 ? "gain" : b.move < 0 ? "loss" : "plain"}`}>{b.move > 0 ? "▲ " : b.move < 0 ? "▼ " : ""}{fmtPct(b.move)}</span><Src k={srcs} /> blended one-day move, covering {Math.round(b.covered)}% of your mix{b.excluded.length > 0 && <>; {b.excluded.map((e) => SHORT[e.id]).join(", ")} n/a</>}.</>
+            : <>No type in your mix has a move for this session (<span className="bw-na">n/a</span>).</>}
+        </p>
+        <p className="bw-meta"><Link href="/portfolio/">Your mix, exposure and how it is worked out</Link> · Interpretation, not a forecast.</p>
+      </div>
+    );
+  }
   return (
     <div>
-      <p className="bw-meta">{example ? "Example holdings. Choose yours in Portfolio Lens." : `${list.length} holding type${list.length === 1 ? "" : "s"} you picked`}</p>
+      <p className="bw-meta">{example ? "Example holdings. Set your own weights in Portfolio Lens." : `${list.length} holding type${list.length === 1 ? "" : "s"} you picked`}</p>
       {list.length ? (
         <ul className="holdrow">
           {list.map((h) => (
@@ -49,38 +59,38 @@ export function HoldingsToday() {
   );
 }
 
-/** Portfolio Lens: pick holding types, read today's impact on each. */
-export function Holdings({ vars }: { vars: MoodVars }) {
-  const { held, example, toggle } = useHeld();
-  const list = B.holdings.filter((h) => held.includes(h.id));
+/** Impact notes for the holding types in the viewer's mix, written for the day's brief, plus the wallet note
+ *  (household costs, not a holding and never weighted). */
+export function ImpactNotes({ ids, vars, example }: { ids: string[]; vars: MoodVars; example: boolean }) {
+  const list = B.holdings.filter((h) => h.id !== "wallet" && ids.includes(h.id));
+  const wallet = B.holdings.find((h) => h.id === "wallet");
+  const note = (h: (typeof B.holdings)[number]) => (
+    <article key={h.id} className="imp">
+      <div className="imp-h"><h3>{h.n}</h3><DirChip d={h.d} /></div>
+      <dl>
+        <dt>What happened</dt><dd>{h.h}<Src k={h.src} /></dd>
+        <dt>What to watch</dt><dd>{h.w}</dd>
+        <dt>Perspective</dt><dd>{fillWith(h.t, vars)}</dd>
+      </dl>
+    </article>
+  );
   return (
     <>
-      <div className="picker" role="group" aria-label="What you hold">
-        {B.holdings.map((h) => (
-          <button key={h.id} type="button" className="bw-pill" aria-pressed={held.includes(h.id)} onClick={() => toggle(h.id)}>{h.n}</button>
-        ))}
-      </div>
-      <p className="bw-meta">{example ? `Showing ${B.defaultHold.length} example holdings. Tap to choose your own; your picks stay on this device.` : "Your picks stay on this device."}</p>
-      {list.length ? (
-        <div className="impact">
-          {list.map((h) => (
-            <article key={h.id} className="imp">
-              <div className="imp-h"><h3>{h.n}</h3><DirChip d={h.d} /></div>
-              <dl>
-                <dt>What happened</dt><dd>{h.h}<Src k={h.src} /></dd>
-                <dt>What to watch</dt><dd>{h.w}</dd>
-                <dt>Perspective</dt><dd>{fillWith(h.t, vars)}</dd>
-              </dl>
-            </article>
-          ))}
-        </div>
-      ) : (
-        <p className="empty">Pick at least one holding above to see how today&apos;s news affects it.</p>
+      {example && <p className="bw-meta"><Chip>Example</Chip> These notes are for the example mix. Set your own weights above.</p>}
+      {list.length ? <div className="impact">{list.map(note)}</div> : (
+        <p className="empty">Give a holding type a weight above to see how today&apos;s news affects it.</p>
+      )}
+      {wallet && (
+        <>
+          <h3 className="sub gap-top">Household costs, not a holding</h3>
+          <div className="impact">{note(wallet)}</div>
+        </>
       )}
       <p className="bw-disclaimer">Interpretation of today&apos;s brief, not a forecast and not advice.</p>
     </>
   );
 }
+
 
 const NAMES = Object.keys(B.stocks);
 function resolve(q: string): { hit?: string; raw?: string; sug?: string[] } {
@@ -127,6 +137,7 @@ export function Watchlist() {
   };
   const restore = () => { if (undo) save(undo.w, undo.ex); setUndo(null); setMsg({ text: "Restored." }); };
 
+  const onType = (e: React.ChangeEvent<HTMLInputElement>) => setQ(e.currentTarget.value);
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const r = resolve(q);
@@ -142,7 +153,7 @@ export function Watchlist() {
       <form className="wl-form" onSubmit={submit} autoComplete="off">
         <label htmlFor="wl-input" className="bw-label">Stock name or ticker</label>
         <div className="wl-row">
-          <input id="wl-input" list="wl-names" value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. Eicher Motors, ONGC, NVDA" />
+          <input id="wl-input" list="wl-names" value={q} onChange={onType} placeholder="e.g. Eicher Motors, ONGC, NVDA" />
           <button className="bw-btn" type="submit">Add <span className="bw-btn-dot" aria-hidden="true">+</span></button>
         </div>
         <datalist id="wl-names">{NAMES.map((n) => <option key={n} value={n} />)}</datalist>

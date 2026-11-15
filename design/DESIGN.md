@@ -106,3 +106,7 @@ Calm, plain, evidence-first. Address the reader as "you". Frame behaviour as res
 | `--f-display` / `--f-body` | `--font-sans` (600 for display) |
 | `--f-data` | `--font-mono` |
 | charts on `--surface` | charts in `.bw-plot` |
+
+## Portfolio mix pattern (15 Nov 2026)
+
+Portfolio Lens sets a weight per holding type with a stepper: a minus button, the value (a `spinbutton`: arrow keys step 5%, Home clears) and a plus button, 40px targets on phones, buttons that reach their limit use `aria-disabled` so keyboard focus stays put. Under the rows: Total and Unallocated, "Equal weight my picks", Reset with Undo. The day is one large signed number (`.md-n`, sign and triangle, source tags) over signed bars from zero (`diverge`, `phoneRows`), each bar a type's share times its move; types with no move print n/a. Exposure is plain horizontal share bars (`.xbars`, value printed) beside a concentration fact list (`.cfacts`). Every interpretive block says "Interpretation, not a forecast."; no colour carries judgement beyond sign.
