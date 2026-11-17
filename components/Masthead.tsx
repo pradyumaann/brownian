@@ -1,8 +1,10 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRef } from "react";
 import { Freshness } from "./Freshness";
 import { ThemeToggle } from "./ThemeToggle";
+import { useMastProgress } from "./useMastProgress";
 
 const DAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 // Night: teal, violet, rose, orange, gold (the header design). Paper: electric azure, violet, hot pink, neon orange,
@@ -29,32 +31,23 @@ function DayLine({ dateLabel, open, close }: Omit<MastProps, "bars">) {
   );
 }
 
-/** The Brownian header. On Markets, Overnight it is the full header of the device showcase: the day line, the
- *  wordmark and the tagline, with the Wander Index's last five sessions as five bars beside them on wider screens. Every other view gets a compact bar: wordmark, day line and the theme switch. */
+/** The Brownian header: one set of elements for every view, so the full header and the slim bar are the same
+ *  wordmark, bars, day line and switch in two states. The header is sticky; `useMastProgress` writes --p (0 full,
+ *  1 slim) from the scroll position on Markets, Overnight, and animates it when you move to or from another view.
+ *  CSS turns --p into transforms (see "Brownian header" in globals.css). Other views sit at --p: 1 from the first paint. */
 export function Masthead(p: MastProps) {
   const path = usePathname() ?? "/";
   const home = path === "/" || path === "";
-  if (!home) {
-    return (
-      <header className="mast-c">
-        <Link href="/" className="mast-c-mark">Brownian</Link>
-        <DayLine {...p} />
-        <ThemeToggle />
-      </header>
-    );
-  }
+  const ref = useRef<HTMLElement>(null);
+  useMastProgress(ref, home);
   return (
-    <header className="mast is-full">
-      <Field />
-      <div className="mast-top">
-        <DayLine {...p} />
-        <ThemeToggle />
-      </div>
-      <div className="mast-body">
-        <div className="mast-text">
-          <p className="mast-mark">Brownian</p>
-          <p className="mast-tag">Markets wander. You don&apos;t have to.</p>
-        </div>
+    <header ref={ref} className="mast" data-away={home ? undefined : ""}>
+      <div className="mast-in">
+        <Field />
+        <Link href="/" className="mast-mark" tabIndex={home ? -1 : undefined} aria-current={home ? "page" : undefined}>Brownian</Link>
+        <p className="mast-tag">Markets wander. You don&apos;t have to.</p>
+        <div className="mast-dl"><DayLine {...p} /></div>
+        <div className="mast-tog"><ThemeToggle /></div>
         <Bars bars={p.bars} />
         <Bars bars={p.bars} compact />
       </div>
@@ -63,17 +56,18 @@ export function Masthead(p: MastProps) {
 }
 
 /** A quiet grid of plus marks over the whole header, as in the design. Each one slowly shrinks and grows, a little
- *  out of step with its neighbours (CSS only, and only when motion is allowed). The bars sit on top of it, so the
- *  marks show above and around them. Decorative: hidden from assistive technology. */
+ *  out of step with its neighbours (CSS only, and only when motion is allowed). Each mark is its own tiny box (HTML, because SVG roots are not composited) so the
+ *  pulse is a compositor-only transform and opacity animation (one big SVG repainted 240 paths every frame and
+ *  restyled them all). The bars sit on top of it, so the marks show above and around them. Decorative: hidden from
+ *  assistive technology. Positions are on a 1920x520 grid; CSS scales it to cover the header (see .mast-field). */
 const COLS = 30, ROWS = 8, STEP = 64;
 function Field() {
   return (
-    <svg className="mast-field" viewBox={`0 0 ${COLS * STEP} ${ROWS * STEP + 8}`} preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
-      {Array.from({ length: ROWS }, (_, r) => Array.from({ length: COLS }, (_, c) => {
-        const x = STEP / 2 + c * STEP, y = STEP / 2 + r * STEP;
-        return <path key={`${r}-${c}`} className="mast-plus" style={{ "--i": (c * 7 + r * 13) % 17 } as React.CSSProperties} d={`M${x - 5} ${y}h10M${x} ${y - 5}v10`} />;
-      }))}
-    </svg>
+    <div className="mast-field" aria-hidden="true">
+      {Array.from({ length: ROWS }, (_, r) => Array.from({ length: COLS }, (_, c) => (
+        <i key={`${r}-${c}`} className="mast-plus" style={{ "--i": (c * 7 + r * 13) % 17, "--x": STEP / 2 + c * STEP, "--y": STEP / 2 + r * STEP } as React.CSSProperties} />
+      )))}
+    </div>
   );
 }
 
