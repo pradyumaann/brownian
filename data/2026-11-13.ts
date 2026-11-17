@@ -326,7 +326,7 @@ export const brief: Brief = {
     { w: "Thu 19", date: "2026-11-19", t: "Walmart, Williams-Sonoma, Valvoline", d: "Walmart reports before the US open; a read on the US consumer.", chip: ["Earnings", "info"] },
     { w: "Week of 16 Nov", t: "FOMC minutes, UK CPI & jobs, China activity data, PBoC LPR, RBA minutes", d: "Exact dates n/a in sources.", chip: ["Global macro", "plain"] },
     { w: "Date n/a", t: "MSCI India rebalance takes effect", d: "Adani Green, Coforge, LIC, Meesho in; PI Industries out. Passive funds trade on the effective date.", chip: ["Stock-specific", "info"] },
-    { w: "2–4 Dec", date: "2026-12-02", end: "2026-12-04", t: "RBI Monetary Policy Committee", d: "With CPI at 6.09%, markets will watch for another hike.", chip: ["High impact", "loss"], affects: ["index", "debt", "realty"] },
+    { w: "2–4 Dec", date: "2026-12-02", end: "2026-12-04", t: "RBI Monetary Policy Committee", d: "With CPI at 6.09%, markets will watch for another hike.", chip: ["High impact", "loss"], affects: ["index", "fin", "debt", "realty"] },
     { w: "8–9 Dec", date: "2026-12-08", end: "2026-12-09", t: "US Federal Reserve (FOMC)", d: "Decision 00:30 IST on 10 Dec. A hike is fully priced, with ≈13% odds of 50bp.", chip: ["High impact", "loss"] },
     { w: "14 Dec", date: "2026-12-14", t: "India November CPI", d: "Date from one source.", chip: ["India macro", "mixed"] },
   ],
