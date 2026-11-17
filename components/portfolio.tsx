@@ -4,61 +4,10 @@ import { useEffect, useState } from "react";
 import { B } from "@/data";
 import type { StockNote } from "@/data/types";
 import { fillWith, type MoodVars } from "@/lib/bands";
-import { blend, fmtPct, SHORT, type MoveFact } from "@/lib/portfolioMath";
 import { buildResultIndex, resolveName, resultFor } from "@/lib/resultDates";
 import { Chip, DirChip } from "./Chip";
-import { dateOf } from "./portfolio/Day";
 import { store } from "./portfolio/store";
-import { usePort } from "./portfolio/usePort";
 import { Src } from "./Src";
-
-/** Picked holding types from the older `ii:held2` key. `example` is true until the viewer picks their own. */
-function useHeld() {
-  const [held, setHeld] = useState<string[]>(B.defaultHold);
-  const [example, setExample] = useState(true);
-  useEffect(() => {
-    const s = store.get<string[]>("held2");
-    if (s) { setHeld(s); setExample(false); }
-  }, []);
-  return { held, example };
-}
-
-/** Markets, Overnight: the blended move of the viewer's mix once weights are saved (`ii:port3`); until then the
- *  picked types with their direction, as before (the older `ii:held2` picks, or the examples). */
-export function HoldingsToday({ moves, asOf }: { moves: MoveFact[]; asOf: string }) {
-  const { held, example } = useHeld();
-  const port = usePort();
-  const list = B.holdings.filter((h) => held.includes(h.id));
-  if (port.mode === "saved" && Object.keys(port.w).length) {
-    const b = blend(port.w, moves);
-    const srcs = b.rows.some((r) => r.contrib != null) ? ["D1", "D5"] : [];
-    return (
-      <div>
-        <p className="bw-meta">Your mix, weights you set · session of {dateOf(asOf)}</p>
-        <p className="mixline">
-          {b.move != null
-            ? <><span className={`bw-mono tone-${b.move > 0 ? "gain" : b.move < 0 ? "loss" : "plain"}`}>{b.move > 0 ? "▲ " : b.move < 0 ? "▼ " : ""}{fmtPct(b.move)}</span><Src k={srcs} /> blended one-day move, covering {Math.round(b.covered)}% of your mix{b.excluded.length > 0 && <>; {b.excluded.map((e) => SHORT[e.id]).join(", ")} n/a</>}.</>
-            : <>No type in your mix has a move for this session (<span className="bw-na">n/a</span>).</>}
-        </p>
-        <p className="bw-meta"><Link href="/portfolio/">Your mix, exposure and how it is worked out</Link> · Interpretation, not a forecast.</p>
-      </div>
-    );
-  }
-  return (
-    <div>
-      <p className="bw-meta">{example ? "Example holdings." : `${list.length} holding type${list.length === 1 ? "" : "s"} you picked`}</p>
-      {list.length ? (
-        <ul className="holdrow">
-          {list.map((h) => (
-            <li key={h.id}><Link href="/portfolio/">{h.n}</Link> <DirChip d={h.d} /></li>
-          ))}
-        </ul>
-      ) : (
-        <p className="bw-meta">No holdings picked yet. Choose them in <Link href="/portfolio/">Portfolio Lens</Link>.</p>
-      )}
-    </div>
-  );
-}
 
 /** Impact notes for the holding types in the viewer's mix, written for the day's brief, plus the wallet note
  *  (household costs, not a holding and never weighted). */
