@@ -7,7 +7,7 @@ import type { Mode, usePort } from "./usePort";
 // Controls under the rows: one primary button ("Equal weight my picks"); the rest are plain link buttons, always in place so
 // keyboard focus stays put (aria-disabled when they would change nothing): "Use the example" (back to the example mix),
 // "Start empty" (a saved mix with no weights, to set from zero) and "I own nothing yet" (mode "none": no example, no
-// figures; aria-pressed while on). Each of the three offers Undo.
+// figures). Each of the three offers Undo.
 
 type Port = ReturnType<typeof usePort>;
 
@@ -65,7 +65,7 @@ export function Mix({ port, facts }: { port: Port; facts: TypeFact[] }) {
         <button type="button" className="bw-btn" onClick={port.equal} disabled={!picked}>Equal weight my picks <span className="bw-btn-dot" aria-hidden="true">=</span></button>
         <button type="button" className="linkbtn" aria-disabled={mode === "example"} onClick={() => mode !== "example" && port.reset()}>Use the example</button>
         <button type="button" className="linkbtn" aria-disabled={mode === "saved" && !picked} onClick={() => !(mode === "saved" && !picked) && port.empty()}>Start empty</button>
-        <button type="button" className="linkbtn" aria-pressed={mode === "none"} onClick={() => mode !== "none" && port.none()}>I own nothing yet</button>
+        <button type="button" className="linkbtn" aria-disabled={mode === "none"} onClick={() => mode !== "none" && port.none()}>I own nothing yet</button>
         {undo && <button type="button" className="linkbtn" onClick={port.restore}>Undo</button>}
       </div>
       <p className="bw-meta">Your wallet is not a holding and has no weight; it is a separate note below.</p>

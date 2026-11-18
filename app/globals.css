@@ -688,7 +688,7 @@ ul.list.list-cont { border-top: 0; }
 .mix-total b { color: var(--ink); font-weight: 500; }
 .mix-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-6); margin-bottom: var(--space-4); }
 .mix-actions .bw-btn[disabled] { opacity: .45; cursor: default; }
-.mix-actions .linkbtn[aria-disabled="true"], .mix-actions .linkbtn[aria-pressed="true"] { color: var(--ink-muted); text-decoration: none; cursor: default; }
+.mix-actions .linkbtn[aria-disabled="true"] { color: var(--ink-muted); text-decoration: none; cursor: default; }
 .mixday { margin-bottom: var(--space-4); }
 .md-v { margin: var(--space-2) 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--space-2); }
 .md-n { font: 600 56px/1 var(--font-sans); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
