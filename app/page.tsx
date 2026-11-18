@@ -44,7 +44,7 @@ export default function MarketsOvernight() {
         </div>
       </header>
 
-      <Section title={<>Blended session <S>move</S></>} meta={`${B.session} session · index and market moves for the types in your mix, not your own holdings' prices`} ix="01 · Portfolio Lens">
+      <Section title={<>Blended session <S>move</S></>} meta={`${B.session} session · index and market moves by holding type, not your own holdings' prices`} ix="01 · Portfolio Lens">
         <SessionMove types={types} asOf={facts.asOf} cond={sessionConditions(facts.asOf)} />
       </Section>
 
