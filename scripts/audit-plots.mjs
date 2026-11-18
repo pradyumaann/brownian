@@ -16,9 +16,13 @@ const SEEDS = {
   over: { port3: { v: 1, w: { index: 60, fin: 60, it: 30 } } },
   noev: { port3: { v: 1, w: { gold: 50, mid: 30 } } },
   watch: { port3: { v: 1, w: { index: 40, it: 30, consumer: 30 } }, watch2: ["Eicher Motors", "Infosys", "NVDA (Nvidia)", "Alkem Labs", "Walmart"] },
+  // "I own nothing yet" (no example, no figures), and a mix with the two Nifty 500 proxy types.
+  none: { port3: { v: 1, w: {}, none: true } },
+  flexi: { port3: { v: 1, w: { flexi: 40, elss: 30, index: 30 } } },
 };
 const SEEDED = [["/portfolio/", "mix"], ["/", "mix"], ["/portfolio/", "migrate"],
-  ["/portfolio/", "left"], ["/portfolio/", "over"], ["/portfolio/", "noev"], ["/portfolio/", "watch"]];
+  ["/portfolio/", "left"], ["/portfolio/", "over"], ["/portfolio/", "noev"], ["/portfolio/", "watch"],
+  ["/portfolio/", "none"], ["/", "none"], ["/portfolio/", "flexi"], ["/", "flexi"]];
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".txt": "text/plain" };
 const server = createServer(async (req, res) => {
   let p = decodeURIComponent(new URL(req.url, "http://x").pathname);

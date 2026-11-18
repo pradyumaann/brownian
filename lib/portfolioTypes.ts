@@ -25,6 +25,8 @@ export interface TypeFact extends MoveFact {
   note: string | null;
   /** Set when the type's move is an approximation built from other series. */
   derived: string | null;
+  /** Set when the type's move is an index standing in for a fund category ("proxy: Nifty 500, not the fund's own returns"). */
+  proxy: string | null;
 }
 export interface PortfolioFacts { asOf: string; types: TypeFact[] }
 

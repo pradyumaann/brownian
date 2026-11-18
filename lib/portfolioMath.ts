@@ -5,17 +5,21 @@
 export const STEP = 5;
 
 /** Type ids that carry a weight. "wallet" is a household-costs note, not a holding. */
-export const HOLDING_IDS = ["index", "fin", "mid", "it", "gold", "silver", "debt", "oil", "consumer", "realty"] as const;
+export const HOLDING_IDS = ["index", "fin", "mid", "flexi", "elss", "it", "gold", "silver", "debt", "oil", "consumer", "realty"] as const;
+
+/** Fund categories read through an index (Nifty 500): "proxy: Nifty 500, not the fund's own returns". */
+export const PROXY_IDS: readonly string[] = ["flexi", "elss"];
 
 /** Short names for bar labels and tight spaces. */
 export const SHORT: Record<string, string> = {
-  index: "Index funds", fin: "Financials", mid: "Mid & small cap", it: "IT & US", gold: "Gold", silver: "Silver",
-  debt: "Debt & FDs", oil: "Oil & gas", consumer: "Auto & FMCG", realty: "Real estate",
+  index: "Index funds", fin: "Financials", mid: "Mid & small cap", flexi: "Flexi-cap", elss: "ELSS", it: "IT & US",
+  gold: "Gold", silver: "Silver", debt: "Debt & FDs", oil: "Oil & gas", consumer: "Auto & FMCG", realty: "Real estate",
 };
 
-export type FactorId = "large" | "midsmall" | "itus" | "gold" | "rates" | "oil" | "realty";
+export type FactorId = "large" | "broad" | "midsmall" | "itus" | "gold" | "rates" | "oil" | "realty";
 export const FACTORS: { id: FactorId; name: string }[] = [
   { id: "large", name: "India large-cap and sector equity" },
+  { id: "broad", name: "India broad market (Nifty 500)" },
   { id: "midsmall", name: "Mid and small cap" },
   { id: "itus", name: "IT and US" },
   { id: "gold", name: "Gold and silver" },
@@ -24,13 +28,46 @@ export const FACTORS: { id: FactorId; name: string }[] = [
   { id: "realty", name: "Real estate" },
 ];
 export const FACTOR_OF: Record<string, FactorId> = {
-  index: "large", fin: "large", consumer: "large", mid: "midsmall", it: "itus", gold: "gold", silver: "gold", debt: "rates", oil: "oil", realty: "realty",
+  index: "large", fin: "large", consumer: "large", flexi: "broad", elss: "broad", mid: "midsmall", it: "itus", gold: "gold", silver: "gold", debt: "rates", oil: "oil", realty: "realty",
 };
 
 /** What the page needs of each type for the blend. `d1` is the type's 1-day move in %, or null (n/a). */
 export interface MoveFact { id: string; n: string; d1: number | null }
 
 export type Weights = Record<string, number>;
+
+// ---- The stored mix (`ii:port3`) -------------------------------------------------------------------------------------
+// components/portfolio/usePort.ts reads and writes the record; the parsing lives here so it is tested without a browser.
+
+/** example: nothing stored, the example mix is shown. migrated: built from the older `ii:held2` picks, not yet saved.
+ *  saved: the viewer's own weights (`{ v: 1, w: { [holdingId]: percent } }`). none: the viewer owns nothing yet
+ *  (`{ v: 1, w: {}, none: true }`): no example mix and no figures are shown, only what Portfolio Lens does. */
+export type Mode = "example" | "migrated" | "saved" | "none";
+
+/** The record stored for "I own nothing yet". */
+export const NONE_RECORD = { v: 1, w: {}, none: true } as const;
+/** The record stored for a saved mix. It never carries `none`, so saving any weight leaves none mode. */
+export const savedRecord = (w: Weights) => ({ v: 1, w });
+
+/** Weights from storage, keeping only known holding ids and whole 5% steps within 0-100. */
+export function sanitise(raw: unknown): Weights {
+  const out: Weights = {};
+  if (raw && typeof raw === "object") {
+    for (const id of HOLDING_IDS) {
+      const n = Number((raw as Record<string, unknown>)[id]);
+      if (Number.isFinite(n) && n > 0) out[id] = Math.min(100, Math.max(STEP, Math.round(n / STEP) * STEP));
+    }
+  }
+  return out;
+}
+
+/** A stored `ii:port3` value read back: none mode (stray weights beside `none: true` are dropped), a saved mix, or null
+ *  when the value is missing or not a version-1 record (the caller then falls back to `ii:held2`, then the example). */
+export function readPort3(raw: unknown): { w: Weights; mode: "saved" | "none" } | null {
+  if (!raw || typeof raw !== "object" || (raw as { v?: unknown }).v !== 1) return null;
+  const r = raw as { w?: unknown; none?: unknown };
+  return r.none === true ? { w: {}, mode: "none" } : { w: sanitise(r.w), mode: "saved" };
+}
 
 const clean = (w: Weights) => HOLDING_IDS.map((id) => [id, Math.max(0, Number(w[id]) || 0)] as const).filter(([, v]) => v > 0);
 

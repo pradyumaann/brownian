@@ -24,6 +24,8 @@ Windows: "1 day" is the change on the session; "21 sessions" is the change over 
 | index: Nifty index funds & large-cap SIPs | nifty50 (D1) | Nifty 50 change | None. Index-fund NAVs, tracking error and expense are not in the store. |
 | fin: Bank, NBFC & insurance stocks | bank, finserv, pvtbank, psubank (D1) | Average of four | Partial: no insurance-only or NBFC-only index; insurers and NBFCs are covered only as far as they sit inside Financial Services. The four are overlapping indices, so private and PSU banks are counted in both Bank and their own series. |
 | mid: Mid & small-cap funds | midcap100, smallcap100 (D1) | Average of two | None for the index move. Fund NAVs not in the store. |
+| flexi: Flexi-cap funds (18 Nov 2026) | nifty500 (D1) | Nifty 500 change, labelled "proxy: Nifty 500, not the fund's own returns" | A proxy, not the category. Nifty 500 spans large, mid and small caps; each fund's own split, stock picks, cash and costs are not in the store, so its NAV can differ. Factor: "India broad market (Nifty 500)". |
+| elss: ELSS (tax-saver) funds (18 Nov 2026) | nifty500 (D1) | Nifty 500 change, same label | A proxy, as for flexi. The two types share one driver, so their moves are identical and the concentration facts count them as two types. |
 | it: IT stocks & US/Nasdaq funds | it (D1); nasdaq, usdinr (D5) | Average of three | Partial in meaning: USD/INR is averaged in as a rupee effect (a weaker rupee counts as a rise), which is an approximation of the rupee value of a US holding, not a compounded return. |
 | gold: Gold ETFs, SGBs & jewellery | gold (D5), usdinr (D5) | Derived: (1 + COMEX gold change) × (1 + USD/INR change) − 1, labelled "derived; excludes duties and premiums" | Derived, not observed. No MCX or rupee gold price, no import duty, GST or local premium, and COMEX futures trade on US hours. SGB interest and jewellery making charges are outside it. |
 | silver: Silver ETFs | none | n/a | Entirely n/a: no silver series. It is not read from gold. |
@@ -33,13 +35,20 @@ Windows: "1 day" is the change on the session; "21 sessions" is the change over 
 | realty: Real estate stocks & REITs | realty (D1) | Nifty Realty change | REITs are not in the index; Nifty Realty covers listed developers. |
 | wallet (not a holding) | none | none | Excluded from weights. Stays a separate household-costs note from the brief. |
 
+### Nifty 500 coverage and types not added (18 Nov 2026)
+
+`nifty500` in `indices.csv` has 1,234 sessions, 15 Nov 2021 to 13 Nov 2026, with no blank close: the same span as `nifty50`. That covers the 250-session year window and the rank's minimum of 250 previous sessions (about 1,233 are available as of 12 Nov 2026).
+
+**No hybrid type.** The store has no hybrid or balanced-fund index, and a hybrid fund's debt part has no move here (debt is n/a: duration unknown). Any hybrid move would therefore be partly estimated, which the product does not do. Hybrid holdings are not given a type; nothing stands in for them.
+
 ## Year-long blend (Phase 2)
 
-`lib/portfolioSeries.ts` builds, for the 250 NSE sessions ending 12 Nov 2026 (`asOf`: the last session on or before `B.sessionDate`, not the last stored day, 13 Nov), each type's daily % change from the same definitions as the table above (`DEFS`, `mover()` in `lib/portfolioFacts.ts`), 3 decimals, 249 changes after the base session. Only that window is sent to `/portfolio` (about 14 KB); the front page does not receive it.
+`lib/portfolioSeries.ts` builds, for the 250 NSE sessions ending 12 Nov 2026 (`asOf`: the last session on or before `B.sessionDate`, not the last stored day, 13 Nov), each type's daily % change from the same definitions as the table above (`DEFS`, `mover()` in `lib/portfolioFacts.ts`), 3 decimals, 249 changes after the base session. Only that window is sent to `/portfolio` (about 14 KB before flexi and ELSS added two series; not re-measured); the front page does not receive it.
 
 | Type | In the year-long blend | Notes |
 |---|---|---|
 | index, fin, mid, it, oil, consumer, realty | Yes | Same drivers and averaging as the day's move. |
+| flexi, elss | Yes, labelled as a proxy | Nifty 500 daily change; "proxy: Nifty 500, not the fund's own returns". |
 | gold | Yes, labelled approximate | (1 + COMEX gold) × (1 + USD/INR) − 1 each day; excludes duties and premiums; COMEX trades on US hours and carried-over closes give no change on a US holiday. |
 | silver | No (left out and named) | No series in the store. |
 | debt | No (left out and named) | No move is estimated (duration unknown). |

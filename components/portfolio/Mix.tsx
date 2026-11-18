@@ -4,6 +4,11 @@ import type { TypeFact } from "@/lib/portfolioTypes";
 import { Chip } from "../Chip";
 import type { Mode, usePort } from "./usePort";
 
+// Controls under the rows: one primary button ("Equal weight my picks"); the rest are plain link buttons, always in place so
+// keyboard focus stays put (aria-disabled when they would change nothing): "Use the example" (back to the example mix),
+// "Start empty" (a saved mix with no weights, to set from zero) and "I own nothing yet" (mode "none": no example, no
+// figures; aria-pressed while on). Each of the three offers Undo.
+
 type Port = ReturnType<typeof usePort>;
 
 /** A weight stepper: tap the buttons, or focus the value and use the arrow keys (up/right more, down/left less, Home zero). */
@@ -27,6 +32,7 @@ const NOTE: Record<Mode, string> = {
   example: "Weights you set stay on this device.",
   migrated: "Carried over from your earlier picks as equal weights. Change any weight to save it on this device.",
   saved: "Saved on this device only. Nothing is sent anywhere.",
+  none: "Marked as owning nothing yet, on this device: no example mix and no figures are shown. Setting any weight saves it and ends this.",
 };
 
 /** Your mix: a weight per holding type in 5% steps, the total and what is left Unallocated. */
@@ -42,7 +48,7 @@ export function Mix({ port, facts }: { port: Port; facts: TypeFact[] }) {
           const f = facts.find((x) => x.id === id)!, v = w[id] || 0;
           return (
             <li key={id} className="mixrow">
-              <span className="mix-n">{f.n}</span>
+              <span className="mix-n">{f.n}{f.proxy && <span className="mix-px">{f.proxy}</span>}</span>
               <Stepper id={id} name={f.n} value={v} onStep={(d) => port.step(id, d)} onZero={() => port.zero(id)} />
               <span className="mix-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, v)}%` }} /></span>
             </li>
@@ -57,7 +63,9 @@ export function Mix({ port, facts }: { port: Port; facts: TypeFact[] }) {
       </p>
       <div className="mix-actions">
         <button type="button" className="bw-btn" onClick={port.equal} disabled={!picked}>Equal weight my picks <span className="bw-btn-dot" aria-hidden="true">=</span></button>
-        <button type="button" className="linkbtn" onClick={port.reset}>Reset to the example</button>
+        <button type="button" className="linkbtn" aria-disabled={mode === "example"} onClick={() => mode !== "example" && port.reset()}>Use the example</button>
+        <button type="button" className="linkbtn" aria-disabled={mode === "saved" && !picked} onClick={() => !(mode === "saved" && !picked) && port.empty()}>Start empty</button>
+        <button type="button" className="linkbtn" aria-pressed={mode === "none"} onClick={() => mode !== "none" && port.none()}>I own nothing yet</button>
         {undo && <button type="button" className="linkbtn" onClick={port.restore}>Undo</button>}
       </div>
       <p className="bw-meta">Your wallet is not a holding and has no weight; it is a separate note below.</p>

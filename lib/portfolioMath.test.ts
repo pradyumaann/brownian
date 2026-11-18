@@ -1,7 +1,7 @@
 // Run with: npm run test:portfolio  (node --test, Node 24 strips the types)
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { blend, blendSeries, changeOver, concentration, levelsOf, maxDrawdown, volatility, worstDay, equalWeights, exposure, fmtBp, fmtPct, normalise, stepWeight, weightedRank, type MoveFact } from "./portfolioMath.ts";
+import { blend, blendSeries, changeOver, concentration, FACTOR_OF, FACTORS, HOLDING_IDS, levelsOf, NONE_RECORD, PROXY_IDS, readPort3, sanitise, savedRecord, SHORT, maxDrawdown, volatility, worstDay, equalWeights, exposure, fmtBp, fmtPct, normalise, stepWeight, weightedRank, type MoveFact } from "./portfolioMath.ts";
 
 const facts: MoveFact[] = [
   { id: "index", n: "Index", d1: 1 }, { id: "fin", n: "Fin", d1: 2 }, { id: "mid", n: "Mid", d1: -1 },
@@ -204,4 +204,54 @@ test("worst day: the lowest daily change and its date; none when there are no ch
   near(w.value, -3.2);
   assert.equal(w.date, "2026-01-03");
   assert.equal(worstDay([null, null], D(2)), null);
+});
+
+// ---- Flexi-cap and ELSS (Nifty 500 proxies) and the "none" mode -----------------------------------------------------
+
+test("every holding type has a short name and a factor; flexi and elss are in, hybrid is not", () => {
+  const ids: readonly string[] = HOLDING_IDS;
+  assert.equal(ids.length, 12);
+  for (const id of ids) {
+    assert.ok(SHORT[id], `short name for ${id}`);
+    assert.ok(FACTORS.some((f) => f.id === FACTOR_OF[id]), `factor for ${id}`);
+  }
+  assert.ok(ids.includes("flexi") && ids.includes("elss"));
+  assert.ok(!ids.includes("hybrid"));
+  assert.deepEqual([...PROXY_IDS].sort(), ["elss", "flexi"]);
+});
+
+test("flexi and elss blend like any other type and roll up to the broad-market factor", () => {
+  const f: MoveFact[] = [...facts, { id: "flexi", n: "Flexi", d1: 0.4 }, { id: "elss", n: "ELSS", d1: 0.4 }];
+  const b = blend({ flexi: 40, elss: 20, index: 40 }, f);
+  near(b.move, 0.4 * 0.4 + 0.2 * 0.4 + 0.4 * 1);
+  near(b.covered, 100);
+  const e = exposure({ flexi: 40, elss: 20, index: 40 });
+  assert.deepEqual(e.map((x) => x.id), ["broad", "large"]);
+  near(e[0].share, 60);
+  const h = blendSeries({ flexi: 50, elss: 50 }, { flexi: [null, 1, -1], elss: [null, 1, -1] })!;
+  assert.deepEqual(h.used.map((u) => u.id), ["flexi", "elss"]);
+  near(h.returns[1]!, 1);
+});
+
+test("the Herfindahl range text counts all twelve types", () => {
+  assert.match(concentration({ index: 50, flexi: 50 }).words, /from 0\.08 for all 12 types equal/);
+});
+
+test("stored mix: none mode, a saved mix, stray weights beside none, and junk", () => {
+  assert.deepEqual(readPort3(NONE_RECORD), { w: {}, mode: "none" });
+  assert.deepEqual(readPort3(JSON.parse(JSON.stringify(NONE_RECORD))), { w: {}, mode: "none" });
+  assert.deepEqual(readPort3({ v: 1, w: { index: 40, elss: 22, wallet: 10, nope: 5 } }), { w: { index: 40, elss: 20 }, mode: "saved" });
+  assert.deepEqual(readPort3({ v: 1, w: { index: 40 }, none: true }), { w: {}, mode: "none" });
+  assert.deepEqual(readPort3({ v: 1, w: {}, none: "yes" }), { w: {}, mode: "saved" });
+  assert.equal(readPort3(null), null);
+  assert.equal(readPort3({ v: 2, w: { index: 50 } }), null);
+  assert.equal(readPort3(["index"]), null);
+  assert.deepEqual(sanitise("junk"), {});
+});
+
+test("saving any weight leaves none mode: the saved record never carries none", () => {
+  const rec = savedRecord({ flexi: 5 });
+  assert.equal("none" in rec, false);
+  assert.deepEqual(readPort3(JSON.parse(JSON.stringify(rec))), { w: { flexi: 5 }, mode: "saved" });
+  assert.deepEqual(readPort3(savedRecord({})), { w: {}, mode: "saved" });
 });

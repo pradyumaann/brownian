@@ -1,16 +1,19 @@
 "use client";
 import { B } from "@/data";
 import type { HoldingId, Tone } from "@/data/types";
-import { normalise, SHORT, type Weights } from "@/lib/portfolioMath";
+import { normalise, SHORT, type Mode, type Weights } from "@/lib/portfolioMath";
 import { Chip } from "../Chip";
 import { EventRail } from "../EventRail";
 import { Src } from "../Src";
+import { NoneNote } from "./NoneNote";
 
 /** Events for what you own: the dated events the brief's own text ties to a holding type that carries a weight in the mix.
  *  Rendered from the mix passed in by Lens, whose first render is the example mix on the server and the browser alike;
  *  the saved mix replaces it after mount, so there is no hydration mismatch. Relevance chips are neutral in tone and carry
  *  no weight, and a tag is never read as the size or direction of an effect. */
-export function EventsForYou({ w, example }: { w: Weights; example: boolean }) {
+export function EventsForYou({ w, mode }: { w: Weights; mode: Mode }) {
+  const example = mode === "example";
+  if (mode === "none") return <NoneNote line="For a mix, this section lists the dated events the brief's own text ties to each of its holding types. Nothing is owned, so no event is listed here." />;
   const shares = normalise(w).shares;
   const mine = (e: { affects?: HoldingId[] }) => (e.affects ?? []).filter((id) => shares[id] > 0);
   // The brief's "High impact" chip is drawn in the plain tone here: next to what someone owns, a red chip reads as a call

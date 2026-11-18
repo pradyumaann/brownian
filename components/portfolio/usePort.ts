@@ -1,24 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { B } from "@/data";
-import { equalWeights, HOLDING_IDS, STEP, stepWeight, type Weights } from "@/lib/portfolioMath";
+import { equalWeights, NONE_RECORD, readPort3, savedRecord, stepWeight, type Mode, type Weights } from "@/lib/portfolioMath";
 import { store } from "./store";
 
-/** example: nothing stored, the example mix is shown. migrated: built from the older `ii:held2` picks, not yet saved.
- *  saved: the viewer's own weights in `ii:port3` (`{ v: 1, w: { [holdingId]: percent } }`). */
-export type Mode = "example" | "migrated" | "saved";
-
-/** Weights from storage, keeping only known holding ids and whole 5% steps within 0-100. */
-function sanitise(raw: unknown): Weights {
-  const out: Weights = {};
-  if (raw && typeof raw === "object") {
-    for (const id of HOLDING_IDS) {
-      const n = Number((raw as Record<string, unknown>)[id]);
-      if (Number.isFinite(n) && n > 0) out[id] = Math.min(100, Math.max(STEP, Math.round(n / STEP) * STEP));
-    }
-  }
-  return out;
-}
+/** example | migrated | saved | none: see `Mode` in lib/portfolioMath.ts. Read `mode` from `usePort()` to tell them apart
+ *  (a front-page card can show its own empty state when it is "none"). */
+export type { Mode };
 
 const EXAMPLE = equalWeights(B.defaultHold);
 
@@ -30,8 +18,8 @@ export function usePort() {
   const [undo, setUndo] = useState<{ w: Weights; mode: Mode } | null>(null);
 
   useEffect(() => {
-    const s = store.get<{ v?: number; w?: unknown }>("port3");
-    if (s && s.v === 1) { setW(sanitise(s.w)); setMode("saved"); }
+    const s = readPort3(store.get<unknown>("port3"));
+    if (s) { setW(s.w); setMode(s.mode); }
     else {
       const held = store.get<unknown>("held2");
       if (Array.isArray(held)) { setW(equalWeights(held.filter((x): x is string => typeof x === "string"))); setMode("migrated"); }
@@ -39,17 +27,26 @@ export function usePort() {
     setReady(true);
   }, []);
 
-  const save = (n: Weights) => { setW(n); setMode("saved"); store.set("port3", { v: 1, w: n }); };
+  // Saving writes `{ v: 1, w }` without `none`, so any saved weight leaves none mode.
+  const save = (n: Weights) => { setW(n); setMode("saved"); store.set("port3", savedRecord(n)); };
+  const setNone = () => { setW({}); setMode("none"); store.set("port3", NONE_RECORD); };
   return {
     w, mode, ready, undo,
     step: (id: string, dir: 1 | -1) => { setUndo(null); save(stepWeight(w, id, dir)); },
     zero: (id: string) => { setUndo(null); const n = { ...w }; delete n[id]; save(n); },
     equal: () => { setUndo({ w, mode }); save(equalWeights(Object.keys(w))); },
+    /** Back to the example mix. */
     reset: () => { setUndo({ w, mode }); setW(EXAMPLE); setMode("example"); store.del("port3"); store.del("held2"); },
+    /** A saved mix with no weights, to set from zero. */
+    empty: () => { setUndo({ w, mode }); save({}); },
+    /** "I own nothing yet": no example and no figures; kept as `{ v: 1, w: {}, none: true }`. `ii:held2` is kept so Undo
+     *  back to carried-over picks still works after a reload. */
+    none: () => { setUndo({ w, mode }); setNone(); },
     restore: () => {
       if (!undo) return;
       if (undo.mode === "saved") save(undo.w);
-      else { setW(undo.w); setMode(undo.mode); if (undo.mode === "example") { store.del("port3"); } }
+      else if (undo.mode === "none") setNone();
+      else { setW(undo.w); setMode(undo.mode); store.del("port3"); }
       setUndo(null);
     },
   };
