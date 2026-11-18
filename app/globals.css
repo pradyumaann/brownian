@@ -233,7 +233,7 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
 
 /* Glossary */
 .gloss { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 var(--space-8); border-top: 1px solid var(--hairline-strong); margin: 0; }
-.gloss > div { padding: var(--space-6) 0; border-bottom: 1px solid var(--hairline); }
+.gloss > div { padding: var(--space-6) 0; border-bottom: 1px solid var(--hairline); scroll-margin-top: calc(var(--m-bar) + var(--space-3)); }
 .gloss dt { font: 500 18px/1.3 var(--font-sans); letter-spacing: -0.01em; margin-bottom: var(--space-2); }
 .gloss dd { margin: 0; font-size: 14px; color: var(--ink-muted); line-height: 1.55; }
 .gloss dd.today { margin-top: var(--space-3); font: 400 12px/1.5 var(--font-mono); color: var(--ink); }
