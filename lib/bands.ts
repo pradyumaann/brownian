@@ -22,3 +22,9 @@ export interface MoodVars { score: number; band: string; press: string }
 /** Fill {band}, {press} and {score} placeholders in copy that depends on today's reading. */
 export const fillWith = (t: string, v: MoodVars) =>
   t.replace("{band}", v.band).replace("{press}", v.press).replace("{score}", String(v.score));
+
+/** Turbulence bands for the percentile of its 20-session average (lib/risk.ts), shared by /wander and the front page. */
+export const TURB_BANDS = [{ from: 0, to: 50, name: "Calm" }, { from: 50, to: 80, name: "Elevated" }, { from: 80, to: 95, name: "Unusual" }, { from: 95, to: 100, name: "Extreme" }];
+export const turbBand = (p: number) => TURB_BANDS.find((b) => p < b.to)?.name ?? "Extreme";
+/** An ordinal, rounded first: 34 → "34th". */
+export const ord = (n: number) => { const r = Math.round(n), s = ["th", "st", "nd", "rd"], v = r % 100; return r + (s[(v - 20) % 10] || s[v] || s[0]); };

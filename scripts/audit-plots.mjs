@@ -8,7 +8,9 @@ import { chromium } from "playwright-core";
 
 const ROOT = resolve("out");
 const ROUTES = ["/", "/portfolio/", "/wander/", "/flows/", "/india/", "/global/", "/macro/", "/earnings/", "/developing/", "/learn/"];
-// Populated-state passes (a saved mix, and older picks only) so the portfolio charts are audited with data.
+// Populated-state passes (a saved mix, and older picks only) so the portfolio charts are audited with data. On `/` the
+// Blended session move card draws no chart (printed lines only), so the `/` passes audit the rest of the page in each mode,
+// with 05 India, 06 Global and 08 Developing folded at 400px.
 const SEEDS = {
   mix: { port3: { v: 1, w: { index: 30, fin: 15, mid: 10, it: 10, gold: 10, silver: 5, debt: 20 } } },
   migrate: { held2: ["index", "fin", "gold", "debt"] },

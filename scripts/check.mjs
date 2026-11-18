@@ -69,12 +69,22 @@ for (const theme of ["night", "paper"]) {
         none: ["Portfolio Lens reads the day's index and market moves"], flexi: ["proxy: Nifty 500, not the fund's own returns"] };
       // Text that must not appear: in "none" mode the example mix and its figures are hidden.
       const ABSENT = { none: ["the example mix", "Blended one-day move", "Tagged to"] };
-      // These two seeds are checked on the front page too (FrontDay and FrontEvents read the same usePort()).
-      const BOTH = new Set(["none", "flexi"]);
-      if (seed && (r === "/portfolio/" || BOTH.has(seed))) {
+      if (seed && r === "/portfolio/") {
         const body = await page.evaluate(() => document.body.innerText);
         for (const t of EXPECT[seed] ?? []) if (!body.includes(t)) errors.push(`missing text: ${t}`);
         for (const t of ABSENT[seed] ?? []) if (body.includes(t)) errors.push(`unexpected text: ${t}`);
+      }
+      // The front page: the Blended session move card (components/portfolio/SessionMove.tsx, the same usePort()) on every
+      // pass, with its market-conditions block; "Your day" and "Events for what you own" are gone from `/`; one primary button.
+      if (r === "/") {
+        const CARD = ["Blended session move", "Market conditions that session", "Single days are noise. Interpretation, not a forecast.", "See what it means for you"];
+        const FRONT = { "": ["Blended one-day move of the example mix"], mix: ["Blended one-day move of your mix"], migrate: ["Blended one-day move of your mix"],
+          none: ["Portfolio Lens reads the day's index and market moves"], flexi: ["Blended one-day move of your mix", "proxy: Nifty 500, not the fund's own returns"] };
+        const FRONT_ABSENT = { none: ["the example mix", "Blended one-day move", "Tagged to"], mix: ["the example mix"], migrate: ["the example mix"], flexi: ["the example mix"] };
+        const { body, dawn } = await page.evaluate(() => ({ body: document.body.innerText, dawn: document.querySelectorAll("main .bw-btn-dawn").length }));
+        for (const t of [...CARD, ...(FRONT[seed ?? ""] ?? [])]) if (!body.includes(t)) errors.push(`missing text: ${t}`);
+        for (const t of ["Your day", "Events for what you own", ...(FRONT_ABSENT[seed] ?? [])]) if (body.includes(t)) errors.push(`unexpected text: ${t}`);
+        if (dawn !== 1) errors.push(`${dawn} primary buttons on /, expected 1`);
       }
       // Term pop-up at 400px on the front page: opens from the keyboard, sits inside the viewport with no sideways
       // page scroll, and Esc closes it with focus back on the term.
