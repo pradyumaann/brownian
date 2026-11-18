@@ -37,8 +37,6 @@ export function usePort() {
     equal: () => { setUndo({ w, mode }); save(equalWeights(Object.keys(w))); },
     /** Back to the example mix. */
     reset: () => { setUndo({ w, mode }); setW(EXAMPLE); setMode("example"); store.del("port3"); store.del("held2"); },
-    /** A saved mix with no weights, to set from zero. */
-    empty: () => { setUndo({ w, mode }); save({}); },
     /** "I own nothing yet": no example and no figures; kept as `{ v: 1, w: {}, none: true }`. `ii:held2` is kept so Undo
      *  back to carried-over picks still works after a reload. */
     none: () => { setUndo({ w, mode }); setNone(); },
@@ -46,7 +44,12 @@ export function usePort() {
       if (!undo) return;
       if (undo.mode === "saved") save(undo.w);
       else if (undo.mode === "none") setNone();
-      else { setW(undo.w); setMode(undo.mode); store.del("port3"); }
+      else {
+        setW(undo.w); setMode(undo.mode); store.del("port3");
+        // reset() deletes `ii:held2`; put the picks back so the carried-over mix survives a reload (equalWeights of these
+        // ids gives the same weights as the original picks, since only known holding ids ever reach `w`).
+        if (undo.mode === "migrated") store.set("held2", Object.keys(undo.w));
+      }
       setUndo(null);
     },
   };

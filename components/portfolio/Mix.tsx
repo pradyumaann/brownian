@@ -5,9 +5,8 @@ import { Chip } from "../Chip";
 import type { Mode, usePort } from "./usePort";
 
 // Controls under the rows: one primary button ("Equal weight my picks"); the rest are plain link buttons, always in place so
-// keyboard focus stays put (aria-disabled when they would change nothing): "Use the example" (back to the example mix),
-// "Start empty" (a saved mix with no weights, to set from zero) and "I own nothing yet" (mode "none": no example, no
-// figures). Each of the three offers Undo.
+// keyboard focus stays put (aria-disabled when they would change nothing): "Use the example" (back to the example mix)
+// and "I own nothing yet" (mode "none": no example, no figures). Each offers Undo.
 
 type Port = ReturnType<typeof usePort>;
 
@@ -32,7 +31,7 @@ const NOTE: Record<Mode, string> = {
   example: "Weights you set stay on this device.",
   migrated: "Carried over from your earlier picks as equal weights. Change any weight to save it on this device.",
   saved: "Saved on this device only. Nothing is sent anywhere.",
-  none: "Marked as owning nothing yet, on this device: no example mix and no figures are shown. Setting any weight saves it and ends this.",
+  none: "You own nothing yet, as set on this device. No example mix and no figures are shown; setting a weight saves it and ends this.",
 };
 
 /** Your mix: a weight per holding type in 5% steps, the total and what is left Unallocated. */
@@ -64,7 +63,6 @@ export function Mix({ port, facts }: { port: Port; facts: TypeFact[] }) {
       <div className="mix-actions">
         <button type="button" className="bw-btn" onClick={port.equal} disabled={!picked}>Equal weight my picks <span className="bw-btn-dot" aria-hidden="true">=</span></button>
         <button type="button" className="linkbtn" aria-disabled={mode === "example"} onClick={() => mode !== "example" && port.reset()}>Use the example</button>
-        <button type="button" className="linkbtn" aria-disabled={mode === "saved" && !picked} onClick={() => !(mode === "saved" && !picked) && port.empty()}>Start empty</button>
         <button type="button" className="linkbtn" aria-disabled={mode === "none"} onClick={() => mode !== "none" && port.none()}>I own nothing yet</button>
         {undo && <button type="button" className="linkbtn" onClick={port.restore}>Undo</button>}
       </div>
