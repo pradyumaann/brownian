@@ -359,9 +359,14 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
 /* Brownian header: the full header on Markets, Overnight (see the masthead block at the end) */
 /* The plus-mark field: 30x8 small boxes (HTML, not SVG: SVG roots do not get compositor animations here) placed on a 1920x520 grid that scales like the old "xMidYMid slice" drawing
    (--s = header units to px). Each mark is its own tiny element so its pulse (transform + opacity) runs on the compositor. */
+/* Plus-mark opacity at rest and at the dim point of its pulse: a little brighter on Night, unchanged on Paper (18 Nov 2026).
+   Kept here, not in design/brownian.css, because that block is generated from tokens.json, whose opacity tokens are not themed. */
+:root { --mast-plus-o: .52; --mast-plus-o-dim: .2; }
+:root[data-theme="paper"] { --mast-plus-o: .4; --mast-plus-o-dim: .15; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="night"]) { --mast-plus-o: .4; --mast-plus-o-dim: .15; } }
 .mast-field { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; --s: max(calc(100cqw / 1920), calc(var(--m-H) / 520)); }
 .mast-plus { position: absolute; left: calc(50% + (var(--x) - 965) * var(--s)); top: calc(50% + (var(--y) - 265) * var(--s)); width: calc(var(--s) * 10); height: calc(var(--s) * 10);
-  background: linear-gradient(var(--plot-muted), var(--plot-muted)) center / 100% var(--s) no-repeat, linear-gradient(var(--plot-muted), var(--plot-muted)) center / var(--s) 100% no-repeat; opacity: .4; }
+  background: linear-gradient(var(--plot-muted), var(--plot-muted)) center / 100% var(--s) no-repeat, linear-gradient(var(--plot-muted), var(--plot-muted)) center / var(--s) 100% no-repeat; opacity: var(--mast-plus-o); }
 .mast-val { font: 500 13px var(--font-mono); font-variant-numeric: tabular-nums; }
 .mast-day { font: 400 10px var(--font-mono); letter-spacing: .02em; }
 .mast-art.mast-art-c { display: none; }
@@ -423,7 +428,7 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
   .mast-bar text { animation: bw-fade .5s ease-out calc(var(--i) * 90ms + 450ms) backwards; }
   /* The plus marks: each one shrinks to a speck and grows back, out of step with its neighbours. */
   .mast-plus { animation: bw-plus-pulse 5s ease-in-out calc(var(--i) * -0.55s) infinite; }
-  @keyframes bw-plus-pulse { 0%, 100% { transform: scale(1); opacity: .4; } 50% { transform: scale(.15); opacity: .15; } }
+  @keyframes bw-plus-pulse { 0%, 100% { transform: scale(1); opacity: var(--mast-plus-o); } 50% { transform: scale(.15); opacity: var(--mast-plus-o-dim); } }
   /* The dawn dot that marks "now" breathes slowly. */
   .bw-now { animation: bw-breathe 3.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
   @keyframes bw-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
