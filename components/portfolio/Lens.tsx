@@ -16,7 +16,6 @@ import { Year } from "./Year";
 export function PortfolioLens({ facts, series, vars }: { facts: PortfolioFacts; series: PortfolioSeries; vars: MoodVars }) {
   const port = usePort();
   const ids = Object.keys(port.w);
-  const example = port.mode === "example";
   return (
     <>
       <Section title={<>Your <S>mix</S></>} meta="A weight for each holding type, in 5% steps · stays on this device" ix="01">
@@ -24,19 +23,19 @@ export function PortfolioLens({ facts, series, vars }: { facts: PortfolioFacts; 
       </Section>
 
       <Section title={<>Your <S>day</S></>} meta="What the session did to your weights · index and market moves, not your own holdings' prices" ix="02">
-        <Day w={port.w} facts={facts.types} asOf={facts.asOf} example={example} />
+        <Day w={port.w} facts={facts.types} asOf={facts.asOf} mode={port.mode} />
       </Section>
 
       <Section title={<>What you&apos;re <S>exposed to</S></>} meta="Your weights grouped by what drives them" ix="03">
-        <Exposure w={port.w} />
+        <Exposure w={port.w} mode={port.mode} />
       </Section>
 
       <Section title={<>Your mix over the <S>year</S></>} meta="The last 250 sessions · index moves for the types in your mix, beside Nifty 50" ix="04">
-        <Year w={port.w} series={series} example={example} />
+        <Year w={port.w} series={series} mode={port.mode} />
       </Section>
 
       <Section title={<>Events for what you <S>own</S></>} meta="Dated events the brief ties to the types in your mix · IST" ix="05">
-        <EventsForYou w={port.w} example={example} />
+        <EventsForYou w={port.w} mode={port.mode} />
       </Section>
 
       <Section title={<>How it is <S>worked out</S></>} meta="Formula, drivers, source tags and what is n/a" ix="06">
@@ -44,7 +43,7 @@ export function PortfolioLens({ facts, series, vars }: { facts: PortfolioFacts; 
       </Section>
 
       <Section title={<>What the news means for <S>each type</S></>} meta="Impact of today's brief on the types in your mix" ix="07">
-        <ImpactNotes ids={ids} vars={vars} example={example} />
+        <ImpactNotes ids={ids} vars={vars} mode={port.mode} />
       </Section>
     </>
   );

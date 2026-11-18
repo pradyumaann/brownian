@@ -25,6 +25,7 @@ The sentence for the RBI meeting and real estate is the closest the text comes: 
 
 | Candidate | Why dropped |
 |---|---|
+| Any event to flexi-cap funds or ELSS (types added 18 Nov 2026) | No sentence in the brief names flexi-cap funds, ELSS or Nifty 500, and their holding notes (`holdings` ids `flexi`, `elss`) mention no dated event. No `affects` tag carries `flexi` or `elss`. |
 | US October PPI to debt, gold | No holding note or event sentence mentions PPI for them. `gold.h` mentions "Fed hike bets", not the PPI date. |
 | India October WPI (Mon 16) to debt, fin, realty | The event text says "Another rise would add to pressure on the RBI", which names no holding type. The debt note cites CPI, not WPI. |
 | Nvidia results to anything beyond IT | No other note mentions it. |

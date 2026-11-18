@@ -22,7 +22,12 @@ export interface Def {
   /** "mean": equal-weighted average of the drivers' changes. "gold": (1 + gold) x (1 + USD/INR) - 1. "none": no type move. */
   how: "mean" | "gold" | "none";
   formula: string; note?: string; derived?: string;
+  /** For a fund category read through an index: what stands in for it, shown wherever the type's move is. */
+  proxy?: string;
 }
+
+const NIFTY500 = IDX("nifty500", "Nifty 500");
+const PROXY500 = "proxy: Nifty 500, not the fund's own returns";
 
 export const DEFS: Def[] = [
   { id: "index", n: "Nifty index funds & large-cap SIPs", drivers: [NIFTY50], how: "mean", formula: "Nifty 50 one-day change." },
@@ -31,6 +36,12 @@ export const DEFS: Def[] = [
     note: "No insurance-only series is held; insurers are covered only as far as they sit inside Financial Services." },
   { id: "mid", n: "Mid & small-cap funds", how: "mean", formula: "Equal-weighted average of the one-day changes of Nifty Midcap 100 and Nifty Smallcap 100.",
     drivers: [IDX("midcap100", "Nifty Midcap 100"), IDX("smallcap100", "Nifty Smallcap 100")] },
+  { id: "flexi", n: "Flexi-cap funds", how: "mean", drivers: [NIFTY500], proxy: PROXY500,
+    formula: "Nifty 500 one-day change, as a proxy for the category.",
+    note: "Nifty 500 spans large, mid and small caps. A flexi-cap fund's own split across them, its stock picks, cash and costs are not in the store, so its NAV can move differently." },
+  { id: "elss", n: "ELSS (tax-saver) funds", how: "mean", drivers: [NIFTY500], proxy: PROXY500,
+    formula: "Nifty 500 one-day change, as a proxy for the category.",
+    note: "ELSS funds are equity funds with a lock-in. Each fund's own portfolio, cash and costs are not in the store, so its NAV can move differently from Nifty 500." },
   { id: "it", n: "IT stocks & US/Nasdaq funds", how: "mean", formula: "Equal-weighted average of the one-day changes of Nifty IT, Nasdaq Composite and USD/INR (a weaker rupee counts as a rise in rupee terms).",
     drivers: [IDX("it", "Nifty IT"), WLD("nasdaq", "Nasdaq Composite"), USDINR] },
   { id: "gold", n: "Gold ETFs, SGBs & jewellery", how: "gold", drivers: [GOLD, USDINR],
@@ -100,7 +111,7 @@ function build(d: Def): TypeFact {
     id: d.id, n: d.n, short: SHORT[d.id], factor: FACTOR_OF[d.id], drivers,
     d1: r2(move(T, 1)), m1: r2(move(T, MONTH)), pctl: r1(r.p), pctlN: r.n,
     formula: missing.length ? `n/a: the history store has no series for ${missing.map((s) => s.label).join(", ")}.` : d.formula,
-    src: [...new Set(d.drivers.flatMap((s) => s.src))].sort(), note: d.note ?? null, derived: d.derived ?? null,
+    src: [...new Set(d.drivers.flatMap((s) => s.src))].sort(), note: d.note ?? null, derived: d.derived ?? null, proxy: d.proxy ?? null,
   };
 }
 

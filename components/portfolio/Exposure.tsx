@@ -1,8 +1,10 @@
 "use client";
-import { concentration, exposure, normalise, SHORT, type Weights } from "@/lib/portfolioMath";
+import { concentration, exposure, normalise, SHORT, type Mode, type Weights } from "@/lib/portfolioMath";
+import { NoneNote } from "./NoneNote";
 
 /** What the mix is exposed to: the share in each factor and concentration as facts. */
-export function Exposure({ w }: { w: Weights }) {
+export function Exposure({ w, mode }: { w: Weights; mode: Mode }) {
+  if (mode === "none") return <NoneNote line="For a mix, this section groups the weights by what drives them and states how concentrated they are. Nothing is owned, so nothing is shown." />;
   const ex = exposure(w), c = concentration(w), nm = normalise(w);
   if (!ex.length) return <p className="empty">No weight is set yet. Once a holding type has a weight, the factors it is exposed to are listed here.</p>;
   const top = Math.max(...ex.map((x) => x.share));

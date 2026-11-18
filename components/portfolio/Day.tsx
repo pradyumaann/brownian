@@ -1,10 +1,11 @@
 "use client";
-import { blend, fmtPct, SHORT, weightedRank, type Weights } from "@/lib/portfolioMath";
+import { blend, fmtPct, SHORT, weightedRank, type Mode, type Weights } from "@/lib/portfolioMath";
 import type { TypeFact } from "@/lib/portfolioTypes";
 import { Diverge } from "../charts/Diverge";
 import { DataTable } from "../DataTable";
 import { More } from "../More";
 import { Src } from "../Src";
+import { NoneNote } from "./NoneNote";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 export const dateOf = (iso: string) => `${Number(iso.slice(8, 10))} ${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
@@ -13,7 +14,9 @@ const tone = (v: number) => (v > 0 ? "gain" : v < 0 ? "loss" : "plain");
 const arrow = (v: number) => (v > 0 ? "▲ " : v < 0 ? "▼ " : "");
 
 /** Your day: the blended one-day move of the mix and what each type added to it. */
-export function Day({ w, facts, asOf, example }: { w: Weights; facts: TypeFact[]; asOf: string; example: boolean }) {
+export function Day({ w, facts, asOf, mode }: { w: Weights; facts: TypeFact[]; asOf: string; mode: Mode }) {
+  const example = mode === "example";
+  if (mode === "none") return <NoneNote full />;
   const b = blend(w, facts);
   const when = dateOf(asOf);
   if (!b.rows.length) {
@@ -22,6 +25,7 @@ export function Day({ w, facts, asOf, example }: { w: Weights; facts: TypeFact[]
   const live = b.rows.filter((r) => r.contrib != null);
   const srcs = [...new Set(live.flatMap((r) => facts.find((f) => f.id === r.id)!.src))].sort();
   const rank = weightedRank(w, facts);
+  const proxied = b.rows.filter((r) => facts.find((f) => f.id === r.id)?.proxy);
   return (
     <>
       <div className="mixday">
@@ -31,7 +35,8 @@ export function Day({ w, facts, asOf, example }: { w: Weights; facts: TypeFact[]
         ) : <p className="md-v"><span className="md-n bw-na">n/a</span></p>}
         <p className="bw-meta">
           {b.move != null ? <>Covers {Math.round(b.covered)}% of your mix{b.unallocated > 0 && <>; {Math.round(b.unallocated)}% is Unallocated and adds nothing</>}. </> : "No type in your mix has a move for this session. "}
-          {b.excluded.length > 0 && <>Not in the blended move: {b.excluded.map((e, i) => <span key={e.id}>{i ? ", " : ""}{SHORT[e.id]} ({Math.round(e.share)}%, n/a)</span>)}. Nothing is estimated for them.</>}
+          {b.excluded.length > 0 && <>Not in the blended move: {b.excluded.map((e, i) => <span key={e.id}>{i ? ", " : ""}{SHORT[e.id]} ({Math.round(e.share)}%, n/a)</span>)}. Nothing is estimated for them. </>}
+          {proxied.length > 0 && <>{proxied.map((r) => SHORT[r.id]).join(" and ")} {proxied.length > 1 ? "are" : "is"} read through an index (proxy: Nifty 500, not the fund&apos;s own returns).</>}
         </p>
       </div>
       <Diverge phoneRows={6} labelWidth={118}
@@ -49,7 +54,7 @@ export function Day({ w, facts, asOf, example }: { w: Weights; facts: TypeFact[]
           rows={b.rows.map((r) => {
             const f = facts.find((x) => x.id === r.id)!;
             return [
-              f.n,
+              f.proxy ? <>{f.n} <span className="faint">({f.proxy})</span></> : f.n,
               `${Math.round(r.share)}%`,
               r.move == null ? <span className="bw-na">n/a</span> : fmtPct(r.move),
               r.contrib == null ? <span className="bw-na">n/a</span> : fmtPct(r.contrib),

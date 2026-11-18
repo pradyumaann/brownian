@@ -20,7 +20,7 @@ export interface CalendarItem {
   affects?: HoldingId[];
 }
 /** The holding types that carry a weight in Portfolio Lens (not the household-costs note `wallet`). */
-export type HoldingId = "index" | "fin" | "mid" | "it" | "gold" | "silver" | "debt" | "oil" | "consumer" | "realty";
+export type HoldingId = "index" | "fin" | "mid" | "flexi" | "elss" | "it" | "gold" | "silver" | "debt" | "oil" | "consumer" | "realty";
 export interface Holding { id: string; n: string; d: "up" | "down" | "mixed"; h: string; w: string; t: string; src: string[] }
 /** [move, tone, note, sector] */
 export type StockNote = [string, Tone, string, string];

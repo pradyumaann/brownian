@@ -19,9 +19,13 @@ const SEEDS = {
   over: { port3: { v: 1, w: { index: 60, fin: 60, it: 30 } } },
   noev: { port3: { v: 1, w: { gold: 50, mid: 30 } } },
   watch: { port3: { v: 1, w: { index: 40, it: 30, consumer: 30 } }, watch2: ["Eicher Motors", "Infosys", "NVDA (Nvidia)", "Alkem Labs", "Walmart"] },
+  // "I own nothing yet" (no example, no figures), and a mix with the two Nifty 500 proxy types.
+  none: { port3: { v: 1, w: {}, none: true } },
+  flexi: { port3: { v: 1, w: { flexi: 40, elss: 30, index: 30 } } },
 };
 const SEEDED = [["/portfolio/", "mix"], ["/", "mix"], ["/portfolio/", "migrate"], ["/", "migrate"],
-  ["/portfolio/", "left"], ["/portfolio/", "over"], ["/portfolio/", "noev"], ["/portfolio/", "watch"]];
+  ["/portfolio/", "left"], ["/portfolio/", "over"], ["/portfolio/", "noev"], ["/portfolio/", "watch"],
+  ["/portfolio/", "none"], ["/", "none"], ["/portfolio/", "flexi"], ["/", "flexi"]];
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".svg": "image/svg+xml", ".woff2": "font/woff2", ".txt": "text/plain" };
 
 const server = createServer(async (req, res) => {
@@ -61,10 +65,16 @@ for (const theme of ["night", "paper"]) {
       await page.screenshot({ path: join(SHOTS, name + ".png"), fullPage: true });
       // Phase 2 text expectations on the seeded Portfolio Lens passes.
       const EXPECT = { left: ["None of the types in your mix has a year-long series"], noev: ["No dated events in the brief are tagged to the types in your mix."],
-        watch: ["Results due Fri 13 Nov, per today's brief", "No result date in today's brief", "Reported", "Reports Tue 17 Nov"], mix: ["Interpretation, not a forecast."] };
-      if (seed && r === "/portfolio/") {
+        watch: ["Results due Fri 13 Nov, per today's brief", "No result date in today's brief", "Reported", "Reports Tue 17 Nov"], mix: ["Interpretation, not a forecast."],
+        none: ["Portfolio Lens reads the day's index and market moves"], flexi: ["proxy: Nifty 500, not the fund's own returns"] };
+      // Text that must not appear: in "none" mode the example mix and its figures are hidden.
+      const ABSENT = { none: ["the example mix", "Blended one-day move", "Tagged to"] };
+      // These two seeds are checked on the front page too (FrontDay and FrontEvents read the same usePort()).
+      const BOTH = new Set(["none", "flexi"]);
+      if (seed && (r === "/portfolio/" || BOTH.has(seed))) {
         const body = await page.evaluate(() => document.body.innerText);
         for (const t of EXPECT[seed] ?? []) if (!body.includes(t)) errors.push(`missing text: ${t}`);
+        for (const t of ABSENT[seed] ?? []) if (body.includes(t)) errors.push(`unexpected text: ${t}`);
       }
       // Term pop-up at 400px on the front page: opens from the keyboard, sits inside the viewport with no sideways
       // page scroll, and Esc closes it with focus back on the term.
