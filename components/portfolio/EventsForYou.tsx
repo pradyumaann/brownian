@@ -1,6 +1,6 @@
 "use client";
 import { B } from "@/data";
-import type { HoldingId } from "@/data/types";
+import type { HoldingId, Tone } from "@/data/types";
 import { normalise, SHORT, type Weights } from "@/lib/portfolioMath";
 import { Chip } from "../Chip";
 import { EventRail } from "../EventRail";
@@ -13,7 +13,10 @@ import { Src } from "../Src";
 export function EventsForYou({ w, example }: { w: Weights; example: boolean }) {
   const shares = normalise(w).shares;
   const mine = (e: { affects?: HoldingId[] }) => (e.affects ?? []).filter((id) => shares[id] > 0);
-  const tagged = B.events.filter((e) => e.date && mine(e).length);
+  // The brief's "High impact" chip is drawn in the plain tone here: next to what someone owns, a red chip reads as a call
+  // on direction, and the brief's rating says only that the event matters (18 Nov 2026 decision).
+  const tagged = B.events.filter((e) => e.date && mine(e).length)
+    .map((e) => (e.chip?.[0] === "High impact" ? { ...e, chip: [e.chip[0], "plain"] as [string, Tone] } : e));
   if (!Object.keys(shares).length) {
     return <p className="empty">No weight is set yet. Give a holding type a weight above and the dated events tagged to it appear here.</p>;
   }
