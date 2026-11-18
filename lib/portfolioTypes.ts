@@ -30,6 +30,16 @@ export interface TypeFact extends MoveFact {
 }
 export interface PortfolioFacts { asOf: string; types: TypeFact[] }
 
+/** What the front page's Blended session move card needs of each type: the move, its tags and its proxy label. */
+export type SessionTypeFact = Pick<TypeFact, "id" | "n" | "d1" | "src" | "proxy">;
+/** Two market readings for the same session as the facts (lib/sessionConditions.ts, server-only), read as /wander reads them.
+ *  `turb`: band and percentile of the 20-session average turbulence. `spill`: the share (%) of Nifty's forecast variance
+ *  from overseas on that session, and its average over the same window /wander charts (`n` sessions). null is n/a. */
+export interface SessionConditions {
+  turb: { band: string; pct: number } | null;
+  spill: { now: number; avg: number; n: number } | null;
+}
+
 /** The year-long daily changes (lib/portfolioSeries.ts): sent to /portfolio only, never in PortfolioFacts. */
 export interface PortfolioSeries extends ReturnSeries {
   asOf: string;

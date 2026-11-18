@@ -736,6 +736,29 @@ ul.list.list-cont { border-top: 0; }
 .hd .hd-n { grid-column: 1 / -1; color: var(--ink); }
 .hd .hd-v { font-family: var(--font-mono); font-size: 12px; }
 .mixday ~ .more, .note.after-plot + .more { margin-top: var(--space-6); }
+/* Blended session move (the front page's first card): flush with the text column, no box, hairlines only. The type lines
+   share one set of columns (subgrid), so weights and moves line up whatever the tags' widths. */
+.smv-lbl { margin-top: var(--space-4); }
+.smv-lbl:first-child { margin-top: 0; }
+.smv > .empty:first-child { border-top: 0; padding-top: 0; }
+.smv-rows { list-style: none; margin: var(--space-4) 0 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; column-gap: var(--space-4); border-top: 1px solid var(--hairline-strong); }
+.smv-rows li { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: baseline; padding: var(--space-2) 0; border-bottom: 1px solid var(--hairline); font-size: 14px; min-height: 37px; }
+.smv-n { min-width: 0; }
+.smv-w, .smv-m { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.smv-w { color: var(--ink-muted); }
+.smv-s { white-space: nowrap; }
+.smv-wait .md-n { display: inline-block; }
+.smv-cond { margin-top: var(--space-8); }
+.smv-cond .sub { margin-bottom: 0; }
+.smv-kv { margin: var(--space-4) 0 0; border-top: 1px solid var(--hairline-strong); }
+.smv-kv > div { display: grid; grid-template-columns: 10rem minmax(0, 1fr); gap: var(--space-4); padding: var(--space-2) 0; border-bottom: 1px solid var(--hairline); font-size: 14px; }
+.smv-kv dt { color: var(--ink-muted); }
+.smv-kv dd { margin: 0; }
+.smv-kv b { font-weight: 500; }
+.smv-noise { margin-top: var(--space-4); }
+.smv .actions { margin-top: var(--space-6); }
+/* A section body folded on phones keeps the heading rule single, as the unfolded body does. */
+.sh + .sec-fold > .more-body > :first-child { border-top: 0; }
 /* Your mix over the year: the mix line takes the first categorical colour, Nifty 50 stays the quiet ink line. */
 .bl-mix { stroke: var(--cat-1); }
 .bl-key-mix { background: var(--cat-1); }
@@ -758,6 +781,8 @@ ul.list.list-cont { border-top: 0; }
   .mix-bar { grid-column: 1 / -1; grid-row: 2; height: 4px; }
   .stp-b { width: 40px; height: 40px; }
   .md-n { font-size: 44px; }
+  .smv-rows { column-gap: var(--space-3); }
+  .smv-kv > div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   .xbars li { grid-template-columns: minmax(0, 1fr) 44px; row-gap: 4px; }
   .xbars .xb { grid-column: 1 / -1; grid-row: 2; }
   .hd li { grid-template-columns: repeat(2, auto); }

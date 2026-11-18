@@ -2,7 +2,7 @@ import Link from "next/link";
 import { B } from "@/data";
 import { Chip } from "@/components/Chip";
 import { CountUp } from "@/components/CountUp";
-import { FrontDay, FrontEvents } from "@/components/portfolio/FrontDay";
+import { SessionMove } from "@/components/portfolio/SessionMove";
 import { More } from "@/components/More";
 import { Rich } from "@/components/Rich";
 import { S, Section } from "@/components/Section";
@@ -13,6 +13,7 @@ import { Diverge } from "@/components/charts/Diverge";
 import { Dial } from "@/components/charts/Dial";
 import { SegMeter } from "@/components/charts/Mini";
 import { portfolioFacts } from "@/lib/portfolioFacts";
+import { sessionConditions } from "@/lib/sessionConditions";
 import { band, comps, pressureHigh, pressureName, pressureScore, quad, score, scoreRaw, scored } from "@/lib/mood";
 import type { Kpi } from "@/data/types";
 
@@ -30,6 +31,9 @@ const US_TOP_BOTTOM = ["Energy", "Utilities", "Technology", "Industrials", "Comm
 
 export default function MarketsOvernight() {
   const fiiSrc = B.flows.src;
+  // The card gets only what it draws: each type's move, tags and proxy label, and two readings for the same session.
+  const facts = portfolioFacts();
+  const types = facts.types.map(({ id, n, d1, src, proxy }) => ({ id, n, d1, src, proxy }));
   return (
     <>
       <header className="vh is-brief">
@@ -39,6 +43,10 @@ export default function MarketsOvernight() {
           <p className="bw-source vh-f">Markets, Overnight · {B.dateShort}</p>
         </div>
       </header>
+
+      <Section title={<>Blended session <S>move</S></>} meta={`${B.session} session · index and market moves by holding type, not your own holdings' prices`} ix="01 · Portfolio Lens">
+        <SessionMove types={types} asOf={facts.asOf} cond={sessionConditions(facts.asOf)} />
+      </Section>
 
       <div className="hero">
         <KpiCell k={B.kpis.gift} />
@@ -57,7 +65,7 @@ export default function MarketsOvernight() {
         <KpiCell k={B.kpis.usdinr} />
       </div>
 
-      <Section title={<>What happened, and why it <S>matters</S></>} meta={`${B.session} session and overnight, in plain English`} ix="01 · Markets, Overnight">
+      <Section title={<>What happened, and why it <S>matters</S></>} meta={`${B.session} session and overnight, in plain English`} ix="02 · Markets, Overnight">
         <div className="takes">
           {B.takeaways.map((t) => (
             <article key={t.h} className="take">
@@ -71,10 +79,6 @@ export default function MarketsOvernight() {
         <h3 className="sub gap-top">What drove the day</h3>
         <ul className="list">{B.drove.slice(0, 2).map((d) => <li key={d}>{d}</li>)}</ul>
         {B.drove.length > 2 && <More label={`${B.drove.length - 2} more`}><ul className="list list-cont">{B.drove.slice(2).map((d) => <li key={d}>{d}</li>)}</ul></More>}
-      </Section>
-
-      <Section title={<>Your <S>day</S></>} meta="What the session did to your weights · index and market moves, not your own holdings' prices" ix="02 · Portfolio Lens">
-        <FrontDay facts={portfolioFacts()} />
       </Section>
 
       <Section title={<>The market&apos;s <S>mood</S></>} meta={`${scored.length} of ${comps.length} components, each ranked against its own five years, ${B.session} session`} ix="03 · Wander Index">
@@ -115,6 +119,7 @@ export default function MarketsOvernight() {
       </Section>
 
       <Section title={<>Sector <S>strength</S></>} meta={<>NSE sectoral indices, {B.session} · one-day change<Src k={["S1", "S2", "S3"]} /></>} ix="05 · India Markets">
+        <More label="Sectors and notes on the day" className="sec-fold">
         <div className="two">
           <Diverge phoneRows={8} rows={B.secIndia.map(([label, value, to]) => ({ label, value, to }))} label={`NSE sector changes, ${B.session}`} />
           <More label="Notes on the day" bodyClassName="note">
@@ -125,9 +130,11 @@ export default function MarketsOvernight() {
             <p><Link href="/india/">India Markets</Link></p>
           </More>
         </div>
+        </More>
       </Section>
 
       <Section title={<>Global <S>cues</S></>} meta={<>S&amp;P 500 sectors and cross-asset, {B.session} close<Src k={["S11"]} /></>} ix="06 · Global Cues">
+        <More label="US sectors and cross-asset" className="sec-fold">
         <Diverge rows={B.secUS.filter(([n]) => US_TOP_BOTTOM.includes(n)).map(([label, value]) => ({ label, value }))}
           label={`S&P 500 top and bottom three sectors, ${B.session}`} labelWidth={150} />
         <p className="bw-source after-plot">Top three and bottom three sectors; all eleven are in <Link href="/global/">Global Cues</Link></p>
@@ -136,6 +143,7 @@ export default function MarketsOvernight() {
             <div key={m}><div className="bw-label">{m}</div><div className="v">{v} <Change v={d} /><Src k={["S11"]} /></div></div>
           ))}
         </div>
+        </More>
       </Section>
 
       <Section title={<>Coming <S>up</S></>} meta="Next 7 days · times in IST" ix="07 · Macro Watch">
@@ -146,11 +154,8 @@ export default function MarketsOvernight() {
         </ul>
       </Section>
 
-      <Section title={<>Events for what you <S>own</S></>} meta="Dated events the brief ties to the types in your mix · IST" ix="08 · Portfolio Lens">
-        <FrontEvents />
-      </Section>
-
-      <Section title={<>Still <S>developing</S></>} meta="Stories carried across sessions" ix="09 · Developing">
+      <Section title={<>Still <S>developing</S></>} meta="Stories carried across sessions" ix="08 · Developing">
+        <More label={`The ${Math.min(5, B.stories.length)} stories`} className="sec-fold">
         <ol className="st">
           {B.stories.slice(0, 5).map((s) => (
             <li key={s.t}>
@@ -160,8 +165,8 @@ export default function MarketsOvernight() {
             </li>
           ))}
         </ol>
+        </More>
         <div className="actions">
-          <Link className="bw-btn bw-btn-dawn" href="/portfolio/">See what it means for you <span className="bw-btn-dot" aria-hidden="true">→</span></Link>
           <Link className="bw-btn" href="/developing/">All developing stories <span className="bw-btn-dot" aria-hidden="true">→</span></Link>
         </div>
       </Section>
