@@ -82,6 +82,8 @@ The glow ("Hyper Charts" look) is allowed only on marks that encode a value. Two
 
 Each section opens with `--space-16` above it and keeps `--space-6`–`--space-8` inside, so the gap between sections is always the largest on the page; a section's heading rule is never doubled by its first block's own top rule.
 
+**Term pop-up** (18 Nov 2026, `components/TermPop.tsx`, `.termpop`). A dotted-underlined term (`.bw-term`) opens a small card anchored to it, never a sheet: the term (Onest 500, 15px), a one- or two-sentence plain definition in `--ink` with no jargon inside it, today's number in mono (`--font-mono`, `--ink-muted`) when the entry has one, and "More in Jargon Buster" to the full entry on `/learn`. `--surface-raised` fill, a 1px `--hairline-strong` border, `--radius-sm`, no shadow, at most 300px wide. It sits above the term with an 8px gap when there is room, otherwise below; it stays 16px inside the viewport on both sides, so at 400px it never causes sideways scroll, and it follows the term on scroll. The open term keeps its underline in `--ink`. It is a component state, not a chart entrance: a 150ms fade with a 4px rise and a slight scale (from 0.98), inside `prefers-reduced-motion: no-preference` only; otherwise it appears at once. One open at a time; Esc or a tap outside closes it. Source tags keep the bottom sheet.
+
 One entrance moment per view (bars grow from zero, the needle sweeps, the score counts up, strands draw in; 600ms ease-out), only inside `prefers-reduced-motion: no-preference`. **Marks are visible at rest.** Hover dims the rest to `--opacity-dim` (200ms). Freshness shows the brief time; after the open, label it "as of the 07:52 brief" in `--dawn-ink`.
 
 ## Voice

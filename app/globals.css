@@ -233,14 +233,32 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
 
 /* Glossary */
 .gloss { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 var(--space-8); border-top: 1px solid var(--hairline-strong); margin: 0; }
-.gloss > div { padding: var(--space-6) 0; border-bottom: 1px solid var(--hairline); }
+.gloss > div { padding: var(--space-6) 0; border-bottom: 1px solid var(--hairline); scroll-margin-top: calc(var(--m-bar) + var(--space-3)); }
 .gloss dt { font: 500 18px/1.3 var(--font-sans); letter-spacing: -0.01em; margin-bottom: var(--space-2); }
 .gloss dd { margin: 0; font-size: 14px; color: var(--ink-muted); line-height: 1.55; }
 .gloss dd.today { margin-top: var(--space-3); font: 400 12px/1.5 var(--font-mono); color: var(--ink); }
 
 /* Glossary term buttons */
 .bw-term { appearance: none; background: none; border: 0; padding: 0; font: inherit; color: inherit; text-align: left; cursor: help; text-decoration: underline dotted var(--ink-faint); text-underline-offset: 3px; }
-.bw-term:hover { text-decoration-color: var(--ink); }
+.bw-term:hover, .bw-term[aria-expanded="true"] { text-decoration-color: var(--ink); }
+
+/* Term pop-up (components/TermPop.tsx): anchored over the term, placed and clamped in script; hairline, no shadow */
+.termpop { position: fixed; z-index: 40; box-sizing: border-box; max-width: calc(100vw - 2 * var(--space-4)); width: 300px; padding: var(--space-3) var(--space-4) var(--space-4); background: var(--surface-raised); color: var(--ink); border: 1px solid var(--hairline-strong); border-radius: var(--radius-sm); display: grid; gap: var(--space-2); text-align: left; }
+.termpop:focus { outline: none; }
+.termpop:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.termpop-h { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); }
+.termpop-h h3 { margin: 0; font: 500 15px/1.3 var(--font-sans); color: var(--ink); }
+.termpop-x { appearance: none; flex: none; border: 1px solid var(--hairline-strong); background: transparent; color: var(--ink-muted); width: 28px; height: 28px; border-radius: var(--radius-pill); display: grid; place-items: center; cursor: pointer; }
+.termpop-x:hover { color: var(--ink); }
+.termpop-d { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ink); overflow-wrap: anywhere; }
+.termpop-n { margin: 0; font: 400 12px/1.5 var(--font-mono); color: var(--ink-muted); overflow-wrap: anywhere; }
+.termpop-more { font-size: 13px; color: var(--ink-muted); text-decoration: underline; text-decoration-color: var(--hairline-strong); text-underline-offset: 3px; justify-self: start; }
+.termpop-more:hover { color: var(--ink); text-decoration-color: var(--ink); }
+@media (prefers-reduced-motion: no-preference) {
+  .termpop { animation: termpop-in 150ms ease-out both; --termpop-dy: 4px; }
+  .termpop[data-place="below"] { --termpop-dy: -4px; }
+  @keyframes termpop-in { from { opacity: 0; transform: translateY(var(--termpop-dy)) scale(0.98); } }
+}
 
 /* Chips: word plus currentColor border */
 .bw-chip.tone-plain { color: var(--ink-muted); }
@@ -248,7 +266,7 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
 /* CPI band mark */
 .cpi-band { fill: var(--plot-grid); stroke: var(--plot-muted); stroke-width: var(--stroke-hair); }
 
-/* Sheet: source tags and glossary terms */
+/* Sheet: source tags (glossary terms use the term pop-up above) */
 .sheet { position: fixed; inset: auto 0 0 0; margin: 0 auto; width: 100%; max-width: 720px; max-height: 80vh; border: 1px solid var(--hairline-strong); border-bottom: 0; border-radius: var(--radius-md) var(--radius-md) 0 0; background: var(--surface-raised); color: var(--ink); padding: 0; }
 .sheet::backdrop { background: color-mix(in srgb, var(--ground) 60%, transparent); }
 .sheet-in { padding: var(--space-6) var(--space-6) calc(var(--space-8) + env(safe-area-inset-bottom, 0px)); display: grid; gap: var(--space-3); }

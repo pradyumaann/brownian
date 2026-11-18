@@ -66,6 +66,35 @@ for (const theme of ["night", "paper"]) {
         const body = await page.evaluate(() => document.body.innerText);
         for (const t of EXPECT[seed] ?? []) if (!body.includes(t)) errors.push(`missing text: ${t}`);
       }
+      // Term pop-up at 400px on the front page: opens from the keyboard, sits inside the viewport with no sideways
+      // page scroll, and Esc closes it with focus back on the term.
+      if (width === 400 && r === "/" && !seed) {
+        const term = page.locator("main [data-term]").first();
+        await term.focus();
+        await page.keyboard.press("Enter");
+        await page.waitForTimeout(250);
+        const pop = await page.evaluate(() => {
+          const el = document.querySelector(".termpop");
+          if (!el) return null;
+          const b = el.getBoundingClientRect(), s = getComputedStyle(el);
+          return { visible: s.display !== "none" && s.visibility !== "hidden" && Number(s.opacity) > 0.9 && b.width > 0 && b.height > 0,
+            inside: b.left >= 0 && b.right <= document.documentElement.clientWidth && b.top >= 0 && b.bottom <= window.innerHeight,
+            dialog: el.getAttribute("role") === "dialog", focusIn: el.contains(document.activeElement),
+            expanded: document.querySelector('[data-term][aria-expanded="true"]') !== null,
+            sw: document.documentElement.scrollWidth, vw: window.innerWidth };
+        });
+        if (!pop) errors.push("term pop-up did not open");
+        else {
+          if (!pop.visible) errors.push("term pop-up not visible");
+          if (!pop.inside) errors.push("term pop-up outside the viewport");
+          if (!pop.dialog || !pop.focusIn || !pop.expanded) errors.push("term pop-up: role, focus or aria-expanded wrong");
+          if (pop.sw > pop.vw) errors.push(`term pop-up causes sideways scroll ${pop.sw}/${pop.vw}`);
+        }
+        await page.keyboard.press("Escape");
+        await page.waitForTimeout(100);
+        const back = await page.evaluate(() => ({ closed: !document.querySelector(".termpop"), onTerm: document.activeElement === document.querySelector("main [data-term]") }));
+        if (!back.closed || !back.onTerm) errors.push("Esc did not close the term pop-up and return focus to the term");
+      }
       const bad = sw > vw || errors.length;
       if (bad) failures++;
       console.log(`${bad ? "FAIL" : "ok  "} ${name.padEnd(28)} scroll ${sw}/${vw}${errors.length ? "  errors: " + errors.join(" | ") : ""}`);

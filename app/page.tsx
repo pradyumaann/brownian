@@ -63,7 +63,7 @@ export default function MarketsOvernight() {
             <article key={t.h} className="take">
               <Chip tone={t.chip[1]}>{t.chip[0]}</Chip>
               <h3>{t.h}</h3>
-              <More label="The detail" className="take-more"><p>{t.p}<Src k={t.src} /></p></More>
+              <More label="The detail" className="take-more"><p><Rich r={t.p} /><Src k={t.src} /></p></More>
               <p className="why">{t.why}</p>
             </article>
           ))}
