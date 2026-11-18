@@ -4,12 +4,13 @@
 /** Direction or status of a reading. Never shown as colour alone: chips and changes always carry words or ▲/▼. */
 export type Tone = "gain" | "loss" | "mixed" | "info" | "plain";
 
-/** Rich text: plain strings, bold leads, source tags and glossary terms, in reading order. */
+/** Rich text: plain strings, bold leads, source tags and glossary terms, in reading order. A `{ term, label }` segment
+ *  wraps existing words (the label) in a term button; wrap only a term's first use on a page. */
 export type Rich = Array<string | { b: string } | { src: string[] } | { term: string; label: string }>;
 
 export interface Pressure { k: string; v: string; lv: 0 | 1 | 2; why: string }
 export interface Kpi { label: string; term?: string; v: string; unit?: string; d: string; dNote: string; src: string[] }
-export interface Takeaway { chip: [string, Tone]; h: string; p: string; why: string; src: string[] }
+export interface Takeaway { chip: [string, Tone]; h: string; p: Rich; why: string; src: string[] }
 /** A dated row. `date` (ISO start) and `end` (ISO, a range's last day) are set only for firm dates; a row with
  *  neither is never plotted on a time line and nothing is estimated for it. */
 export interface CalendarItem {
@@ -115,8 +116,9 @@ export interface Brief {
   erDone: [string, string, string, string, Tone][];
   erLessons: [string, string][];
   stories: Story[];
-  /** id → [term, definition, today's number] */
-  gloss: Record<string, [string, string, string]>;
+  /** id → [term, definition, today's number, short]. `short` is the term pop-up's plain-language definition: one or two
+   *  sentences, no jargon inside it, under about 35 words, facts only. The id is also the entry's anchor on /learn (`/learn/#<id>`). */
+  gloss: Record<string, [string, string, string, string]>;
   sources: [string, string][];
   web: [string, string, string][];
   method: string[];
