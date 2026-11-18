@@ -13,7 +13,6 @@ import { Diverge } from "@/components/charts/Diverge";
 import { Dial } from "@/components/charts/Dial";
 import { SegMeter } from "@/components/charts/Mini";
 import { portfolioFacts } from "@/lib/portfolioFacts";
-import { sessionConditions } from "@/lib/sessionConditions";
 import { band, comps, pressureHigh, pressureName, pressureScore, quad, score, scoreRaw, scored } from "@/lib/mood";
 import type { Kpi } from "@/data/types";
 
@@ -31,7 +30,7 @@ const US_TOP_BOTTOM = ["Energy", "Utilities", "Technology", "Industrials", "Comm
 
 export default function MarketsOvernight() {
   const fiiSrc = B.flows.src;
-  // The card gets only what it draws: each type's move, tags and proxy label, and two readings for the same session.
+  // The card gets only what it draws: each type's move, tags and proxy label.
   const facts = portfolioFacts();
   const types = facts.types.map(({ id, n, d1, src, proxy }) => ({ id, n, d1, src, proxy }));
   return (
@@ -43,10 +42,6 @@ export default function MarketsOvernight() {
           <p className="bw-source vh-f">Markets, Overnight · {B.dateShort}</p>
         </div>
       </header>
-
-      <Section title={<>Blended session <S>move</S></>} meta={`${B.session} session · index and market moves by holding type, not your own holdings' prices`} ix="01 · Portfolio Lens">
-        <SessionMove types={types} asOf={facts.asOf} cond={sessionConditions(facts.asOf)} />
-      </Section>
 
       <div className="hero">
         <KpiCell k={B.kpis.gift} />
@@ -64,6 +59,10 @@ export default function MarketsOvernight() {
         <KpiCell k={B.kpis.fii} />
         <KpiCell k={B.kpis.usdinr} />
       </div>
+
+      <Section title={<>Blended session <S>move</S></>} meta={`${B.session} session · index and market moves by holding type, not your own holdings' prices`} ix="01 · Portfolio Lens">
+        <SessionMove types={types} asOf={facts.asOf} />
+      </Section>
 
       <Section title={<>What happened, and why it <S>matters</S></>} meta={`${B.session} session and overnight, in plain English`} ix="02 · Markets, Overnight">
         <div className="takes">

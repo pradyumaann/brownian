@@ -75,9 +75,9 @@ for (const theme of ["night", "paper"]) {
         for (const t of ABSENT[seed] ?? []) if (body.includes(t)) errors.push(`unexpected text: ${t}`);
       }
       // The front page: the Blended session move card (components/portfolio/SessionMove.tsx, the same usePort()) on every
-      // pass, with its market-conditions block; "Your day" and "Events for what you own" are gone from `/`; one primary button.
+      // pass; "Your day" and "Events for what you own" are gone from `/`; one primary button.
       if (r === "/") {
-        const CARD = ["Blended session move", "Market conditions that session", "Single days are noise. Interpretation, not a forecast.", "See what it means for you"];
+        const CARD = ["Blended session move", "Single days are noise. Interpretation, not a forecast.", "See what it means for you"];
         const FRONT = { "": ["Blended one-day move of the example mix"], mix: ["Blended one-day move of your mix"], migrate: ["Blended one-day move of your mix"],
           none: ["Portfolio Lens reads the day's index and market moves"], flexi: ["Blended one-day move of your mix", "proxy: Nifty 500, not the fund's own returns"] };
         const FRONT_ABSENT = { none: ["the example mix", "Blended one-day move", "Tagged to"], mix: ["the example mix"], migrate: ["the example mix"], flexi: ["the example mix"] };
