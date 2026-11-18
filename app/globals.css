@@ -736,27 +736,39 @@ ul.list.list-cont { border-top: 0; }
 .hd .hd-n { grid-column: 1 / -1; color: var(--ink); }
 .hd .hd-v { font-family: var(--font-mono); font-size: 12px; }
 .mixday ~ .more, .note.after-plot + .more { margin-top: var(--space-6); }
-/* Blended session move (the front page's first card): flush with the text column, no box, hairlines only. The type lines
-   share one set of columns (subgrid), so weights and moves line up whatever the tags' widths. */
-.smv-lbl { margin-top: var(--space-4); }
-.smv-lbl:first-child { margin-top: 0; }
-.smv > .empty:first-child { border-top: 0; padding-top: 0; }
-.smv-rows { list-style: none; margin: var(--space-4) 0 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; column-gap: var(--space-4); border-top: 1px solid var(--hairline-strong); }
-.smv-rows li { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: baseline; padding: var(--space-2) 0; border-bottom: 1px solid var(--hairline); font-size: 14px; min-height: 37px; }
+/* Blended session move (the front page's first card): flush with the text column, no box, hairlines only. One display
+   figure with its caption set beside it (stacked on phones), then ruled type lines on fixed columns shared with the column
+   names, then a footer row that ends in the page's one primary button. Gaps step on the space scale: 6 · 8 · 8. */
+.smv { --smv-cols: minmax(0, 1.1fr) minmax(0, 1fr) 3.5rem 6.5rem 4rem; }
+.smv-ex { min-height: 20px; margin: 0 0 var(--space-6); font: 400 13px/20px var(--font-sans); color: var(--ink-muted); }
+.smv-ex .bw-chip { margin-right: var(--space-2); vertical-align: 1px; }
+.smv-stat { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "fig lbl" "fig cov"; align-items: end; column-gap: var(--space-8); row-gap: var(--space-2); }
+.smv-lbl { grid-area: lbl; margin: 0; font: 500 14px/1.4 var(--font-sans); color: var(--ink); max-width: 44ch; }
+.smv-cov { grid-area: cov; margin: 0; font: 400 13px/1.5 var(--font-sans); color: var(--ink-muted); max-width: 52ch; align-self: start; }
+.smv-fig { grid-area: fig; margin: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 var(--space-2); }
+.smv-num { display: inline-block; font: 400 96px/0.9 var(--font-sans); letter-spacing: -0.05em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.smv-tri { display: inline-block; font-size: .28em; letter-spacing: 0; vertical-align: 1.75em; margin-right: .2em; }
+.smv-fig .bw-src { vertical-align: 0; }
+.smv-head, .smv-rows li { display: grid; grid-template-columns: var(--smv-cols); column-gap: var(--space-4); align-items: center; }
+.smv-head { margin-top: var(--space-8); padding-bottom: var(--space-2); border-bottom: 1px solid var(--hairline-strong); font: 400 10px/1.3 var(--font-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--ink-faint); }
+.smv-head .smv-hr { text-align: right; }
+.smv-rows { list-style: none; margin: 0; padding: 0; }
+.smv-rows li { min-height: 52px; padding: var(--space-3) 0; border-bottom: 1px solid var(--hairline); font-size: 15px; }
 .smv-n { min-width: 0; }
-.smv-w, .smv-m { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.smv-n .mix-px { margin-top: 2px; }
+.smv-bar { display: block; height: 2px; background: var(--hairline); }
+.smv-bar i { display: block; height: 100%; background: var(--ink-muted); }
+.smv-w, .smv-m { font: 400 14px/1.4 var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 .smv-w { color: var(--ink-muted); }
-.smv-s { white-space: nowrap; }
-.smv-wait .md-n { display: inline-block; }
-.smv-cond { margin-top: var(--space-8); }
-.smv-cond .sub { margin-bottom: 0; }
-.smv-kv { margin: var(--space-4) 0 0; border-top: 1px solid var(--hairline-strong); }
-.smv-kv > div { display: grid; grid-template-columns: 10rem minmax(0, 1fr); gap: var(--space-4); padding: var(--space-2) 0; border-bottom: 1px solid var(--hairline); font-size: 14px; }
-.smv-kv dt { color: var(--ink-muted); }
-.smv-kv dd { margin: 0; }
-.smv-kv b { font-weight: 500; }
-.smv-noise { margin-top: var(--space-4); }
-.smv .actions { margin-top: var(--space-6); }
+.smv-s { white-space: nowrap; text-align: right; }
+.smv-s .bw-src:first-child { margin-left: 0; }
+.smv-l2 { display: none; }
+.smv-hid { visibility: hidden; }
+.smv > .empty:first-child { border-top: 0; padding-top: 0; }
+.smv-foot { margin-top: var(--space-8); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4) var(--space-8); }
+.smv-foot-t { display: grid; gap: var(--space-1); min-width: 0; }
+.smv-foot-t p { margin: 0; }
+.smv-link { font-size: 13px; }
 /* A section body folded on phones keeps the heading rule single, as the unfolded body does. */
 .sh + .sec-fold > .more-body > :first-child { border-top: 0; }
 /* Your mix over the year: the mix line takes the first categorical colour, Nifty 50 stays the quiet ink line. */
@@ -781,8 +793,17 @@ ul.list.list-cont { border-top: 0; }
   .mix-bar { grid-column: 1 / -1; grid-row: 2; height: 4px; }
   .stp-b { width: 40px; height: 40px; }
   .md-n { font-size: 44px; }
-  .smv-rows { column-gap: var(--space-3); }
-  .smv-kv > div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .smv { --smv-cols: minmax(0, 1fr) 2.75rem 5.25rem 3.25rem; }
+  .smv-stat { grid-template-columns: minmax(0, 1fr); grid-template-areas: "lbl" "fig" "cov"; row-gap: var(--space-3); }
+  .smv-num { font-size: 64px; }
+  .smv-l2 { display: inline; }
+  .smv-head, .smv-rows li { column-gap: var(--space-3); }
+  .smv-head > :nth-child(2) { display: none; }
+  /* On phones the share bar is the line's own bottom rule: the track is the hairline, the fill is the share. */
+  .smv-rows li { min-height: 48px; padding: var(--space-3) 0 0; row-gap: var(--space-3); border-bottom: 0; font-size: 14px; }
+  .smv-rows .smv-bar { grid-column: 1 / -1; grid-row: 2; }
+  .smv-w, .smv-m { font-size: 13px; }
+  .smv-foot { flex-direction: column; align-items: flex-start; gap: var(--space-6); }
   .xbars li { grid-template-columns: minmax(0, 1fr) 44px; row-gap: 4px; }
   .xbars .xb { grid-column: 1 / -1; grid-row: 2; }
   .hd li { grid-template-columns: repeat(2, auto); }
