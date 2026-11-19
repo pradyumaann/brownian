@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/fetch-brief.mjs",
     "build": "next build && node scripts/fix-export-segments.mjs",
     "check": "npm run lint:copy && node scripts/check.mjs",
     "lint:copy": "node scripts/lint-copy.mjs",
