@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { niceTicks } from "./TimeLine";
 import { useWidth } from "./usePlot";
 
@@ -18,7 +18,9 @@ export function BlendLine({ dates, mix, nifty, name }: {
   dates: string[]; mix: (number | null)[]; nifty: (number | null)[] | null; name: string;
 }) {
   const { ref, w } = useWidth<HTMLDivElement>();
-  const W = w || 640, phone = W < 480, H = phone ? 240 : 280, l = phone ? 38 : 44, r = 16, t = 14, b = 30;
+  const uid = useId().replace(/:/g, "");
+  const W = w || 640, phone = W < 480, sH = phone ? 28 : 36, H = (phone ? 240 : 280) + sH + 10, l = phone ? 38 : 44, r = 16, t = 14, b = 30;
+  const pb = H - b - sH - 10; // bottom of the line area; the daily-change strip sits between it and the axis
   const n = dates.length;
   const lastI = mix.findLastIndex((v) => v != null);
   const [cursor, setCursor] = useState<number | null>(null);
@@ -33,7 +35,7 @@ export function BlendLine({ dates, mix, nifty, name }: {
   const vals = [...mix, ...(nifty ?? [])].filter((v): v is number => v != null);
   const lo = Math.min(...vals), hi = Math.max(...vals), pad = (hi - lo) * 0.08 || 1;
   const dMin = lo - pad, dMax = hi + pad;
-  const X = (i: number) => l + (i / Math.max(1, n - 1)) * (W - l - r), Y = (v: number) => t + (1 - (v - dMin) / (dMax - dMin)) * (H - t - b);
+  const X = (i: number) => l + (i / Math.max(1, n - 1)) * (W - l - r), Y = (v: number) => t + (1 - (v - dMin) / (dMax - dMin)) * (pb - t);
   const path = (a: (number | null)[]) => {
     let d = "", pen = false;
     a.forEach((v, i) => { if (v == null) { pen = false; return; } d += `${pen ? "L" : "M"}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`; pen = true; });
@@ -46,6 +48,19 @@ export function BlendLine({ dates, mix, nifty, name }: {
     yTicks = [];
     for (let v = Math.ceil(dMin / step) * step; v <= dMax; v += step) yTicks.push(Math.round(v * 100) / 100);
   }
+  // The area between the mix line and the 100 baseline, one closed shape per unbroken run.
+  const base = Y(100);
+  const area = (() => {
+    let d = "", run: number[] = [];
+    const flush = () => { if (run.length > 1) d += `M${X(run[0]).toFixed(1)} ${base.toFixed(1)}` + run.map((i) => `L${X(i).toFixed(1)} ${Y(mix[i]!).toFixed(1)}`).join("") + `L${X(run.at(-1)!).toFixed(1)} ${base.toFixed(1)}Z`; run = []; };
+    mix.forEach((v, i) => { if (v == null) flush(); else run.push(i); });
+    flush();
+    return d;
+  })();
+  // Daily change of the mix, one tick per session from a middle line: up above, down below, scaled to the largest day.
+  const moves = mix.map((v, i) => (i > 0 && v != null && mix[i - 1] != null ? v / mix[i - 1]! - 1 : null));
+  const maxMove = Math.max(1e-9, ...moves.map((m) => Math.abs(m ?? 0)));
+  const sMid = H - b - sH / 2, sw = Math.max(1, ((W - l - r) / Math.max(1, n - 1)) * 0.62);
   // One tick at the first session of each quarter month (two a year on phones), never closer than 56px.
   const xTicks = dates.map((d, i) => ({ d, i })).filter(({ d, i }) => i > 0 && d.slice(5, 7) !== dates[i - 1].slice(5, 7) && (phone ? ["01", "07"] : ["01", "04", "07", "10"]).includes(d.slice(5, 7)))
     .filter((tk, k, all) => k === 0 || X(tk.i) - X(all[k - 1].i) >= 56);
@@ -73,10 +88,15 @@ export function BlendLine({ dates, mix, nifty, name }: {
   return (
     <div className="bw-plot" ref={ref}>
       <div className="tl-key" aria-hidden="true">
-        <span><i className="bl-key-mix" />{name}</span>
+        <span><i className="bl-key-up" /><i className="bl-key-dn" />{name} · above or below 100</span>
+        <span><i className="bl-key-tick" />Daily change</span>
         {nifty && <span><i className="tl-key-over" />Nifty 50</span>}
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={aria}>
+        <defs>
+          <clipPath id={`${uid}-up`}><rect x={0} y={0} width={W} height={Math.max(0, Math.min(pb, base))} /></clipPath>
+          <clipPath id={`${uid}-dn`}><rect x={0} y={Math.max(0, Math.min(pb, base))} width={W} height={H} /></clipPath>
+        </defs>
         {yTicks.map((v) => (
           <g key={v}>
             <line x1={l} x2={W - r} y1={Y(v)} y2={Y(v)} className={v === 100 ? "bw-base" : "bw-grid"} />
@@ -89,9 +109,22 @@ export function BlendLine({ dates, mix, nifty, name }: {
             <text x={X(i)} y={H - 10} textAnchor="middle" className="bw-tick">{fmtTick(d)}</text>
           </g>
         ))}
+        <line x1={l} x2={W - r} y1={pb} y2={pb} className="bw-grid" />
         <line x1={l} x2={W - r} y1={H - b} y2={H - b} className="bw-grid" />
+        <g aria-hidden="true" className="bl-strip">
+          <line x1={l} x2={W - r} y1={sMid} y2={sMid} className="bw-grid" />
+          {moves.map((m, i) => (m == null || m === 0 ? null : (
+            <rect key={i} x={X(i) - sw / 2} width={sw} y={m > 0 ? sMid - Math.max(1, (Math.abs(m) / maxMove) * (sH / 2 - 1)) : sMid} height={Math.max(1, (Math.abs(m) / maxMove) * (sH / 2 - 1))}
+              className={m > 0 ? "bl-up" : "bl-dn"} />
+          )))}
+        </g>
+        <g aria-hidden="true">
+          <path d={area} className="bl-area bl-area-up" clipPath={`url(#${uid}-up)`} />
+          <path d={area} className="bl-area bl-area-dn" clipPath={`url(#${uid}-dn)`} />
+        </g>
         {nifty && <path d={path(nifty.map((_, i) => (mix[i] == null ? null : nifty[i])))} fill="none" className="tl-line tl-over" strokeWidth={1.25} strokeLinejoin="round" pathLength={1} style={{ ["--d" as string]: "0.3s" }} />}
-        <path d={path(mix)} fill="none" className="tl-line bl-mix" strokeWidth={1.75} strokeLinejoin="round" pathLength={1} />
+        <path d={path(mix)} fill="none" className="tl-line bl-mix bl-mix-up" strokeWidth={2} strokeLinejoin="round" pathLength={1} clipPath={`url(#${uid}-up)`} />
+        <path d={path(mix)} fill="none" className="tl-line bl-mix bl-mix-dn" strokeWidth={2} strokeLinejoin="round" pathLength={1} clipPath={`url(#${uid}-dn)`} />
         {mix.map((v, i) => (v == null || i % step ? null : (
           <rect key={dates[i]} x={X(i) - (W - l - r) / n * step / 2} y={t} width={Math.max(1, (W - l - r) / n * step)} height={H - t - b}
             fill="transparent" {...readoutAttrs(one(v), tipL(i))} />

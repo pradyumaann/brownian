@@ -3,6 +3,7 @@ import { B } from "@/data";
 import { Chip } from "@/components/Chip";
 import { CountUp } from "@/components/CountUp";
 import { SessionMove } from "@/components/portfolio/SessionMove";
+import { Fold, FoldPart } from "@/components/Fold";
 import { More } from "@/components/More";
 import { Rich } from "@/components/Rich";
 import { S, Section } from "@/components/Section";
@@ -30,6 +31,8 @@ const US_TOP_BOTTOM = ["Energy", "Utilities", "Technology", "Industrials", "Comm
 
 export default function MarketsOvernight() {
   const fiiSrc = B.flows.src;
+  const shown = B.stories.slice(0, 5);
+  const newStories = shown.filter((x) => x.st === "NEW").length;
   // The card gets only what it draws: each type's move, tags and proxy label.
   const facts = portfolioFacts();
   const types = facts.types.map(({ id, n, d1, src, proxy }) => ({ id, n, d1, src, proxy }));
@@ -46,15 +49,16 @@ export default function MarketsOvernight() {
       <div className="hero">
         <KpiCell k={B.kpis.gift} />
         <div>
-          <div className="bw-label"><Link href="/wander/">Wander Index</Link> · <Link href="/wander/#macro-pressure">Macro pressure</Link></div>
-          <div className="v">
-            <CountUp to={score} />
-            <small className="v-sub"> / </small>
-            <span className="v-press">{pressureScore}</span>
-          </div>
+          <div className="bw-label"><Link href="/wander/">Wander Index</Link></div>
+          <div className="v"><CountUp to={score} /></div>
           <SegMeter score={scoreRaw} label={`Wander Index ${score} of 100, ${band}`} />
+          <div className="d"><span className="w">{band} · interpretation, not a forecast</span></div>
+        </div>
+        <div>
+          <div className="bw-label"><Link href="/wander/#macro-pressure">Macro pressure</Link></div>
+          <div className="v">{pressureScore}</div>
           <SegMeter score={pressureScore} label={`Macro pressure ${pressureScore} of 100, ${pressureName}`} />
-          <div className="d"><span className="w">{band} · macro pressure {pressureName.toLowerCase()} · interpretation, not a forecast</span></div>
+          <div className="d"><span className="w">{pressureName} · interpretation, not a forecast</span></div>
         </div>
         <KpiCell k={B.kpis.fii} />
         <KpiCell k={B.kpis.usdinr} />
@@ -64,23 +68,7 @@ export default function MarketsOvernight() {
         <SessionMove types={types} asOf={facts.asOf} />
       </Section>
 
-      <Section title={<>What happened, and why it <S>matters</S></>} meta={`${B.session} session and overnight, in plain English`} ix="02 · Markets, Overnight">
-        <div className="takes">
-          {B.takeaways.map((t) => (
-            <article key={t.h} className="take">
-              <Chip tone={t.chip[1]}>{t.chip[0]}</Chip>
-              <h3>{t.h}</h3>
-              <More label="The detail" className="take-more"><p><Rich r={t.p} /><Src k={t.src} /></p></More>
-              <p className="why">{t.why}</p>
-            </article>
-          ))}
-        </div>
-        <h3 className="sub gap-top">What drove the day</h3>
-        <ul className="list">{B.drove.slice(0, 2).map((d) => <li key={d}>{d}</li>)}</ul>
-        {B.drove.length > 2 && <More label={`${B.drove.length - 2} more`}><ul className="list list-cont">{B.drove.slice(2).map((d) => <li key={d}>{d}</li>)}</ul></More>}
-      </Section>
-
-      <Section title={<>The market&apos;s <S>mood</S></>} meta={`${scored.length} of ${comps.length} components, each ranked against its own five years, ${B.session} session`} ix="03 · Wander Index">
+      <Section title={<>The market&apos;s <S>mood</S></>} meta={`${scored.length} of ${comps.length} components, each ranked against its own five years, ${B.session} session`} ix="02 · Wander Index">
         <div className="two">
           <div>
             <Dial score={scoreRaw} comps={scored.map((c) => ({ name: c.name, score: c.score }))} label={`Wander Index ${score}, ${band}`} />
@@ -103,60 +91,76 @@ export default function MarketsOvernight() {
         </div>
       </Section>
 
-      <Section title={<>Where money <S>moved</S></>} meta={<>FII and DII provisional net flows, cash market<Src k={fiiSrc} /></>} ix="04 · Flow Map">
-        <div className="pair">
-          {[B.flows.day, B.flows.mtd].map((f) => (
-            <div key={f.label}>
-              <p className="cap">{f.label}</p>
-              <Diverge format="crore" labelWidth={56} valueWidth={120} rowH={34}
-                rows={[{ label: "FII", value: f.fii }, { label: "DII", value: f.dii }]}
-                label={`${f.label}: FII net ${f.fii} crore, DII net ${f.dii} crore`} />
+      <Section title={<>What happened, and why it <S>matters</S></>} meta={`${B.session} session and overnight, in plain English`} ix="03 · Markets, Overnight">
+        <div className="takes">
+          {B.takeaways.map((t) => (
+            <article key={t.h} className="take">
+              <Chip tone={t.chip[1]}>{t.chip[0]}</Chip>
+              <h3>{t.h}</h3>
+              <More label="The detail" className="take-more"><p><Rich r={t.p} /><Src k={t.src} /></p></More>
+              <p className="why">{t.why}</p>
+            </article>
+          ))}
+        </div>
+        <h3 className="sub gap-top">What drove the day</h3>
+        <ul className="list">{B.drove.slice(0, 2).map((d) => <li key={d}>{d}</li>)}</ul>
+        {B.drove.length > 2 && <More label={`${B.drove.length - 2} more`}><ul className="list list-cont">{B.drove.slice(2).map((d) => <li key={d}>{d}</li>)}</ul></More>}
+      </Section>
+
+      <Fold id="money-movement" title={<>Money <S>movement</S></>} ix="04 · Flow Map, India, Global"
+        summary={`Flows, ${B.secIndia.length} NSE sectors and US sectors, ${B.session} session`}>
+        <FoldPart id="flow-map" title={<>Where money <S>moved</S></>} ix="Flow Map" meta={<>FII and DII provisional net flows, cash market<Src k={fiiSrc} /></>}>
+          <div className="pair">
+            {[B.flows.day, B.flows.mtd].map((f) => (
+              <div key={f.label}>
+                <p className="cap">{f.label}</p>
+                <Diverge format="crore" labelWidth={56} valueWidth={120} rowH={34}
+                  rows={[{ label: "FII", value: f.fii }, { label: "DII", value: f.dii }]}
+                  label={`${f.label}: FII net ${f.fii} crore, DII net ${f.dii} crore`} />
+              </div>
+            ))}
+          </div>
+          <p className="note after-plot">HDFC Sky puts November&apos;s FII buying at $6.43bn, the strongest since September 2024<Src k={["S1"]} />. <Link href="/flows/">Flow Map</Link></p>
+        </FoldPart>
+
+        <FoldPart id="sector-strength" title={<>Sector <S>strength</S></>} ix="India Markets" meta={<>NSE sectoral indices, {B.session} · one-day change<Src k={["S1", "S2", "S3"]} /></>}>
+          <div className="two">
+            <Diverge phoneRows={8} rows={B.secIndia.map(([label, value, to]) => ({ label, value, to }))} label={`NSE sector changes, ${B.session}`} />
+            <div className="note">
+              <p><b>Financials led</b>; autos and FMCG lagged<Src k={["S5"]} />.</p>
+              <p><b>Realty +4.50%</b> had no specific catalyst in the sources. HDFC Sky&apos;s close report gave +3.7%<Src k={["S1"]} />.</p>
+              <p><b>Auto</b> ended an 8-session winning streak on profit-taking.</p>
+              <p><b>Oil &amp; Gas</b>: sources differ, −0.50% to −0.76%, shown as a range. {B.secIndiaNa.join(" and ")}: n/a.</p>
+              <p><Link href="/india/">India Markets</Link></p>
             </div>
-          ))}
-        </div>
-        <p className="note after-plot">HDFC Sky puts November&apos;s FII buying at $6.43bn, the strongest since September 2024<Src k={["S1"]} />. <Link href="/flows/">Flow Map</Link></p>
-      </Section>
+          </div>
+        </FoldPart>
 
-      <Section title={<>Sector <S>strength</S></>} meta={<>NSE sectoral indices, {B.session} · one-day change<Src k={["S1", "S2", "S3"]} /></>} ix="05 · India Markets">
-        <More label="Sectors and notes on the day" className="sec-fold">
-        <div className="two">
-          <Diverge phoneRows={8} rows={B.secIndia.map(([label, value, to]) => ({ label, value, to }))} label={`NSE sector changes, ${B.session}`} />
-          <More label="Notes on the day" bodyClassName="note">
-            <p><b>Financials led</b>; autos and FMCG lagged<Src k={["S5"]} />.</p>
-            <p><b>Realty +4.50%</b> had no specific catalyst in the sources. HDFC Sky&apos;s close report gave +3.7%<Src k={["S1"]} />.</p>
-            <p><b>Auto</b> ended an 8-session winning streak on profit-taking.</p>
-            <p><b>Oil &amp; Gas</b>: sources differ, −0.50% to −0.76%, shown as a range. {B.secIndiaNa.join(" and ")}: n/a.</p>
-            <p><Link href="/india/">India Markets</Link></p>
-          </More>
-        </div>
-        </More>
-      </Section>
+        <FoldPart id="global-cues" title={<>Global <S>cues</S></>} ix="Global Cues" meta={<>S&amp;P 500 sectors and cross-asset, {B.session} close<Src k={["S11"]} /></>}>
+          <Diverge rows={B.secUS.filter(([n]) => US_TOP_BOTTOM.includes(n)).map(([label, value]) => ({ label, value }))}
+            label={`S&P 500 top and bottom three sectors, ${B.session}`} labelWidth={150} />
+          <p className="bw-source after-plot">Top three and bottom three sectors; all eleven are in <Link href="/global/">Global Cues</Link></p>
+          <div className="macro">
+            {B.macro.filter(([m]) => ["US 10Y yield", "Brent", "Dollar index", "Gold futures"].includes(m)).map(([m, v, d]) => (
+              <div key={m}><div className="bw-label">{m}</div><div className="v">{v} <Change v={d} /><Src k={["S11"]} /></div></div>
+            ))}
+          </div>
+        </FoldPart>
+      </Fold>
 
-      <Section title={<>Global <S>cues</S></>} meta={<>S&amp;P 500 sectors and cross-asset, {B.session} close<Src k={["S11"]} /></>} ix="06 · Global Cues">
-        <More label="US sectors and cross-asset" className="sec-fold">
-        <Diverge rows={B.secUS.filter(([n]) => US_TOP_BOTTOM.includes(n)).map(([label, value]) => ({ label, value }))}
-          label={`S&P 500 top and bottom three sectors, ${B.session}`} labelWidth={150} />
-        <p className="bw-source after-plot">Top three and bottom three sectors; all eleven are in <Link href="/global/">Global Cues</Link></p>
-        <div className="macro">
-          {B.macro.filter(([m]) => ["US 10Y yield", "Brent", "Dollar index", "Gold futures"].includes(m)).map(([m, v, d]) => (
-            <div key={m}><div className="bw-label">{m}</div><div className="v">{v} <Change v={d} /><Src k={["S11"]} /></div></div>
-          ))}
-        </div>
-        </More>
-      </Section>
-
-      <Section title={<>Coming <S>up</S></>} meta="Next 7 days · times in IST" ix="07 · Macro Watch">
+      <Fold id="coming-up" title={<>Coming <S>up</S></>} ix="05 · Macro Watch"
+        summary={`${B.next.length} ${B.next.length === 1 ? "event" : "events"} in the next 7 days · times in IST`}>
         <ul className="tl">
           {B.next.map((e) => (
             <li key={e.w + e.t} className={e.today ? "today" : undefined}><span className="when">{e.w}</span><div className="t">{e.t}</div></li>
           ))}
         </ul>
-      </Section>
+      </Fold>
 
-      <Section title={<>Still <S>developing</S></>} meta="Stories carried across sessions" ix="08 · Developing">
-        <More label={`The ${Math.min(5, B.stories.length)} stories`} className="sec-fold">
+      <Fold id="still-developing" title={<>Still <S>developing</S></>} ix="06 · Developing"
+        summary={`${shown.length} ${shown.length === 1 ? "story" : "stories"} carried across sessions${newStories ? `, ${newStories} new` : ""}`}>
         <ol className="st">
-          {B.stories.slice(0, 5).map((s) => (
+          {shown.map((s) => (
             <li key={s.t}>
               <span className="chips"><span className={`bw-chip${s.st === "NEW" ? " chip-new" : " tone-plain"}`}>{s.st === "NEW" ? "New" : "Ongoing"}</span></span>
               <div><div className="t">{s.t}</div><div className="m">Watch: {s.w}</div></div>
@@ -164,11 +168,10 @@ export default function MarketsOvernight() {
             </li>
           ))}
         </ol>
-        </More>
         <div className="actions">
           <Link className="bw-btn" href="/developing/">All developing stories <span className="bw-btn-dot" aria-hidden="true">→</span></Link>
         </div>
-      </Section>
+      </Fold>
     </>
   );
 }

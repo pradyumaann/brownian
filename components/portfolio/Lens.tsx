@@ -1,7 +1,8 @@
 "use client";
 import type { MoodVars } from "@/lib/bands";
 import type { PortfolioFacts, PortfolioSeries } from "@/lib/portfolioTypes";
-import { ImpactNotes } from "../portfolio";
+import { ImpactNotes, Watchlist } from "../portfolio";
+import { Fold } from "../Fold";
 import { Section, S } from "../Section";
 import { Day } from "./Day";
 import { EventsForYou } from "./EventsForYou";
@@ -11,8 +12,8 @@ import { Mix } from "./Mix";
 import { usePort } from "./usePort";
 import { Year } from "./Year";
 
-/** Portfolio Lens, sections 01 to 07: your mix, your day, what you are exposed to, your mix over the year, events for what
- *  you own, how it is worked out, the impact notes. One `usePort()` here feeds every section, so a changed weight updates all. */
+/** Portfolio Lens, sections 01 to 08: your mix, your day, what you are exposed to, is my stock in the news (the watchlist),
+ *  your mix over the year, events for what you own, how it is worked out (a fold), the impact notes. One `usePort()` here feeds every section, so a changed weight updates all. */
 export function PortfolioLens({ facts, series, vars }: { facts: PortfolioFacts; series: PortfolioSeries; vars: MoodVars }) {
   const port = usePort();
   const ids = Object.keys(port.w);
@@ -30,19 +31,24 @@ export function PortfolioLens({ facts, series, vars }: { facts: PortfolioFacts; 
         <Exposure w={port.w} mode={port.mode} />
       </Section>
 
-      <Section title={<>Your mix over the <S>year</S></>} meta="The last 250 sessions · index moves for the types in your mix, beside Nifty 50" ix="04">
+      <Section title={<>Is my stock in the <S>news</S>?</>} meta="Watchlist · every company in the brief, plus this week's results calendars. Example rows are marked until you add your own." ix="04">
+        <Watchlist />
+      </Section>
+
+      <Section title={<>Your mix over the <S>year</S></>} meta="The last 250 sessions · index moves for the types in your mix, beside Nifty 50" ix="05">
         <Year w={port.w} series={series} mode={port.mode} />
       </Section>
 
-      <Section title={<>Events for what you <S>own</S></>} meta="Dated events the brief ties to the types in your mix · IST" ix="05">
+      <Section title={<>Events for what you <S>own</S></>} meta="Dated events the brief ties to the types in your mix · IST" ix="06">
         <EventsForYou w={port.w} mode={port.mode} />
       </Section>
 
-      <Section title={<>How it is <S>worked out</S></>} meta="Formula, drivers, source tags and what is n/a" ix="06">
+      <Fold id="how-it-is-worked-out" title={<>How it is <S>worked out</S></>} ix="07"
+        summary="The blended move is each type's share times its one-day move, from index and market series. Formula, drivers, source tags and what is n/a are inside.">
         <How facts={facts.types} series={series} />
-      </Section>
+      </Fold>
 
-      <Section title={<>What the news means for <S>each type</S></>} meta="Impact of today's brief on the types in your mix" ix="07">
+      <Section title={<>What the news means for <S>each type</S></>} meta="Impact of today's brief on the types in your mix" ix="08">
         <ImpactNotes ids={ids} vars={vars} mode={port.mode} />
       </Section>
     </>

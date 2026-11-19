@@ -10,7 +10,8 @@ const ROOT = resolve("out");
 const ROUTES = ["/", "/portfolio/", "/wander/", "/flows/", "/india/", "/global/", "/macro/", "/earnings/", "/developing/", "/learn/"];
 // Populated-state passes (a saved mix, and older picks only) so the portfolio charts are audited with data. On `/` the
 // Blended session move card draws no chart (printed lines only), so the `/` passes audit the rest of the page in each mode,
-// with 05 India, 06 Global and 08 Developing folded at 400px.
+// with the always-folded sections (Money movement, Coming up, Still developing on `/`; How it is worked out on /portfolio/)
+// opened first: a plot inside a closed fold is laid out but not visible, so it is audited once opened.
 const SEEDS = {
   mix: { port3: { v: 1, w: { index: 30, fin: 15, mid: 10, it: 10, gold: 10, silver: 5, debt: 20 } } },
   migrate: { held2: ["index", "fin", "gold", "debt"] },
@@ -47,10 +48,14 @@ for (const theme of ["night", "paper"]) {
         await page.evaluate((s) => { localStorage.removeItem("ii:port3"); localStorage.removeItem("ii:held2"); localStorage.removeItem("ii:watch2"); for (const [k, v] of Object.entries(s)) localStorage.setItem("ii:" + k, JSON.stringify(v)); }, SEEDS[seed]);
         await page.reload({ waitUntil: "networkidle" });
       }
+      // Open every fold (motion is reduced, so each opens at once) and check each one really revealed its body.
+      let guard = 0;
+      while ((await page.locator(".fold-btn[aria-expanded=false]").count()) && guard++ < 10) await page.locator(".fold-btn[aria-expanded=false]").first().click();
       await page.waitForTimeout(250);
       const found = await page.evaluate(() => {
         const ground = getComputedStyle(document.body).backgroundColor, out = [];
         document.querySelectorAll(".bw-plot").forEach((p, i) => {
+          if (p.closest(".fold:not(.is-open)")) return; // a closed fold: audited once opened
           const r = p.getBoundingClientRect(), name = p.querySelector("svg")?.getAttribute("aria-label")?.slice(0, 48) ?? "chart " + i;
           const bg = getComputedStyle(p).backgroundColor;
           const issues = [];

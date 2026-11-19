@@ -49,7 +49,7 @@ export function Mix({ port, facts }: { port: Port; facts: TypeFact[] }) {
             <li key={id} className="mixrow">
               <span className="mix-n">{f.n}{f.proxy && <span className="mix-px">{f.proxy}</span>}</span>
               <Stepper id={id} name={f.n} value={v} onStep={(d) => port.step(id, d)} onZero={() => port.zero(id)} />
-              <span className="mix-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, v)}%` }} /></span>
+              <span className="mix-bar" aria-hidden="true">{Array.from({ length: 100 / STEP }, (_, k) => <i key={k} className={k < v / STEP ? "on" : undefined} />)}</span>
             </li>
           );
         })}
