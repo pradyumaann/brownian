@@ -30,7 +30,7 @@ export function IndicatorField({ rows, from, to }: { rows: FieldRow[]; from: str
   const narrow = W < 760, phone = W < 520;
   const R = rows.length;
   // Layout: a left axis for the rank, the field skewed back to the right, the row labels in a column of their own.
-  const LW = phone ? 96 : narrow ? 150 : 214, left = phone ? 26 : 32, bottom = 24;
+  const LW = phone ? 112 : narrow ? 150 : 214, left = phone ? 26 : 32, bottom = 24;
   const skew = phone ? 8 : narrow ? 14 : 22, pitch = phone ? 70 : narrow ? 78 : 88, Zh = phone ? 62 : narrow ? 70 : 80;
   const top = 14 + Math.round(pitch * 0.3);
   const H = top + Zh + (R - 1) * pitch + bottom;
@@ -80,7 +80,7 @@ export function IndicatorField({ rows, from, to }: { rows: FieldRow[]; from: str
   const what = (r: FieldRow, b: FieldBin) => {
     const span = narrow ? (b.toDate ? "month to date" : "month") : b.toDate ? "week to date" : "week";
     const unit = r.kind === "crore" ? `${narrow ? "months" : "weeks"}` : "daily closes";
-    return `${r.name} · ${span}${b.toDate ? ", " : " to "}${day(b.end)}${r.kind === "crore" ? " · net" : " · last close"} · higher than ${Math.round(b.rank)}% of the five years' ${unit}`;
+    return `${r.name} · ${span}${b.toDate ? ", " : " to "}${day(b.end)}${r.kind === "crore" ? " · net" : " · last close"} · above ${Math.round(b.rank)}% of the past five years' ${unit}`;
   };
 
   // Year ticks under the front row, at the first column of each year, at least 56px apart on phones.
@@ -92,7 +92,7 @@ export function IndicatorField({ rows, from, to }: { rows: FieldRow[]; from: str
     if (seen && y !== seen && (!years.length || X(0, c) - X(0, years.at(-1)!.c) >= (phone ? 56 : 40))) years.push({ c, y });
     seen = y;
   });
-  const summary = rows.map((r) => `${r.name} ${fieldValue(r.kind, r.last.v)} (${r.last.label}, ${day(r.last.date)}), higher than ${Math.round(r.last.rank)}% of its five years`).join("; ");
+  const summary = rows.map((r) => `${r.name} ${fieldValue(r.kind, r.last.v)} (${r.last.label}, ${day(r.last.date)}), above ${Math.round(r.last.rank)}% of its past five years`).join("; ");
 
   return (
     <div className="bw-plot ifield" ref={ref}>

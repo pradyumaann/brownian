@@ -219,5 +219,12 @@ export function validateBrief(input: unknown): Report {
     }
   }
 
+  // Pipeline wording: text is for the reader and should not describe where the app got it ("the brief"). A warning, not an error.
+  const PIPELINE = /\b(?:(?:the|this|today's|our)\s+(?:pre-market\s+)?brief(?:'s|’s)?|pre-market brief|the day's record)\b/i;
+  for (const [path, text] of strings) {
+    const m = text.match(PIPELINE);
+    if (m) warn(path, `Reads as pipeline wording ("${m[0]}"); write for the reader instead.`);
+  }
+
   return done();
 }

@@ -234,7 +234,7 @@ test("flexi and elss blend like any other type and roll up to the broad-market f
 });
 
 test("the Herfindahl range text counts all twelve types", () => {
-  assert.match(concentration({ index: 50, flexi: 50 }).words, /from 0\.08 for all 12 types equal/);
+  assert.match(concentration({ index: 50, flexi: 50 }).words, /from 0\.08 when all 12 types are equal/);
 });
 
 test("stored mix: none mode, a saved mix, stray weights beside none, and junk", () => {

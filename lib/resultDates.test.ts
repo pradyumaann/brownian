@@ -23,13 +23,13 @@ const ix = buildResultIndex(src);
 const get = (n: string) => resultFor(ix, n, names, aliases);
 
 test("today's list gives the brief date, through an alias or the company's own listed spelling", () => {
-  assert.equal(get("Eicher Motors").text, "Results due Fri 13 Nov, per today's brief");
+  assert.equal(get("Eicher Motors").text, "Results due Fri 13 Nov");
   assert.equal(get("Eicher Motors").date, "2026-11-13");
-  assert.equal(get("RVNL").text, "Results due Fri 13 Nov, per today's brief");      // listed as "Rail Vikas Nigam"
+  assert.equal(get("RVNL").text, "Results due Fri 13 Nov");      // listed as "Rail Vikas Nigam"
 });
 
 test("tomorrow's list gives the next day, even for a name the watchlist does not know", () => {
-  assert.equal(get("Ashok Leyland").text, "Results due Sat 14 Nov, per today's brief");
+  assert.equal(get("Ashok Leyland").text, "Results due Sat 14 Nov");
 });
 
 test("a US company shows its date and the calendar's own timing text, unchanged", () => {

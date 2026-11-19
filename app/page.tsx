@@ -122,17 +122,14 @@ export default function MarketsOvernight() {
               </div>
             ))}
           </div>
-          <p className="note after-plot">HDFC Sky puts November&apos;s FII buying at $6.43bn, the strongest since September 2024<Src k={["S1"]} />. <Link href="/flows/">Money Moves</Link></p>
+          <p className="note after-plot"><Link href="/flows/">Money Moves</Link></p>
         </FoldPart>
 
         <FoldPart id="sector-strength" title={<>Sector <S>strength</S></>} ix="India Markets" meta={<>NSE sectoral indices, {B.session} · one-day change<Src k={["S1", "S2", "S3"]} /></>}>
           <div className="two">
             <Diverge phoneRows={8} rows={B.secIndia.map(([label, value, to]) => ({ label, value, to }))} label={`NSE sector changes, ${B.session}`} />
             <div className="note">
-              <p><b>Financials led</b>; autos and FMCG lagged<Src k={["S5"]} />.</p>
-              <p><b>Realty +4.50%</b> had no specific catalyst in the sources. HDFC Sky&apos;s close report gave +3.7%<Src k={["S1"]} />.</p>
-              <p><b>Auto</b> ended an 8-session winning streak on profit-taking.</p>
-              <p><b>Oil &amp; Gas</b>: sources differ, −0.50% to −0.76%, shown as a range. {B.secIndiaNa.join(" and ")}: n/a.</p>
+              {B.secIndiaNa.length > 0 && <p>{B.secIndiaNa.join(" and ")}: n/a.</p>}
               <p><Link href="/india/">India Markets</Link></p>
             </div>
           </div>
@@ -141,7 +138,7 @@ export default function MarketsOvernight() {
         <FoldPart id="global-cues" title={<>Global <S>cues</S></>} ix="Global Cues" meta={<>S&amp;P 500 sectors and cross-asset, {B.session} close<Src k={["S11"]} /></>}>
           <Diverge rows={B.secUS.filter(([n]) => US_TOP_BOTTOM.includes(n)).map(([label, value]) => ({ label, value }))}
             label={`S&P 500 top and bottom three sectors, ${B.session}`} labelWidth={150} />
-          <p className="bw-source after-plot">Top three and bottom three sectors; all eleven are in <Link href="/global/">Global Cues</Link></p>
+          <p className="bw-source after-plot">Top three and bottom three sectors; all eleven are on <Link href="/global/">Global Cues</Link>.</p>
           <div className="macro">
             {B.macro.filter(([m]) => ["US 10Y yield", "Brent", "Dollar index", "Gold futures"].includes(m)).map(([m, v, d]) => (
               <div key={m}><div className="bw-label">{m}</div><div className="v">{v} <Change v={d} /><Src k={["S11"]} /></div></div>

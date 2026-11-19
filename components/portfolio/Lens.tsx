@@ -22,7 +22,7 @@ export function PortfolioLens({ facts, series, vars }: { facts: PortfolioFacts; 
   return (
     <>
       <Fold id="your-mix" title={<>Your <S>mix</S></>} ix="01"
-        summary="A weight for each holding type, in 5% steps · stays on this device. The weights are inside.">
+        summary="A weight for each holding type, in 5% steps · stays on this device.">
         <Mix port={port} facts={facts.types} />
       </Fold>
 
@@ -34,7 +34,7 @@ export function PortfolioLens({ facts, series, vars }: { facts: PortfolioFacts; 
         <MixMetrics w={port.w} series={series} mode={port.mode} />
       </Section>
 
-      <Section title={<>Is my stock in the <S>news</S>?</>} meta="Watchlist · every company in the brief, plus this week's results calendars. Example rows are marked until you add your own." ix="04">
+      <Section title={<>Is my stock in the <S>news</S>?</>} meta="Watchlist · every company in today's news, plus this week's results calendars. Example rows are marked until you add your own." ix="04">
         <Watchlist />
       </Section>
 
@@ -43,19 +43,19 @@ export function PortfolioLens({ facts, series, vars }: { facts: PortfolioFacts; 
       </Section>
 
       <Fold id="events-for-what-you-own" title={<>Events for what you <S>own</S></>} ix="06"
-        summary={port.mode === "none" ? "No mix, so no events are tagged. Dated events the brief ties to a type are inside." : "Dated events the brief ties to the types in your mix · IST. The list is inside."}>
+        summary={port.mode === "none" ? "No mix, so no events are tagged." : "Dated events tied to the types in your mix · IST."}>
         <EventsForYou w={port.w} mode={port.mode} />
       </Fold>
 
       <Fold id="how-it-is-worked-out" title={<>How it is <S>worked out</S></>} ix="07"
-        summary="The blended move is each type's share times its one-day move, from index and market series. Formula, drivers, source tags and what is n/a are inside.">
+        summary="The blended move is each type's share times its one-day move, from index and market series. Formula, drivers and source tags are listed in full.">
         <How facts={facts.types} series={series} />
       </Fold>
 
       <Fold id="what-the-news-means" title={<>What the news means for <S>each type</S></>} ix="08"
         summary={port.mode === "none"
-          ? "No mix, so no type notes; the household-costs note is inside."
-          : `${notes} ${notes === 1 ? "note" : "notes"} for the types in your mix, plus the household-costs note. Impact of today's brief.`}>
+          ? "No mix, so no type notes; only the household-costs note is shown."
+          : `${notes} ${notes === 1 ? "note" : "notes"} for the types in your mix, plus the household-costs note. Impact of today's news.`}>
         <ImpactNotes ids={ids} vars={vars} mode={port.mode} />
       </Fold>
     </>

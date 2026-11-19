@@ -13,7 +13,7 @@ import { NoneNote } from "./NoneNote";
  *  no weight, and a tag is never read as the size or direction of an effect. */
 export function EventsForYou({ w, mode }: { w: Weights; mode: Mode }) {
   const example = mode === "example";
-  if (mode === "none") return <NoneNote line="For a mix, this section lists the dated events the brief's own text ties to each of its holding types. Nothing is owned, so no event is listed here." />;
+  if (mode === "none") return <NoneNote line="For a mix, this section lists the dated events tied to each of its holding types. Nothing is owned, so no event is listed here." />;
   const shares = normalise(w).shares;
   const mine = (e: { affects?: HoldingId[] }) => (e.affects ?? []).filter((id) => shares[id] > 0);
   // The brief's "High impact" chip is drawn in the plain tone here: next to what someone owns, a red chip reads as a call
@@ -35,10 +35,10 @@ export function EventsForYou({ w, mode }: { w: Weights; mode: Mode }) {
             </p>
           )} />
       ) : (
-        <p className="empty">No dated events in the brief are tagged to the types in your mix.</p>
+        <p className="empty">No dated events are tagged to the types in your mix.</p>
       )}
-      <p className="bw-meta">Dates from the brief and web calendars<Src k={["W1", "W13", "W15", "W16", "W17", "W19"]} />. Only events whose link to a holding type is stated in the brief&apos;s own text are tagged, so a missing tag is not a statement of no effect.</p>
-      <p className="note after-plot"><b>Interpretation, not a forecast.</b> Tags are Brownian&apos;s reading of the brief&apos;s own text. They say which type the brief links an event to, not how large or in which direction the effect will be.</p>
+      <p className="bw-meta">Dates from published calendars<Src k={["W1", "W13", "W15", "W16", "W17", "W19"]} />. Only events with a stated link to a holding type are tagged, so a missing tag is not a statement of no effect.</p>
+      <p className="note after-plot"><b>Interpretation, not a forecast.</b> Tags are Brownian&apos;s reading of the news. They show which type an event relates to, not how large or in which direction the effect will be.</p>
     </>
   );
 }

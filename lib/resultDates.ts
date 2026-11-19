@@ -26,7 +26,7 @@ export interface ResultDate {
   text: string;
 }
 
-export const NONE: ResultDate = { kind: "none", date: null, text: "No result date in today's brief" };
+export const NONE: ResultDate = { kind: "none", date: null, text: "No result date found" };
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -87,9 +87,9 @@ export function buildResultIndex(b: ResultSource): ResultIndex {
   const ix: ResultIndex = new Map();
   const put = (name: string, r: ResultDate) => { const k = keyOf(name, b.names, b.aliases); if (!ix.has(k)) ix.set(k, r); };
   for (const r of b.erDone) put(r[0], { kind: "reported", date: null, text: "Reported" });
-  for (const r of b.erToday) put(r[0], { kind: "due", date: b.briefDate, text: `Results due ${dayLabel(b.briefDate)}, per today's brief` });
+  for (const r of b.erToday) put(r[0], { kind: "due", date: b.briefDate, text: `Results due ${dayLabel(b.briefDate)}` });
   const tom = addDays(b.briefDate, 1);
-  for (const r of b.erTom) put(r[0], { kind: "due", date: tom, text: `Results due ${dayLabel(tom)}, per today's brief` });
+  for (const r of b.erTom) put(r[0], { kind: "due", date: tom, text: `Results due ${dayLabel(tom)}` });
   for (const r of b.erUS) {
     const [when, who, timing, why] = [String(r[0]), String(r[1]), String(r[2]), String(r[3])];
     const date = parseUsDate(when, b.briefDate);

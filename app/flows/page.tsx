@@ -25,11 +25,7 @@ export default function Flows() {
   const { day, mtd, src } = B.flows;
   const perDay = (v: number) => "₹" + Math.round(Math.abs(v) / mtd.sessions).toLocaleString("en-IN") + " cr";
   const read: [string, string][] = [
-    [`FIIs are averaging ${perDay(mtd.fii)} a day`, `in November vs ${perDay(mtd.dii)} of daily DII selling. Thursday's ${crore(day.fii, false)} was in line with that pace.`],
-    ["A sharp reversal.", "FIIs sold about ₹45,000 cr in each of September and October. November's ₹73,566 cr ($6.43bn) is the strongest month since Sep 2024."],
-    ["Why FIIs may be buying:", "sources point to rotation away from AI megacaps toward “old-economy” markets like India, plus re-entry after two months of selling."],
-    ["Why DIIs are selling:", "9 straight sessions of selling into a ~10% rally looks like profit-taking by Indian funds. This is Brownian's reading; the sources don't give a reason."],
-    ["The risk:", "research on emerging-market flows finds US rates are a major driver. With the US 10Y at 5.10% and a December hike priced, this buying could slow."],
+    [`FIIs are averaging ${perDay(mtd.fii)} a day`, `this month, against ${perDay(mtd.dii)} of average daily DII flow.`],
   ];
   // NSDL history: monthly FPI equity sums, the last 12 months, and daily cumulative lines.
   const daily = fpiDaily(asOf), ctx = flowContext(asOf);
@@ -69,10 +65,10 @@ export default function Flows() {
         </More>
       </Section>
 
-      <Section title={<>From selling to record <S>buying</S></>} meta={<>FPI net equity investment by month, ₹ crore, NSDL reporting days<Src k={["D4"]} /></>} ix="02">
+      <Section title={<>FPI flows by <S>month</S></>} meta={<>FPI net equity investment by month, ₹ crore, NSDL reporting days<Src k={["D4"]} /></>} ix="02">
         <Diverge format="crore" valueWidth={132} phoneRows={6} phoneKeep="last" rows={last12.map((m) => ({ label: m.label, value: m.value }))}
           label={`FPI net equity investment by month: ${last12.map((m) => `${m.label} ${crore(m.value)}`).join(", ")}`} />
-        <p className="bw-meta">NSDL counts custodian-confirmed trades, so its November figure ({crore(last12.at(-1)!.value)} to date) differs from the brief&apos;s exchange provisional FII figure ({crore(mtd.fii)}<Src k={["S5"]} />). DII history has no free daily source yet: n/a.</p>
+        <p className="bw-meta">NSDL counts custodian-confirmed trades, so its November figure ({crore(last12.at(-1)!.value)} to date) differs from the exchange&apos;s provisional FII figure ({crore(mtd.fii)}<Src k={src} />). Daily DII history is not available.</p>
       </Section>
 
       <Section title={<>Three years of foreign <S>money</S></>} meta={<>Cumulative FPI net investment by NSDL reporting day, {span[0].date.slice(0, 4)} to {span.at(-1)!.date}<Src k={["D4"]} /></>} ix="03">
@@ -108,7 +104,7 @@ export default function Flows() {
       <Section title={<>Where foreign money <S>went</S></>} meta={<>FPI net equity investment by sector, {st.label}, NSDL fortnightly data<Src k={["D4"]} /></>} ix="04">
         <MoneyFlow sold={st.sold} bought={st.bought} net={st.total} month={st.label}
           label={`FPI equity flows by sector in ${st.label}. Drawn left to right: sectors net sold, then a band to each destination. Net sold: ${st.sold.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}. Net bought: ${st.bought.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}. ${st.total < 0 ? `Net outflow ${crore(-st.total, false)}.` : `Net new money ${crore(st.total, false)}.`}`} />
-        <p className="bw-meta after-plot">Net for the month: {crore(st.total)}. NSDL reports only each sector&apos;s net, so the bands show how much each destination received, not which sold sector paid for which: not traced trades. Interpretation, not a forecast.</p>
+        <p className="bw-meta after-plot">Net for the month: {crore(st.total)}. NSDL reports only each sector&apos;s net, so the bands show how much each destination received, not which sold sector paid for which. Interpretation, not a forecast.</p>
       </Section>
 
       <Section title={<>Two years of sector <S>flows</S></>} meta={<>Net FPI equity flow by sector and fortnight, {tr.labels[0]} to {tr.labels.at(-1)}, the {tr.sectors.length} sectors with the largest flows<Src k={["D4"]} /></>} ix="05">
@@ -121,7 +117,7 @@ export default function Flows() {
         </More>
       </Section>
 
-      <Section title={<>Into financials, out of <S>consumption</S></>} meta={<><Term id="rotation">Sector rotation</Term> · India, theme average of its NSE sectors, {B.session}<Src k={["S3"]} /></>} ix="06">
+      <Section title={<>Sector <S>rotation</S> by theme</>} meta={<><Term id="rotation">Sector rotation</Term> · India, theme average of its NSE sectors, {B.session}<Src k={["S3"]} /></>} ix="06">
         <div className="two">
           <Diverge rows={themes.map((t) => ({ label: t.n, value: Math.round(t.avg * 100) / 100 }))} label={`Theme averages: ${themes.map((t) => `${t.n} ${pct(t.avg)}`).join(", ")}`} labelWidth={170} />
           <More label="Sectors in each theme">
@@ -164,7 +160,7 @@ export default function Flows() {
 
       <Fold id="trend-pause-spike" title={<>Trend, pause or <S>spike</S>?</>} ix="09"
         summary={`${B.trend.length} sectors: trend context for the day's biggest sector moves`}>
-        <DataTable stack head={[["Sector"], ["Thu", "r"], ["Context"], ["Read"], ["What it means"]]}
+        <DataTable stack head={[["Sector"], ["Change", "r"], ["Context"], ["Read"], ["What it means"]]}
           rows={B.trend.map((r) => [<b key="s">{r[0]}</b>, <Change key="c" v={r[1]} />, r[2], <Chip key="ch" tone={r[4]}>{r[3]}</Chip>, r[5]])} />
       </Fold>
     </>

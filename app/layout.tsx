@@ -33,18 +33,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main id="main" tabIndex={-1}>{children}</main>
           <footer className="foot">
             <div className="foot-top">
-              <p className="bw-disclaimer"><b>For information only; not investment advice.</b> “n/a” means the figure could not be verified from the sources retrieved this morning. The Wander Index, macro-pressure reading and impact notes are a rules-based reading of the sources, not a forecast.</p>
-              <p className="bw-source">Built from the Pre-Market Brief of {B.dateLabel}, prepared {B.prepared} IST</p>
+              <p className="bw-disclaimer"><b>For information only; not investment advice.</b> “n/a” means the figure could not be verified from the sources checked. The Wander Index, macro-pressure reading and impact notes are a rules-based reading of the sources, not a forecast.</p>
+              <p className="bw-source">Updated {B.dateLabel}, {B.prepared} IST</p>
             </div>
             <details className="srcs">
               <summary>Sources and methodology</summary>
-              <h4>Brief sources</h4>
+              <h4>News and market sources</h4>
               <ol>
                 {B.sources.map(([n, u], i) => (
                   <li key={u}><span className="bw-mono">S{i + 1}</span> <a href={u} target="_blank" rel="noopener noreferrer">{n}</a></li>
                 ))}
               </ol>
-              <h4>Calendar and economic data (web, {B.dateShort})</h4>
+              <h4>Calendar and economic data</h4>
               <ol>
                 {B.web.map(([k, n, u]) => (
                   <li key={k}><span className="bw-mono">{k}</span> <a href={u} target="_blank" rel="noopener noreferrer">{n}</a></li>

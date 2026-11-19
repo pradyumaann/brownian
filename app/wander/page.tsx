@@ -10,7 +10,7 @@ import { Dial } from "@/components/charts/Dial";
 import { SegMeter } from "@/components/charts/Mini";
 import { Quadrant } from "@/components/charts/Quadrant";
 import { TimeLine } from "@/components/charts/TimeLine";
-import { BANDS, METHOD, MISSING, asOf, band, bandOf, comps, moodSeries, niftyOn, pressure, pressureHigh, pressureName, pressureScore, pressureTone, quad, score, scoreRaw, scored, wanderVsNifty } from "@/lib/mood";
+import { BANDS, METHOD, asOf, band, bandOf, comps, moodSeries, niftyOn, pressure, pressureHigh, pressureName, pressureScore, pressureTone, quad, score, scoreRaw, scored, wanderVsNifty } from "@/lib/mood";
 import { PAPERS } from "@/lib/papers";
 import { ord, TURB_BANDS, turbBand } from "@/lib/bands";
 import { riskOn, riskSeries } from "@/lib/risk";
@@ -41,7 +41,7 @@ export default function Wander() {
   const rational: [string, string][] = [
     ["Extremes matter more than the level.", `Baker & Wurgler (2006) found that after periods of high sentiment, speculative stocks (small, volatile, unprofitable) went on to deliver lower returns. Today reads ${score}, “${band}”.`],
     ["A few components carry the reading.", `${ext.length} of ${scored.length} scored components read extreme greed${ext.length ? ": " + ext.map((c) => `${c.name.toLowerCase()} (${Math.round(c.score)})`).join(", ") : ""}. ${fear.length ? `${fear.map((c) => c.name).join(" and ")} ${fear.length === 1 ? "reads" : "read"} fear.` : "None reads fear."}`],
-    ["Sentiment and fundamentals can disagree.", `${pressureHigh} of ${B.pressure.length} macro indicators in the brief show high pressure. When the two diverge, prices depend on flows continuing.`],
+    ["Sentiment and fundamentals can disagree.", `${pressureHigh} of ${B.pressure.length} macro indicators show high pressure. When the two diverge, prices depend on flows continuing.`],
     ["Common biases after a strong run.", "Recency bias makes further gains feel likely, herding makes following FIIs feel safe, and loss aversion makes a falling asset feel like a reason to sell."],
     ["Questions investors use to stay rational.", "Has my allocation drifted from its target? Would I make this change if the market were flat? Am I reacting to a single day?"],
   ];
@@ -65,13 +65,13 @@ export default function Wander() {
             <p className="bw-label">Macro pressure · 0 low, 100 high<Src k={["S11", "W8", "W11"]} /></p>
             <div className="score"><span className="n">{pressureScore}</span><span className="w">{pressureName}</span></div>
             <SegMeter score={pressureScore} label={`Macro pressure ${pressureScore} of 100, ${pressureName}`} />
-            <p className="bw-meta">{pressureHigh} of {B.pressure.length} indicators in the brief read high. Today: <b>{quad.name}</b>. <a href="#macro-pressure">See the indicators</a></p>
+            <p className="bw-meta">{pressureHigh} of {B.pressure.length} indicators read high. Today: <b>{quad.name}</b>. <a href="#macro-pressure">See the indicators</a></p>
           </div>
-          <p className="bw-meta">Wander Index: average of {scored.length} of {comps.length} components{off.length ? `; ${off.map((c) => c.name.toLowerCase()).join(" and ")} not scored yet` : ""}. Bands: {BANDS.map((x) => `${x.name.toLowerCase()} ${x.from}–${Math.min(100, Math.floor(x.to))}`).join(" · ")}.</p>
+          <p className="bw-meta">Wander Index: average of {scored.length} of {comps.length} components{off.length ? `; ${off.map((c) => c.name.toLowerCase()).join(" and ")} not scored` : ""}. Bands: {BANDS.map((x) => `${x.name.toLowerCase()} ${x.from}–${Math.min(100, Math.floor(x.to))}`).join(" · ")}.</p>
         </div>
       </div>
 
-      <Section id="macro-pressure" title={<>Macro <S>pressure</S></>} meta={`Fundamental headwinds from the brief, kept separate from sentiment · ${pressureName}, ${pressureHigh} of ${B.pressure.length} indicators high`} ix="01">
+      <Section id="macro-pressure" title={<>Macro <S>pressure</S></>} meta={`Fundamental headwinds, kept separate from sentiment · ${pressureName}, ${pressureHigh} of ${B.pressure.length} indicators high`} ix="01">
         <div className="pair">
           <div className="rows">
             {B.pressure.map((p) => {
@@ -92,7 +92,6 @@ export default function Wander() {
             <p className="bw-disclaimer after-plot">Interpretation, not a forecast.</p>
           </div>
         </div>
-        <More label="What the brief does not cover" className="after-plot" bodyClassName="missing">{MISSING.map(([b, t]) => <div key={b}><b>{b}</b><span>{t}</span></div>)}</More>
       </Section>
 
       <Section title={<>The Wander Index over <S>time</S></>} meta={<>Daily reading, last {series.length} sessions with at least {METHOD.minComps} scored components, with the Nifty 50 close<Src k={["D1"]} /></>} ix="02">
@@ -101,7 +100,7 @@ export default function Wander() {
         <p className="note after-plot"><b>Beside the market.</b> {vsN.rBack != null ? <>Over these sessions the reading moved with the Nifty 50&apos;s previous {vsN.horizon} sessions (correlation {r2(vsN.rBack)}). Part of that is built in: momentum, trend and safe-haven demand are measured on the Nifty itself. </> : null}{vsN.rFwd != null ? <>Against the Nifty&apos;s following {vsN.horizon} sessions the correlation was {r2(vsN.rFwd)} ({vsN.nFwd} readings). </> : null}{vsN.greed.n || vsN.fear.n ? <>Average Nifty 50 move over the following {vsN.horizon} sessions: after extreme fear, {after(vsN.fear)}; after extreme greed, {after(vsN.greed)}; on all days, {after(vsN.all)}.</> : null}</p>
         <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Neighbouring days share most of their {vsN.horizon}-session windows, so these readings overlap and are far fewer independent observations than the count suggests; one period is not evidence of a lasting pattern.</p>
         <More label="How it&apos;s built">
-        <p className="note after-plot"><b>How it&apos;s built.</b> Each component is today&apos;s reading ranked against its own previous {METHOD.lookbackYears} years: a score of 70 means the reading was more greedy than on 70% of those days. It needs at least {METHOD.minDays} trading days of history and uses nothing after the day it scores. The structure follows published fear-and-greed indices (CNN Business, Tickertape&apos;s Market Mood Index); the value is Brownian&apos;s own reading, not theirs. <b>Method change:</b> the 13 Nov brief&apos;s first version scored six components against fixed reference levels and read 69; from 14 Nov 2026 every component is ranked against history, so today&apos;s figure differs.</p>
+        <p className="note after-plot"><b>How it&apos;s built.</b> Each component is today&apos;s reading ranked against its own previous {METHOD.lookbackYears} years: a score of 70 means the reading was more greedy than on 70% of those days. It needs at least {METHOD.minDays} trading days of history and uses nothing after the day it scores. The structure follows published fear-and-greed indices (CNN Business, Tickertape&apos;s Market Mood Index); the scoring is Brownian&apos;s own.</p>
         <p className="bw-meta">Single days are noise; the bands show where the reading spends its time. Scores before {longDate(lastIn.since!)} use fewer components, because {lastIn.name.toLowerCase()} history starts later (see each component below).</p>
         </More>
       </Section>
@@ -128,7 +127,7 @@ export default function Wander() {
                   <dt>Measures</dt><dd>{c.metric}</dd>
                   <dt>Today</dt><dd className="bw-mono">{c.value}<Src k={c.src} /></dd>
                   <dt>Scoring</dt><dd>{c.how}{c.dir === -1 ? " (a higher reading means more fear)" : ""}</dd>
-                  <dt>History</dt><dd>{c.history ? `${c.history.toLocaleString("en-IN")} prior sessions` : "none yet"}{c.since ? `; scored since ${longDate(c.since)}` : ""}</dd>
+                  <dt>History</dt><dd>{c.history ? `${c.history.toLocaleString("en-IN")} prior sessions` : "none"}{c.since ? `; scored since ${longDate(c.since)}` : ""}</dd>
                   <dt>Basis</dt><dd><Papers ids={c.papers} basis={c.basis} /></dd>
                 </dl>
               </More>

@@ -12,7 +12,7 @@ type Node = { at: number; time: string; kind: "now" | "mark" | "event"; body: Re
  *  it replaces: time, event, forecast, previous. The list itself is what a screen reader walks. */
 export function DayRail({ rows, briefTime }: { rows: Row[]; briefTime: string }) {
   const nodes: Node[] = [
-    { at: clockMins(briefTime) ?? 0, time: briefTime, kind: "now", body: <b>Brief prepared</b> },
+    { at: clockMins(briefTime) ?? 0, time: briefTime, kind: "now", body: <b>Pre-market update</b> },
     { at: mins(hours.open), time: hours.open, kind: "mark", body: <span>NSE opens</span> },
     { at: mins(hours.close), time: hours.close, kind: "mark", body: <span>NSE closes</span> },
   ];
@@ -37,7 +37,7 @@ export function DayRail({ rows, briefTime }: { rows: Row[]; briefTime: string })
   });
   nodes.sort((a, b) => a.at - b.at);
   return (
-    <Rail className="rail-day" label="The day in IST, from the brief time">
+    <Rail className="rail-day" label="Today's schedule, India time (IST)">
       {nodes.map((n, i) => {
         const next = nodes[i + 1];
         const gap = next ? Math.round(Math.min(56, Math.max(n.kind === "event" ? 16 : 12, (next.at - n.at) * 0.16))) : 0;

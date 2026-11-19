@@ -1,6 +1,6 @@
 // Wander Index, server-side. Seven components, each scored as the percentile of today's reading among its own
 // previous five years (at least 250 trading days), then averaged. Scores use only data up to each day, never later.
-// 15 Nov 2026: the put/call volume ratio was dropped (see MISSING) and both VIX readings are taken against their own
+// 15 Nov 2026: the put/call volume ratio was dropped and both VIX readings are taken against their own
 // 50-day average. FII long share of index futures (participant_oi.csv) was tested as a replacement and not added:
 // its fit with the other components fell from 0.65 to 0.20 between halves, and its level has drifted to record lows.
 import { B } from "@/data";
@@ -197,8 +197,4 @@ export const quad = score >= 50 ? (pressure >= 0.5 ? QUADS.fragile : QUADS.suppo
 export const vars: MoodVars = { score, band, press: pressureName.toLowerCase() };
 export const fill = (t: string) => fillWith(t, vars);
 
-export const MISSING: [string, string][] = [
-  ["Valuation", "Nifty P/E against its own history. Not a sentiment input in CNN's index, but useful context; NSE publishes it daily (D1)."],
-  ["Put/call ratio", "Removed on 15 Nov 2026. Nifty options volume changed character when SEBI's index-derivative rules took effect on 20 Nov 2024 (one weekly expiry per exchange, larger contracts), and it is dominated by retail and proprietary expiry-day trading rather than hedging. Ranked against that short, broken history it read fear most days and moved against the other components."],
-];
 export const METHOD = { lookbackYears: 5, minDays: MIN, minComps: MIN_COMPS };

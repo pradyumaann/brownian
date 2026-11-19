@@ -123,3 +123,12 @@ test("an oversized record is rejected", () => {
   const b = good(); b.method.push("x".repeat(1_600_000));
   assert.ok(paths(validateBrief(b)).includes(""));
 });
+
+test("pipeline wording such as 'the brief' is a warning, not an error", () => {
+  const b = good(); b.holdings[0].h = "The brief gives no figure for Nifty 500.";
+  const r = validateBrief(b);
+  assert.equal(r.ok, true);
+  assert.ok(r.warnings.some((w) => w.path === "holdings[0].h" && /pipeline wording/.test(w.message)));
+  const c = good(); c.drove[0] = "A brief rally faded by the close.";
+  assert.ok(!validateBrief(c).warnings.some((w) => w.path === "drove[0]"), "an ordinary 'brief rally' is not pipeline wording");
+});

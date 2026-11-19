@@ -146,7 +146,7 @@ export const TEMPLATE: Template = {
     },
     "repo": {
       "term": "Repo rate",
-      "definition": "The rate at which the RBI lends to banks. It sets the floor for loan EMIs, FD rates and bond yields.",
+      "definition": "The rate at which the RBI lends to banks. It influences loan EMIs, FD rates and bond yields.",
       "short": "The interest rate at which India's central bank lends to banks. When it goes up, loan repayments and fixed-deposit rates usually go up too."
     },
     "mpc": {
@@ -184,33 +184,27 @@ export const TEMPLATE: Template = {
       "definition": "Money moving from one group of stocks to another as investors change their outlook, such as from consumption to financials.",
       "short": "Money moving from one group of companies to another, for example out of car makers and into banks, as investors change their views."
     },
-    "pcr": {
-      "term": "Put/call ratio",
-      "definition": "Nifty options put volume divided by call volume. More puts than usual means traders are paying for protection, which sentiment indexes read as fear.",
-      "short": "Compares contracts that pay if the Nifty falls with contracts that pay if it rises. More of the first kind than usual is read as fear.",
-      "today": "No longer a Wander Index component (dropped 15 Nov 2026); the Wander Index page explains why."
-    },
     "trend": {
       "term": "200-day moving average",
       "definition": "The average closing price over the last 200 sessions. An index far above it has risen fast; below it, the longer trend is down.",
       "short": "The average closing price over the last 200 trading days. Well above it means prices rose fast; below it means the longer trend is down.",
-      "today": "Today: see the Wander Index's trend component."
+      "today": "Shown on the Wander Index page."
     },
     "turbulence": {
       "term": "Turbulence",
-      "definition": "How unusual today's mix of sector moves is compared with history: the Mahalanobis distance of Kritzman & Li (2010). High turbulence means sectors moved in ways they rarely do together.",
+      "definition": "How unusual today's mix of sector moves is compared with history, measured with a statistical distance (Kritzman & Li, 2010). High turbulence means sectors moved in ways they rarely do together.",
       "short": "How unusual today's mix of moves across groups of companies is compared with the past. When it is high, those groups moved in ways they rarely do together.",
-      "today": "Today: see Risk on the Wander Index page."
+      "today": "Shown under “Is today unusual?” on the Wander Index page."
     },
     "fragility": {
       "term": "Fragility (absorption ratio)",
       "definition": "How much of all sector moves is explained by a few common forces (Kritzman, Li, Page & Rigobon, 2011). When it is high, sectors move as one and a shock spreads faster.",
       "short": "How much groups of companies move together, pushed by the same few forces. When it is high, a shock in one place spreads faster.",
-      "today": "Today: see Risk on the Wander Index page."
+      "today": "Shown under “Is today unusual?” on the Wander Index page."
     },
     "sentiment": {
       "term": "Sentiment index",
-      "definition": "A composite of market behaviour (volatility, breadth, momentum, flows, safe-haven demand) scaled 0–100. Extremes are read as contrarian signals.",
+      "definition": "A composite of market behaviour (volatility, breadth, momentum, flows, safe-haven demand) scaled 0–100. Very high or very low readings are sometimes read as signs of a turning point. Interpretation, not a forecast.",
       "short": "A 0 to 100 score of how fearful or greedy the market is acting, built from price swings, how many shares rose, recent gains, money flows and gold.",
       "today": "Today: {score}, “{band}”."
     }
@@ -282,6 +276,6 @@ export const TEMPLATE: Template = {
     "Jegadeesh, N. (1990). Evidence of Predictable Behavior of Security Returns. Journal of Finance.",
     "Jegadeesh, N. & Titman, S. (1993). Returns to Buying Winners and Selling Losers. Journal of Finance.",
     "Calvo, G., Leiderman, L. & Reinhart, C. (1993). Capital Inflows and Real Exchange Rate Appreciation in Latin America: The Role of External Factors. IMF Staff Papers.",
-    "Reference levels for India VIX and US VIX are approximate long-run medians used by this app; formulas are shown with each component."
+    "India VIX and US VIX are compared with their own 50-day average; formulas are shown beside each component."
   ]
 };
