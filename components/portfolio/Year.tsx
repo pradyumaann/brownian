@@ -1,5 +1,5 @@
 "use client";
-import { blendSeries, changeOver, fmtPct, levelsOf, maxDrawdown, SHORT, volatility, worstDay, type Weights } from "@/lib/portfolioMath";
+import { blendSeries, changeOver, fmtPct, levelsOf, maxDrawdown, PROXY_IDS, SHORT, volatility, worstDay, type Mode, type Weights } from "@/lib/portfolioMath";
 import type { PortfolioSeries } from "@/lib/portfolioTypes";
 import { BlendLine } from "../charts/BlendLine";
 import { Chip } from "../Chip";
@@ -7,13 +7,16 @@ import { DataTable } from "../DataTable";
 import { More } from "../More";
 import { Src } from "../Src";
 import { dateOf } from "./Day";
+import { NoneNote } from "./NoneNote";
 
 const na = <span className="bw-na">n/a</span>;
 const pct1 = (v: number | null) => (v == null ? na : fmtPct(v, 1));
 const names = (a: { id: string }[]) => a.map((x) => SHORT[x.id]).join(", ");
 
 /** Your mix over the year: the blend of the covered types' index moves, weights held constant each day, beside Nifty 50. */
-export function Year({ w, series, example }: { w: Weights; series: PortfolioSeries; example: boolean }) {
+export function Year({ w, series, mode }: { w: Weights; series: PortfolioSeries; mode: Mode }) {
+  const example = mode === "example";
+  if (mode === "none") return <NoneNote line="For a mix, this section draws a blend of index moves for its types over the last 250 sessions, beside Nifty 50. Nothing is owned, so no line is drawn." />;
   const bh = blendSeries(w, series.types);
   if (!Object.keys(w).length) {
     return <p className="empty">No weight is set yet. Give a holding type a weight above and its year of index moves appears here.</p>;
@@ -30,6 +33,7 @@ export function Year({ w, series, example }: { w: Weights; series: PortfolioSeri
   const nl = series.nifty.some((v) => v != null) ? levelsOf(series.nifty) : null;
   const sessions = series.dates.length, first = series.dates[0], last = series.dates[sessions - 1];
   const mixEnd = bh.levels.at(-1);
+  const proxied = bh.used.filter((u) => PROXY_IDS.includes(u.id)).map((u) => SHORT[u.id]);
   const name = example ? "Example mix" : "Your mix";
   const mixChg = changeOver(bh.levels), nChg = nl ? changeOver(nl) : null;
   const mixDd = maxDrawdown(bh.levels, series.dates), nDd = nl ? maxDrawdown(nl, series.dates) : null;
@@ -52,6 +56,7 @@ export function Year({ w, series, example }: { w: Weights; series: PortfolioSeri
       </p>
       <p className="note after-plot">
         <b>Interpretation, not a forecast.</b> A blend of index moves for the types in your mix, weights held constant each day: not your own holdings&apos; returns. It re-weights the covered types to 100%, so its last day can differ from Your day, which counts Unallocated and left-out weight as zero. Gold is approximate (COMEX gold in USD × USD/INR; excludes duties and premiums)<Src k={["D5"]} />.
+        {proxied.length > 0 && <> {proxied.join(" and ")} {proxied.length > 1 ? "are" : "is"} read through an index (proxy: Nifty 500, not the fund&apos;s own returns)<Src k={["D1"]} />.</>}
       </p>
       <More label="Change, volatility, largest fall and worst day">
         <div className="yfacts">

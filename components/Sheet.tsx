@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { B } from "@/data";
-import { fillWith, type MoodVars } from "@/lib/bands";
 import { DATA_SOURCES } from "@/lib/papers";
 
 const SRC: Record<string, readonly [string, string]> = Object.fromEntries([
@@ -10,37 +9,29 @@ const SRC: Record<string, readonly [string, string]> = Object.fromEntries([
   ...DATA_SOURCES.map(([k, n, u]) => [k, [n, u]] as const),
 ]);
 
-interface Content { title: string; body: string; note?: string; link?: string }
+interface Content { title: string; body: string; link?: string }
 
-/** One sheet for source tags ([data-src]) and glossary terms ([data-term]). Esc closes it and focus returns to the opener. */
-export function Sheet({ vars }: { vars: MoodVars }) {
+/** One sheet for source tags ([data-src]). Esc closes it and focus returns to the opener.
+ *  Glossary terms ([data-term]) open the anchored pop-up in TermPop instead. */
+export function Sheet() {
   const dlg = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLElement | null>(null);
   const [c, setC] = useState<Content | null>(null);
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      const t = e.target as HTMLElement;
-      const term = t.closest<HTMLElement>("[data-term]");
-      const src = t.closest<HTMLElement>("[data-src]");
-      let next: Content | null = null;
-      if (term) {
-        const g = B.gloss[term.dataset.term!];
-        if (g) next = { title: g[0], body: g[1], note: fillWith(g[2], vars) };
-        opener.current = term;
-      } else if (src) {
-        const s = SRC[src.dataset.src!];
-        if (s) next = { title: `Source ${src.dataset.src}`, body: s[0], link: s[1] };
-        opener.current = src;
-      }
-      if (!next) return;
+      const src = (e.target as HTMLElement).closest<HTMLElement>("[data-src]");
+      if (!src) return;
+      const s = SRC[src.dataset.src!];
+      if (!s) return;
+      opener.current = src;
       e.preventDefault();
-      setC(next);
+      setC({ title: `Source ${src.dataset.src}`, body: s[0], link: s[1] });
       if (!dlg.current?.open) dlg.current?.showModal();
     };
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);
-  }, [vars]);
+  }, []);
 
   const close = () => dlg.current?.close();
 
@@ -60,7 +51,6 @@ export function Sheet({ vars }: { vars: MoodVars }) {
           </button>
         </div>
         <p className="sheet-b">{c?.body}</p>
-        {c?.note && <p className="bw-meta">{c.note}</p>}
         {c?.link && <p className="bw-meta"><a href={c.link} target="_blank" rel="noopener noreferrer">Open the source</a></p>}
       </div>
     </dialog>

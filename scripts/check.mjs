@@ -19,9 +19,13 @@ const SEEDS = {
   over: { port3: { v: 1, w: { index: 60, fin: 60, it: 30 } } },
   noev: { port3: { v: 1, w: { gold: 50, mid: 30 } } },
   watch: { port3: { v: 1, w: { index: 40, it: 30, consumer: 30 } }, watch2: ["Eicher Motors", "Infosys", "NVDA (Nvidia)", "Alkem Labs", "Walmart"] },
+  // "I own nothing yet" (no example, no figures), and a mix with the two Nifty 500 proxy types.
+  none: { port3: { v: 1, w: {}, none: true } },
+  flexi: { port3: { v: 1, w: { flexi: 40, elss: 30, index: 30 } } },
 };
 const SEEDED = [["/portfolio/", "mix"], ["/", "mix"], ["/portfolio/", "migrate"], ["/", "migrate"],
-  ["/portfolio/", "left"], ["/portfolio/", "over"], ["/portfolio/", "noev"], ["/portfolio/", "watch"]];
+  ["/portfolio/", "left"], ["/portfolio/", "over"], ["/portfolio/", "noev"], ["/portfolio/", "watch"],
+  ["/portfolio/", "none"], ["/", "none"], ["/portfolio/", "flexi"], ["/", "flexi"]];
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".svg": "image/svg+xml", ".woff2": "font/woff2", ".txt": "text/plain" };
 
 const server = createServer(async (req, res) => {
@@ -61,10 +65,55 @@ for (const theme of ["night", "paper"]) {
       await page.screenshot({ path: join(SHOTS, name + ".png"), fullPage: true });
       // Phase 2 text expectations on the seeded Portfolio Lens passes.
       const EXPECT = { left: ["None of the types in your mix has a year-long series"], noev: ["No dated events in the brief are tagged to the types in your mix."],
-        watch: ["Results due Fri 13 Nov, per today's brief", "No result date in today's brief", "Reported", "Reports Tue 17 Nov"], mix: ["Interpretation, not a forecast."] };
+        watch: ["Results due Fri 13 Nov, per today's brief", "No result date in today's brief", "Reported", "Reports Tue 17 Nov"], mix: ["Interpretation, not a forecast."],
+        none: ["Portfolio Lens reads the day's index and market moves"], flexi: ["proxy: Nifty 500, not the fund's own returns"] };
+      // Text that must not appear: in "none" mode the example mix and its figures are hidden.
+      const ABSENT = { none: ["the example mix", "Blended one-day move", "Tagged to"] };
       if (seed && r === "/portfolio/") {
         const body = await page.evaluate(() => document.body.innerText);
         for (const t of EXPECT[seed] ?? []) if (!body.includes(t)) errors.push(`missing text: ${t}`);
+        for (const t of ABSENT[seed] ?? []) if (body.includes(t)) errors.push(`unexpected text: ${t}`);
+      }
+      // The front page: the Blended session move card (components/portfolio/SessionMove.tsx, the same usePort()) on every
+      // pass; "Your day" and "Events for what you own" are gone from `/`; one primary button.
+      if (r === "/") {
+        const CARD = ["Blended session move", "Single days are noise. Interpretation, not a forecast.", "See what it means for you"];
+        const FRONT = { "": ["Blended one-day move of the example mix"], mix: ["Blended one-day move of your mix"], migrate: ["Blended one-day move of your mix"],
+          none: ["Portfolio Lens reads the day's index and market moves"], flexi: ["Blended one-day move of your mix", "proxy: Nifty 500, not the fund's own returns"] };
+        const FRONT_ABSENT = { none: ["the example mix", "Blended one-day move", "Tagged to"], mix: ["the example mix"], migrate: ["the example mix"], flexi: ["the example mix"] };
+        const { body, dawn } = await page.evaluate(() => ({ body: document.body.innerText, dawn: document.querySelectorAll("main .bw-btn-dawn").length }));
+        for (const t of [...CARD, ...(FRONT[seed ?? ""] ?? [])]) if (!body.includes(t)) errors.push(`missing text: ${t}`);
+        for (const t of ["Your day", "Events for what you own", ...(FRONT_ABSENT[seed] ?? [])]) if (body.includes(t)) errors.push(`unexpected text: ${t}`);
+        if (dawn !== 1) errors.push(`${dawn} primary buttons on /, expected 1`);
+      }
+      // Term pop-up at 400px on the front page: opens from the keyboard, sits inside the viewport with no sideways
+      // page scroll, and Esc closes it with focus back on the term.
+      if (width === 400 && r === "/" && !seed) {
+        const term = page.locator("main [data-term]").first();
+        await term.focus();
+        await page.keyboard.press("Enter");
+        await page.waitForTimeout(250);
+        const pop = await page.evaluate(() => {
+          const el = document.querySelector(".termpop");
+          if (!el) return null;
+          const b = el.getBoundingClientRect(), s = getComputedStyle(el);
+          return { visible: s.display !== "none" && s.visibility !== "hidden" && Number(s.opacity) > 0.9 && b.width > 0 && b.height > 0,
+            inside: b.left >= 0 && b.right <= document.documentElement.clientWidth && b.top >= 0 && b.bottom <= window.innerHeight,
+            dialog: el.getAttribute("role") === "dialog", focusIn: el.contains(document.activeElement),
+            expanded: document.querySelector('[data-term][aria-expanded="true"]') !== null,
+            sw: document.documentElement.scrollWidth, vw: window.innerWidth };
+        });
+        if (!pop) errors.push("term pop-up did not open");
+        else {
+          if (!pop.visible) errors.push("term pop-up not visible");
+          if (!pop.inside) errors.push("term pop-up outside the viewport");
+          if (!pop.dialog || !pop.focusIn || !pop.expanded) errors.push("term pop-up: role, focus or aria-expanded wrong");
+          if (pop.sw > pop.vw) errors.push(`term pop-up causes sideways scroll ${pop.sw}/${pop.vw}`);
+        }
+        await page.keyboard.press("Escape");
+        await page.waitForTimeout(100);
+        const back = await page.evaluate(() => ({ closed: !document.querySelector(".termpop"), onTerm: document.activeElement === document.querySelector("main [data-term]") }));
+        if (!back.closed || !back.onTerm) errors.push("Esc did not close the term pop-up and return focus to the term");
       }
       const bad = sw > vw || errors.length;
       if (bad) failures++;

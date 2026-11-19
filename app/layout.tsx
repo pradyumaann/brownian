@@ -5,6 +5,7 @@ import { Masthead } from "@/components/Masthead";
 import { Nav } from "@/components/Nav";
 import { Readout } from "@/components/Readout";
 import { Sheet } from "@/components/Sheet";
+import { TermPop } from "@/components/TermPop";
 import { hours } from "@/lib/market";
 import { moodSeries, vars } from "@/lib/mood";
 import { DATA_SOURCES, PAPERS } from "@/lib/papers";
@@ -67,7 +68,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <p className="tagline">Brownian · <span className="bw-serif">Markets wander. You don&apos;t have to.</span></p>
           </footer>
         </div>
-        <Sheet vars={vars} />
+        <Sheet />
+        <TermPop vars={vars} />
         <Readout />
       </body>
     </html>

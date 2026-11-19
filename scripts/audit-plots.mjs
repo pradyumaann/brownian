@@ -8,7 +8,9 @@ import { chromium } from "playwright-core";
 
 const ROOT = resolve("out");
 const ROUTES = ["/", "/portfolio/", "/wander/", "/flows/", "/india/", "/global/", "/macro/", "/earnings/", "/developing/", "/learn/"];
-// Populated-state passes (a saved mix, and older picks only) so the portfolio charts are audited with data.
+// Populated-state passes (a saved mix, and older picks only) so the portfolio charts are audited with data. On `/` the
+// Blended session move card draws no chart (printed lines only), so the `/` passes audit the rest of the page in each mode,
+// with 05 India, 06 Global and 08 Developing folded at 400px.
 const SEEDS = {
   mix: { port3: { v: 1, w: { index: 30, fin: 15, mid: 10, it: 10, gold: 10, silver: 5, debt: 20 } } },
   migrate: { held2: ["index", "fin", "gold", "debt"] },
@@ -16,9 +18,13 @@ const SEEDS = {
   over: { port3: { v: 1, w: { index: 60, fin: 60, it: 30 } } },
   noev: { port3: { v: 1, w: { gold: 50, mid: 30 } } },
   watch: { port3: { v: 1, w: { index: 40, it: 30, consumer: 30 } }, watch2: ["Eicher Motors", "Infosys", "NVDA (Nvidia)", "Alkem Labs", "Walmart"] },
+  // "I own nothing yet" (no example, no figures), and a mix with the two Nifty 500 proxy types.
+  none: { port3: { v: 1, w: {}, none: true } },
+  flexi: { port3: { v: 1, w: { flexi: 40, elss: 30, index: 30 } } },
 };
 const SEEDED = [["/portfolio/", "mix"], ["/", "mix"], ["/portfolio/", "migrate"],
-  ["/portfolio/", "left"], ["/portfolio/", "over"], ["/portfolio/", "noev"], ["/portfolio/", "watch"]];
+  ["/portfolio/", "left"], ["/portfolio/", "over"], ["/portfolio/", "noev"], ["/portfolio/", "watch"],
+  ["/portfolio/", "none"], ["/", "none"], ["/portfolio/", "flexi"], ["/", "flexi"]];
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".txt": "text/plain" };
 const server = createServer(async (req, res) => {
   let p = decodeURIComponent(new URL(req.url, "http://x").pathname);

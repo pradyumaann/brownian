@@ -25,8 +25,13 @@ export interface TypeFact extends MoveFact {
   note: string | null;
   /** Set when the type's move is an approximation built from other series. */
   derived: string | null;
+  /** Set when the type's move is an index standing in for a fund category ("proxy: Nifty 500, not the fund's own returns"). */
+  proxy: string | null;
 }
 export interface PortfolioFacts { asOf: string; types: TypeFact[] }
+
+/** What the front page's Blended session move card needs of each type: the move, its tags and its proxy label. */
+export type SessionTypeFact = Pick<TypeFact, "id" | "n" | "d1" | "src" | "proxy">;
 
 /** The year-long daily changes (lib/portfolioSeries.ts): sent to /portfolio only, never in PortfolioFacts. */
 export interface PortfolioSeries extends ReturnSeries {

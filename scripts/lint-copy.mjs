@@ -7,7 +7,9 @@ import { join, resolve } from "node:path";
 
 const ROOT = resolve(".");
 // Files and folders scanned, plus lib/portfolio*.ts (tests excluded).
-const PATHS = ["components/portfolio.tsx", "components/portfolio", "components/EventRail.tsx", "components/charts/BlendLine.tsx", "app/portfolio", "lib/resultDates.ts"];
+// components/portfolio/SessionMove.tsx (the front page's Blended session move card) is named on its own so it stays
+// scanned if the folder list changes; the Set below keeps it from being counted twice.
+const PATHS = ["components/portfolio.tsx", "components/portfolio", "components/portfolio/SessionMove.tsx", "components/EventRail.tsx", "components/charts/BlendLine.tsx", "app/portfolio", "lib/resultDates.ts"];
 
 const BANNED = [
   /\bbuy(?:s|ing)?\b/i, /\bsell(?:s|ing)?\b/i, /\bholds?\b/i, /\bshould\b/i, /\brecommend(?:s|ed|ing|ation|ations)?\b/i,
@@ -26,7 +28,7 @@ function walk(p) {
 const libFiles = existsSync(join(ROOT, "lib"))
   ? readdirSync(join(ROOT, "lib")).filter((f) => f.startsWith("portfolio") && /\.tsx?$/.test(f) && !/\.test\./.test(f)).map((f) => "lib/" + f)
   : [];
-const files = [...PATHS.flatMap(walk), ...libFiles].map((f) => f.replaceAll("\\", "/"));
+const files = [...new Set([...PATHS.flatMap(walk), ...libFiles].map((f) => f.replaceAll("\\", "/")))];
 
 let hits = 0;
 for (const f of files) {

@@ -12,22 +12,19 @@ import { Quadrant } from "@/components/charts/Quadrant";
 import { TimeLine } from "@/components/charts/TimeLine";
 import { BANDS, METHOD, MISSING, asOf, band, bandOf, comps, moodSeries, niftyOn, pressure, pressureHigh, pressureName, pressureScore, pressureTone, quad, score, scoreRaw, scored, wanderVsNifty } from "@/lib/mood";
 import { PAPERS } from "@/lib/papers";
+import { ord, TURB_BANDS, turbBand } from "@/lib/bands";
 import { riskOn, riskSeries } from "@/lib/risk";
 import { SPILL, spillSeries } from "@/lib/spillover";
 import { liquidity } from "@/lib/flows";
 
 export const metadata: Metadata = { title: "Wander Index" };
 
-const ord = (n: number) => { const r = Math.round(n), s = ["th", "st", "nd", "rd"], v = r % 100; return r + (s[(v - 20) % 10] || s[v] || s[0]); };
 const longDate = (d: string) => new Date(d + "T00:00:00Z").toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 
 function Papers({ ids, basis }: { ids: (keyof typeof PAPERS)[]; basis?: string }) {
   if (!ids.length) return <>{basis}</>;
   return <>{ids.map((id, i) => <span key={id}>{i ? "; " : ""}<a href={PAPERS[id].url} target="_blank" rel="noopener noreferrer">{PAPERS[id].cite}</a>, <i>{PAPERS[id].title}</i></span>)}</>;
 }
-
-const TURB_BANDS = [{ from: 0, to: 50, name: "Calm" }, { from: 50, to: 80, name: "Elevated" }, { from: 80, to: 95, name: "Unusual" }, { from: 95, to: 100, name: "Extreme" }];
-const turbBand = (p: number) => TURB_BANDS.find((b) => p < b.to)?.name ?? "Extreme";
 
 export default function Wander() {
   const ext = scored.filter((c) => c.score >= 75), fear = scored.filter((c) => c.score < 45), off = comps.filter((c) => !c.available);

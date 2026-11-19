@@ -4,14 +4,17 @@ import { useEffect, useState } from "react";
 import { B } from "@/data";
 import type { StockNote } from "@/data/types";
 import { fillWith, type MoodVars } from "@/lib/bands";
+import type { Mode } from "@/lib/portfolioMath";
 import { buildResultIndex, resolveName, resultFor } from "@/lib/resultDates";
 import { Chip, DirChip } from "./Chip";
+import { NoneNote } from "./portfolio/NoneNote";
 import { store } from "./portfolio/store";
 import { Src } from "./Src";
 
 /** Impact notes for the holding types in the viewer's mix, written for the day's brief, plus the wallet note
  *  (household costs, not a holding and never weighted). */
-export function ImpactNotes({ ids, vars, example }: { ids: string[]; vars: MoodVars; example: boolean }) {
+export function ImpactNotes({ ids, vars, mode }: { ids: string[]; vars: MoodVars; mode: Mode }) {
+  const example = mode === "example";
   const list = B.holdings.filter((h) => h.id !== "wallet" && ids.includes(h.id));
   const wallet = B.holdings.find((h) => h.id === "wallet");
   const note = (h: (typeof B.holdings)[number]) => (
@@ -27,7 +30,9 @@ export function ImpactNotes({ ids, vars, example }: { ids: string[]; vars: MoodV
   return (
     <>
       {example && <p className="bw-meta"><Chip>Example</Chip> These notes are for the example mix.</p>}
-      {list.length ? <div className="impact">{list.map(note)}</div> : (
+      {mode === "none" ? (
+        <NoneNote line="For a mix, this section gives the brief's notes on what happened to each of its holding types and what to watch. Nothing is owned, so only the household-costs note follows." />
+      ) : list.length ? <div className="impact">{list.map(note)}</div> : (
         <p className="empty">Give a holding type a weight above to see how today&apos;s news affects it.</p>
       )}
       {wallet && (
