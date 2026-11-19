@@ -1,9 +1,10 @@
 "use client";
-import { beta, blendSeries, correlation, extremePairs, fmtR, normalise, pairwise, PROXY_IDS, SHORT, HOLDING_IDS, type Weights } from "@/lib/portfolioMath";
+import { beta, blendSeries, correlation, extremePairs, fmtR, normalise, pairwise, PROXY_IDS, SHORT, HOLDING_IDS, type Mode, type Weights } from "@/lib/portfolioMath";
 import type { PortfolioSeries } from "@/lib/portfolioTypes";
 import { DataTable } from "../DataTable";
 import { Src } from "../Src";
 import { dateOf } from "./Day";
+import { NoneNote } from "./NoneNote";
 
 const na = <span className="bw-na">n/a</span>;
 const num2 = (v: number) => (v < 0 ? "−" : "") + Math.abs(v).toFixed(2);
@@ -12,16 +13,17 @@ const num2 = (v: number) => (v < 0 ? "−" : "") + Math.abs(v).toFixed(2);
  *  correlation with Nifty 50 and its beta, the most and least correlated pair of held types, and each type's own figures.
  *  Same blend as the year: weights constant each day, the covered types re-weighted to 100%. A figure that cannot be worked
  *  out honestly (a type with no series, a short or flat series) is n/a, never estimated. */
-export function MixMetrics({ w, series }: { w: Weights; series: PortfolioSeries }) {
+export function MixMetrics({ w, series, mode }: { w: Weights; series: PortfolioSeries; mode: Mode }) {
+  if (mode === "none") return <NoneNote line="For a mix, this section shows how its daily changes moved with Nifty 50: correlation, beta and the most and least correlated pair of types. Nothing is owned, so nothing is shown." />;
   const bh = blendSeries(w, series.types);
   const nifty = series.nifty;
   const hasNifty = nifty.some((v) => v != null);
   const nm = normalise(w);
   const held = HOLDING_IDS.filter((id) => nm.shares[id] > 0);
+  if (!held.length) return <p className="empty">No weight is set yet. Once a holding type has a weight, how its daily changes moved with Nifty 50 is shown here.</p>;
   if (!bh) {
     return (
       <>
-        <h3 className="sub gap-top">Moves with Nifty 50</h3>
         <p className="empty">None of the types in your mix has a year-long series ({held.map((id) => SHORT[id]).join(", ")}), so no co-movement figure is worked out and none is estimated.</p>
       </>
     );
@@ -47,7 +49,6 @@ export function MixMetrics({ w, series }: { w: Weights; series: PortfolioSeries 
   });
   return (
     <>
-      <h3 className="sub gap-top">Moves with Nifty 50</h3>
       <p className="bw-meta">
         Covers {Math.round(bh.covered)}% of your mix{bh.left.length > 0 && <>; {bh.left.map((x) => SHORT[x.id]).join(", ")} left out (n/a)</>} · {window}
       </p>

@@ -6,7 +6,7 @@ export function NoneNote({ full, line }: { full?: boolean; line?: string }) {
     return (
       <div className="empty">
         <p>Portfolio Lens reads the day&apos;s index and market moves against a mix of holding types, each given a weight that stays on this device.</p>
-        <p className="gap-top">For a mix, it shows the blended one-day move, what the weights are exposed to, the last 250 sessions beside Nifty 50 and the dated events the brief ties to each type. With nothing owned, no example mix and no figures are shown.</p>
+        <p className="gap-top">For a mix, it shows the blended one-day move, how its daily changes moved with Nifty 50, the last 250 sessions beside Nifty 50 and the dated events the brief ties to each type. With nothing owned, no example mix and no figures are shown.</p>
       </div>
     );
   }

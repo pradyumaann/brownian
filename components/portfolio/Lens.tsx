@@ -7,13 +7,13 @@ import { Fold } from "../Fold";
 import { Section, S } from "../Section";
 import { Day } from "./Day";
 import { EventsForYou } from "./EventsForYou";
-import { Exposure } from "./Exposure";
 import { How } from "./How";
 import { Mix } from "./Mix";
+import { MixMetrics } from "./MixMetrics";
 import { usePort } from "./usePort";
 import { Year } from "./Year";
 
-/** Portfolio Lens, sections 01 to 08: your mix, your day, what you are exposed to, is my stock in the news (the watchlist),
+/** Portfolio Lens, sections 01 to 08: your mix, your day, moves with Nifty 50, is my stock in the news (the watchlist),
  *  your mix over the year, events for what you own, how it is worked out (a fold), the impact notes. One `usePort()` here feeds every section, so a changed weight updates all. */
 export function PortfolioLens({ facts, series, vars }: { facts: PortfolioFacts; series: PortfolioSeries; vars: MoodVars }) {
   const port = usePort();
@@ -29,8 +29,8 @@ export function PortfolioLens({ facts, series, vars }: { facts: PortfolioFacts; 
         <Day w={port.w} facts={facts.types} asOf={facts.asOf} mode={port.mode} />
       </Section>
 
-      <Section title={<>What you&apos;re <S>exposed to</S></>} meta="Your weights grouped by what drives them" ix="03">
-        <Exposure w={port.w} mode={port.mode} series={series} />
+      <Section title={<>Moves with <S>Nifty 50</S></>} meta="How your mix's daily changes moved with the market · weights held constant" ix="03">
+        <MixMetrics w={port.w} series={series} mode={port.mode} />
       </Section>
 
       <Section title={<>Is my stock in the <S>news</S>?</>} meta="Watchlist · every company in the brief, plus this week's results calendars. Example rows are marked until you add your own." ix="04">

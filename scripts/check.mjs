@@ -88,7 +88,7 @@ for (const theme of ["night", "paper"]) {
         const before = (a, b) => order.findIndex((t) => t.startsWith(a)) < order.findIndex((t) => t.startsWith(b)) && order.findIndex((t) => t.startsWith(a)) >= 0;
         if (r === "/" && !(before("What happened", "The market") && before("The market", "What drove"))) errors.push("order: What happened, then the market mood, then What drove the day");
         if (r === "/" && !(order.findIndex((t) => t.startsWith("What happened")) < order.findIndex((t) => t.startsWith("Money")))) errors.push("order: Money movement must come after What happened");
-        if (r === "/portfolio/" && !before("What you", "Is my stock")) errors.push("order: What you're exposed to must come before Is my stock in the news?");
+        if (r === "/portfolio/" && !before("Moves with", "Is my stock")) errors.push("order: Moves with Nifty 50 must come before Is my stock in the news?");
         if (r === "/") {
           const hero = await page.evaluate(() => [...document.querySelectorAll(".hero > div .bw-label")].map((l) => l.textContent.trim()));
           if (hero.length !== 5 || !hero.includes("Wander Index") || !hero.includes("Macro pressure")) errors.push(`hero should hold 5 cells with Wander Index and Macro pressure apart: ${hero.join(" | ")}`);
