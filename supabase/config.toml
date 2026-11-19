@@ -1,0 +1,6 @@
+# Minimal Supabase CLI config: only what deploying the intake function needs.
+project_id = "pdnzxjxqpnaaqqzqtizx"
+
+# The morning routine authenticates with its own key (INTAKE_KEY), not a Supabase login token.
+[functions.intake]
+verify_jwt = false
