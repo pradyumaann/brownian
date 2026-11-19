@@ -31,3 +31,40 @@ create policy "published briefs are readable" on public.briefs
 ```
 
 Held and staging rows stay private. Writes go through the backend with the service key (never in Vercel's build environment, never in the repo).
+
+## Intake endpoint (Phase 1)
+
+The morning routine sends each day's record to a Supabase Edge Function (`supabase/functions/intake`, logic in `supabase/functions/_shared/intake.ts`).
+
+```
+POST https://pdnzxjxqpnaaqqzqtizx.supabase.co/functions/v1/intake            publish
+POST https://pdnzxjxqpnaaqqzqtizx.supabase.co/functions/v1/intake?mode=staging   dry run (never shown on the site)
+Authorization: Bearer <INTAKE_KEY>
+Body: the Brief record as JSON (shape: data/types.ts)
+```
+
+| Result | Meaning |
+|---|---|
+| 200 `published` | Valid. Stored as the day's published brief; a rebuild is requested if `VERCEL_DEPLOY_HOOK` is set. |
+| 200 `staging` | Valid and `?mode=staging`. Stored, not shown. |
+| 422 `held` | Has errors. Stored with its report for review, never shown. |
+| 422 `rejected` | Not stored: no usable date, or it would replace a published day (only a valid, non-staging record can). |
+| 401 / 400 / 413 / 405 | Wrong key, bad JSON, too large, not POST. |
+
+`supabase/functions/_shared/validate.ts` holds the rules (structure, source tags that exist, tones, dates, number ranges, cross-references, no advice/tip language). `npm run test:backend` runs the tests; the 13 Nov brief is the known-good record.
+
+Secrets (Supabase function secrets, never in the repo): `INTAKE_KEY` (the routine's key), `VERCEL_DEPLOY_HOOK` (optional). `SUPABASE_URL` and the service key are provided by Supabase to the function; the service key is never in Vercel or the repo.
+
+Deploy (needs a Supabase login): `npx supabase login`, then `npx supabase functions deploy intake --project-ref pdnzxjxqpnaaqqzqtizx`, then `npx supabase secrets set INTAKE_KEY=<random value> --project-ref pdnzxjxqpnaaqqzqtizx`.
+
+## The daily record and the template
+
+The routine does not send a whole `Brief`. It sends the **daily record**: everything in `data/types.ts` except the fixed parts, with two small differences.
+
+| Fixed (template, `supabase/functions/_shared/template.ts`) | Daily record carries instead |
+|---|---|
+| `gloss` (term, definition, short text) | `glossToday`: `{ <glossary id>: "Today: …" }` for the entries that have a line for the day |
+| holding-type names and order | `holdings`: `[{ id, d, h, w, t, src }]`, one per type id |
+| `aliases`, `defaultHold`, `defaultWatch`, `method` | nothing |
+
+`mergeDaily` (`_shared/merge.ts`) adds the fixed parts before validating, ignores (with a warning) any fixed part the routine sends, and drops unknown holding types and glossary ids. A full record (as the 13 Nov brief) is still accepted. The template is edited by hand, in this repo, when a glossary term or holding type is added; a term used in the text but missing from the template makes the day held. `scripts/make-template.mjs` records how it was first derived. The daily record is about three quarters of the full record: the fixed parts are mostly the glossary.
