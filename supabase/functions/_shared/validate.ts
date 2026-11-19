@@ -169,9 +169,10 @@ export function validateBrief(input: unknown): Report {
   for (const id of HOLDING_IDS) if (!holdingIds.has(id)) err("holdings", `Holding type "${id}" is missing.`);
   arr("defaultHold").forEach((id, i) => { if (!holdingIds.has(id)) err(`defaultHold[${i}]`, `"${id}" is not a holding id.`); });
   const stocks = obj("stocks");
-  arr("defaultWatch").forEach((n, i) => { if (!isStr(n) || !(n in stocks)) warn(`defaultWatch[${i}]`, `"${n}" has no entry in stocks.`); });
-  // Aliases are fixed (template) while stocks vary by day, so a name with no entry today is a warning, not an error.
-  Object.entries(obj("aliases")).forEach(([k, v]) => { if (!isStr(v)) err(`aliases.${k}`, "Alias must point to a stock name."); else if (!(v in stocks)) warn(`aliases.${k}`, `Alias points to "${v}", which has no entry in stocks today.`); });
+  const watchMissing = arr("defaultWatch").filter((n) => !isStr(n) || !(n in stocks));
+  if (watchMissing.length) warn("defaultWatch", `${watchMissing.length} default watchlist name(s) have no entry in stocks today: ${watchMissing.slice(0, 5).join(", ")}${watchMissing.length > 5 ? ", ..." : ""}.`);
+  // Aliases are fixed (template) while stocks vary by day, so an alias whose stock has no entry today is normal and silent.
+  Object.entries(obj("aliases")).forEach(([k, v]) => { if (!isStr(v)) err(`aliases.${k}`, "Alias must point to a stock name."); });
 
   // glossary entries: [term, definition, today, short]
   Object.entries(gloss).forEach(([k, g]) => {

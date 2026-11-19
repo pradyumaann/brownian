@@ -31,6 +31,9 @@ const glossIds = Object.entries(TEMPLATE.gloss)
   .map(([id, e]) => `- \`${id}\`: ${e.term}${e.today !== undefined ? " (fixed line, do not send)" : ""}`)
   .join("\n");
 
+// The app's own names for companies: the names it has covered (stocks keys) and every alias target.
+const stockNames = [...new Set([...Object.keys(brief.stocks), ...Object.values(TEMPLATE.aliases)])].sort((a, b) => a.localeCompare(b));
+
 const spec = [
   read("docs/routine-spec.md").trimEnd(),
   "",
@@ -45,6 +48,10 @@ const spec = [
   "## Glossary ids for `glossToday`",
   "",
   glossIds,
+  "",
+  "## Stock names for `stocks` (the app's own names; use them as the keys)",
+  "",
+  stockNames.join("; "),
   "",
   "## Example: the 13 Nov 2026 record, trimmed (every list shows its first two entries; yours has the full set)",
   "",

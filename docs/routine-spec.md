@@ -27,7 +27,7 @@ Output: one JSON object, written to a file, validated as JSON, then POSTed to th
 - **Releases and calendar:** `cpi`, `ppi`, `indicators` (13 rows: region, indicator, latest, previous, detail, next date, how to read, tone, source tag; an indicator the sources do not give is `"n/a"` with an empty source), `releases` (the scheduled prints as numbers, null = n/a), `next` (what is coming today and tomorrow), `events` (the wider calendar, firm dates only). Research these on the web each day: RBI, FOMC, India CPI/WPI/IIP/GDP dates, US data, earnings.
 - **Earnings:** `erToday`, `erTom`, `erDeadline`, `erTodayMore`, `erUS`, `erDone` (results already out and the reaction), `erLessons`.
 - **Stories:** `stories` (4-6; `st` is `"NEW"` or `"ONGOING"`, `day` e.g. "Day 9 of Nov"; `p` what happened, `m` why it matters, `w` what to watch).
-- **Stocks:** `stocks` maps a company name to `[move, tone, note, sector]` for the names mentioned that day.
+- **Stocks:** `stocks` maps a company name to `[move, tone, note, sector]` for the names mentioned that day. Key each entry by the app's own name for the company, from the "Stock names" list at the end of this guide (for example "HUL", not "Hindustan Unilever"; "SBI", not "State Bank of India"). A company not on that list uses its common short name. The app matches what viewers type against these names, so do not rename them.
 - **Sources:** `sources` (`[title, url]`, the brief's own sources, S1...), `web` (`[W#, title, url]`, calendar and other web research).
 
 ## Holdings (`holdings`)
