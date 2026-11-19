@@ -17,14 +17,14 @@ const WLD = (id: string, label: string, unit: "pct" | "bp" = "pct"): Src => ({ i
 
 const NIFTY50 = IDX("nifty50", "Nifty 50"), USDINR = WLD("usdinr", "USD/INR"), GOLD = WLD("gold", "COMEX gold (USD)");
 
-interface Def {
+export interface Def {
   id: string; n: string; drivers: Src[];
   /** "mean": equal-weighted average of the drivers' changes. "gold": (1 + gold) x (1 + USD/INR) - 1. "none": no type move. */
   how: "mean" | "gold" | "none";
   formula: string; note?: string; derived?: string;
 }
 
-const DEFS: Def[] = [
+export const DEFS: Def[] = [
   { id: "index", n: "Nifty index funds & large-cap SIPs", drivers: [NIFTY50], how: "mean", formula: "Nifty 50 one-day change." },
   { id: "fin", n: "Bank, NBFC & insurance stocks", how: "mean", formula: "Equal-weighted average of the one-day changes of Nifty Bank, Financial Services, Private Bank and PSU Bank.",
     drivers: [IDX("bank", "Nifty Bank"), IDX("finserv", "Nifty Financial Services"), IDX("pvtbank", "Nifty Private Bank"), IDX("psubank", "Nifty PSU Bank")],
@@ -50,14 +50,14 @@ const DEFS: Def[] = [
 ];
 
 const h = history();
-const days = h.tradingDays;
-/** The last NSE session on or before the brief's session date. */
-const T = days.map((d, i) => [d, i] as const).filter(([d]) => d <= B.sessionDate).at(-1)![1];
+export const days = h.tradingDays;
+/** Index (into `days`) of the last NSE session on or before the brief's session date: the date the page is read as of. */
+export const T =days.map((d, i) => [d, i] as const).filter(([d]) => d <= B.sessionDate).at(-1)![1];
 
-const level = (s: Src): Raw => (s.kind === "index" ? indexSeries(s.id).values : worldOnNseDays(s.id).values);
+export const level = (s: Src): Raw => (s.kind === "index" ? indexSeries(s.id).values : worldOnNseDays(s.id).values);
 const have = (a: Raw) => a.some((v) => v != null);
 /** Change over n sessions in % (basis points for a yield level), null if either end is missing. */
-const chg = (a: Raw, i: number, n: number, bp: boolean) => {
+export const chg = (a: Raw, i: number, n: number, bp: boolean) => {
   const x = a[i], y = i - n >= 0 ? a[i - n] : null;
   if (x == null || y == null) return null;
   return bp ? (x - y) * 100 : (x / y - 1) * 100;
@@ -71,15 +71,12 @@ function rank(ser: Raw, i: number): { p: number | null; n: number } {
 const r2 = (v: number | null) => (v == null ? null : Math.round(v * 100) / 100);
 const r1 = (v: number | null) => (v == null ? null : Math.round(v * 10) / 10);
 
-function build(d: Def): TypeFact {
+/** A type's move over n sessions ending on day i, built from its drivers' levels. Needs every driver: a missing driver
+ *  (or a missing close at either end) means no move, never a part-average. "none" types have no move at all.
+ *  Shared with lib/portfolioSeries.ts so the year-long blend uses exactly the same definitions as the day's move. */
+export function mover(d: Def) {
   const lv = new Map(d.drivers.map((s) => [s.id, level(s)]));
   const missing = d.drivers.filter((s) => !have(lv.get(s.id)!));
-  const drivers: DriverFact[] = d.drivers.map((s) => {
-    const a = lv.get(s.id)!, bp = s.unit === "bp";
-    const daily: Raw = days.map((_, i) => chg(a, i, 1, bp));
-    return { id: s.id, label: s.label, src: s.src, unit: s.unit ?? "pct", d1: r2(daily[T]), m1: r2(chg(a, T, MONTH, bp)), pctl: r1(rank(daily, T).p) };
-  });
-  // The type's move over n sessions ending on day i. Needs every driver: a missing driver means no move, never a part-average.
   const move = (i: number, n: number): number | null => {
     if (d.how === "none" || missing.length) return null;
     const vals = d.drivers.map((s) => chg(lv.get(s.id)!, i, n, false));
@@ -87,6 +84,16 @@ function build(d: Def): TypeFact {
     if (d.how === "gold") return ((1 + vals[0]! / 100) * (1 + vals[1]! / 100) - 1) * 100;
     return (vals as number[]).reduce((s, v) => s + v, 0) / vals.length;
   };
+  return { lv, missing, move };
+}
+
+function build(d: Def): TypeFact {
+  const { lv, missing, move } = mover(d);
+  const drivers: DriverFact[] = d.drivers.map((s) => {
+    const a = lv.get(s.id)!, bp = s.unit === "bp";
+    const daily: Raw = days.map((_, i) => chg(a, i, 1, bp));
+    return { id: s.id, label: s.label, src: s.src, unit: s.unit ?? "pct", d1: r2(daily[T]), m1: r2(chg(a, T, MONTH, bp)), pctl: r1(rank(daily, T).p) };
+  });
   const daily: Raw = d.how === "none" || missing.length ? [] : days.map((_, i) => move(i, 1));
   const r = daily.length ? rank(daily, T) : { p: null, n: 0 };
   return {

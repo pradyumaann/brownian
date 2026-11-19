@@ -12,7 +12,14 @@ export interface Kpi { label: string; term?: string; v: string; unit?: string; d
 export interface Takeaway { chip: [string, Tone]; h: string; p: string; why: string; src: string[] }
 /** A dated row. `date` (ISO start) and `end` (ISO, a range's last day) are set only for firm dates; a row with
  *  neither is never plotted on a time line and nothing is estimated for it. */
-export interface CalendarItem { w: string; t: string; d?: string; date?: string; end?: string; today?: boolean; chip?: [string, Tone] }
+export interface CalendarItem {
+  w: string; t: string; d?: string; date?: string; end?: string; today?: boolean; chip?: [string, Tone];
+  /** Holding types the brief's own text links to this event. Set only where a sentence in the brief states the link; each tag
+   *  and its quoted sentence is recorded in docs/portfolio-event-tags.md. Absent means no link is stated, not "no effect". */
+  affects?: HoldingId[];
+}
+/** The holding types that carry a weight in Portfolio Lens (not the household-costs note `wallet`). */
+export type HoldingId = "index" | "fin" | "mid" | "it" | "gold" | "silver" | "debt" | "oil" | "consumer" | "realty";
 export interface Holding { id: string; n: string; d: "up" | "down" | "mixed"; h: string; w: string; t: string; src: string[] }
 /** [move, tone, note, sector] */
 export type StockNote = [string, Tone, string, string];

@@ -4,60 +4,10 @@ import { useEffect, useState } from "react";
 import { B } from "@/data";
 import type { StockNote } from "@/data/types";
 import { fillWith, type MoodVars } from "@/lib/bands";
-import { blend, fmtPct, SHORT, type MoveFact } from "@/lib/portfolioMath";
+import { buildResultIndex, resolveName, resultFor } from "@/lib/resultDates";
 import { Chip, DirChip } from "./Chip";
-import { dateOf } from "./portfolio/Day";
 import { store } from "./portfolio/store";
-import { usePort } from "./portfolio/usePort";
 import { Src } from "./Src";
-
-/** Picked holding types from the older `ii:held2` key. `example` is true until the viewer picks their own. */
-function useHeld() {
-  const [held, setHeld] = useState<string[]>(B.defaultHold);
-  const [example, setExample] = useState(true);
-  useEffect(() => {
-    const s = store.get<string[]>("held2");
-    if (s) { setHeld(s); setExample(false); }
-  }, []);
-  return { held, example };
-}
-
-/** Markets, Overnight: the blended move of the viewer's mix once weights are saved (`ii:port3`); until then the
- *  picked types with their direction, as before (the older `ii:held2` picks, or the examples). */
-export function HoldingsToday({ moves, asOf }: { moves: MoveFact[]; asOf: string }) {
-  const { held, example } = useHeld();
-  const port = usePort();
-  const list = B.holdings.filter((h) => held.includes(h.id));
-  if (port.mode === "saved" && Object.keys(port.w).length) {
-    const b = blend(port.w, moves);
-    const srcs = b.rows.some((r) => r.contrib != null) ? ["D1", "D5"] : [];
-    return (
-      <div>
-        <p className="bw-meta">Your mix, weights you set · session of {dateOf(asOf)}</p>
-        <p className="mixline">
-          {b.move != null
-            ? <><span className={`bw-mono tone-${b.move > 0 ? "gain" : b.move < 0 ? "loss" : "plain"}`}>{b.move > 0 ? "▲ " : b.move < 0 ? "▼ " : ""}{fmtPct(b.move)}</span><Src k={srcs} /> blended one-day move, covering {Math.round(b.covered)}% of your mix{b.excluded.length > 0 && <>; {b.excluded.map((e) => SHORT[e.id]).join(", ")} n/a</>}.</>
-            : <>No type in your mix has a move for this session (<span className="bw-na">n/a</span>).</>}
-        </p>
-        <p className="bw-meta"><Link href="/portfolio/">Your mix, exposure and how it is worked out</Link> · Interpretation, not a forecast.</p>
-      </div>
-    );
-  }
-  return (
-    <div>
-      <p className="bw-meta">{example ? "Example holdings." : `${list.length} holding type${list.length === 1 ? "" : "s"} you picked`}</p>
-      {list.length ? (
-        <ul className="holdrow">
-          {list.map((h) => (
-            <li key={h.id}><Link href="/portfolio/">{h.n}</Link> <DirChip d={h.d} /></li>
-          ))}
-        </ul>
-      ) : (
-        <p className="bw-meta">No holdings picked yet. Choose them in <Link href="/portfolio/">Portfolio Lens</Link>.</p>
-      )}
-    </div>
-  );
-}
 
 /** Impact notes for the holding types in the viewer's mix, written for the day's brief, plus the wallet note
  *  (household costs, not a holding and never weighted). */
@@ -93,15 +43,9 @@ export function ImpactNotes({ ids, vars, example }: { ids: string[]; vars: MoodV
 
 
 const NAMES = Object.keys(B.stocks);
-function resolve(q: string): { hit?: string; raw?: string; sug?: string[] } {
-  const s = q.trim().toLowerCase();
-  if (!s) return {};
-  if (B.aliases[s]) return { hit: B.aliases[s] };
-  const exact = NAMES.find((n) => n.toLowerCase() === s);
-  if (exact) return { hit: exact };
-  const sug = NAMES.filter((n) => n.toLowerCase().includes(s) || Object.entries(B.aliases).some(([a, v]) => v === n && a.startsWith(s))).slice(0, 4);
-  return { raw: q.trim(), sug };
-}
+/** One resolver for the add box and the results-date join, so both read a name the same way (lib/resultDates.ts). */
+const resolve = (q: string) => resolveName(q, NAMES, B.aliases);
+const RESULTS = buildResultIndex({ briefDate: B.briefDate, names: NAMES, aliases: B.aliases, erToday: B.erToday, erTom: B.erTom, erUS: B.erUS, erDone: B.erDone });
 
 type Msg = { text: string; add?: string[]; anyway?: string; undo?: boolean } | null;
 
@@ -169,13 +113,18 @@ export function Watchlist() {
       {watch.length ? (
         <ul className="wl">
           {watch.map((n, i) => {
-            const d: StockNote | undefined = B.stocks[n];
+            // The same resolver reads the note and the date, so a stored alias spelling gets both or neither.
+            const key = resolve(n).hit ?? n;
+            const d: StockNote | undefined = B.stocks[key];
+            const rd = resultFor(RESULTS, n, NAMES, B.aliases);
+            const srcs = rd.kind === "due" ? ["W1", "W2"] : rd.kind === "reports" ? ["W4", ...(/nvidia/i.test(key) ? ["W6"] : /home depot/i.test(key) ? ["W7"] : [])] : [];
             return (
               <li key={n} className="wrow">
                 <span className="nm">{n}{examples && <> <Chip>Example</Chip></>}</span>
-                <span className="mv">{d ? <WatchMove d={d} /> : <Chip>Not in brief</Chip>}</span>
+                <span className="mv">{d ? <WatchMove d={d} /> : <Chip>{rd.kind === "none" ? "Not in brief" : "Calendar only"}</Chip>}</span>
                 <span className="note">
-                  {d ? <>{d[2]} <span className="faint">· {d[3]}</span></> : <>Not mentioned in today&apos;s brief or results calendars. Its sector is on the <Link href="/flows/">Flow Map</Link>.</>}
+                  {d ? <>{d[2]} <span className="faint">· {d[3]}</span></> : rd.kind !== "none" ? <>Named only in today&apos;s results calendars; the brief has no other note on it.</> : <>Not mentioned in today&apos;s brief or results calendars. Its sector is on the <Link href="/flows/">Flow Map</Link>.</>}
+                  <span className={`rd${rd.kind === "none" ? " none" : ""}`}>{rd.text}{srcs.length > 0 && <Src k={srcs} />}</span>
                 </span>
                 <button type="button" className="x" onClick={() => remove(i)} aria-label={`Remove ${n}`}>
                   <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>

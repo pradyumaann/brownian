@@ -13,7 +13,11 @@ const railPos = (d: number) => (d <= LINEAR_DAYS ? d : LINEAR_DAYS + (d - LINEAR
 /** The dates that can move a portfolio, on a vertical rail where position is days from the brief's date. Only rows with a
  *  firm date are plotted; the rest sit in a "No exact date" group beneath, never placed or estimated. Distances are
  *  computed from `briefDate` with UTC arithmetic, never from the build clock. */
-export function EventRail({ events, briefDate }: { events: CalendarItem[]; briefDate: string }) {
+export function EventRail({ events, briefDate, extra }: {
+  events: CalendarItem[]; briefDate: string;
+  /** Optional line under a dated event (Portfolio Lens uses it for neutral relevance chips). Absent on Macro Watch. */
+  extra?: (e: CalendarItem) => React.ReactNode;
+}) {
   const dated = events.filter((e) => e.date).map((e) => ({ e, d: daysBetween(briefDate, e.date!) }))
     .sort((a, b) => a.d - b.d);
   const undated = events.filter((e) => !e.date);
@@ -32,6 +36,7 @@ export function EventRail({ events, briefDate }: { events: CalendarItem[]; brief
         <div className="rail-b">
           <div className="t">{e.t}{e.chip && <Chip tone={e.chip[1]}>{e.chip[0]}</Chip>}</div>
           {e.d && <p className="d">{e.d}</p>}
+          {extra?.(e)}
         </div>
       </li>,
     );

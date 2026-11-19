@@ -7,7 +7,7 @@ import { join, resolve } from "node:path";
 
 const ROOT = resolve(".");
 // Files and folders scanned, plus lib/portfolio*.ts (tests excluded).
-const PATHS = ["components/portfolio.tsx", "components/portfolio", "app/portfolio"];
+const PATHS = ["components/portfolio.tsx", "components/portfolio", "components/EventRail.tsx", "components/charts/BlendLine.tsx", "app/portfolio", "lib/resultDates.ts"];
 
 const BANNED = [
   /\bbuy(?:s|ing)?\b/i, /\bsell(?:s|ing)?\b/i, /\bholds?\b/i, /\bshould\b/i, /\brecommend(?:s|ed|ing|ation|ations)?\b/i,

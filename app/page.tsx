@@ -2,7 +2,7 @@ import Link from "next/link";
 import { B } from "@/data";
 import { Chip } from "@/components/Chip";
 import { CountUp } from "@/components/CountUp";
-import { HoldingsToday } from "@/components/portfolio";
+import { FrontDay, FrontEvents } from "@/components/portfolio/FrontDay";
 import { More } from "@/components/More";
 import { Rich } from "@/components/Rich";
 import { S, Section } from "@/components/Section";
@@ -68,20 +68,16 @@ export default function MarketsOvernight() {
             </article>
           ))}
         </div>
-        <div className="pair gap-top">
-          <div>
-            <h3 className="sub">Your holdings today</h3>
-            <HoldingsToday moves={portfolioFacts().types.map((t) => ({ id: t.id, n: t.n, d1: t.d1 }))} asOf={portfolioFacts().asOf} />
-          </div>
-          <div>
-            <h3 className="sub">What drove the day</h3>
-            <ul className="list">{B.drove.slice(0, 2).map((d) => <li key={d}>{d}</li>)}</ul>
-            {B.drove.length > 2 && <More label={`${B.drove.length - 2} more`}><ul className="list list-cont">{B.drove.slice(2).map((d) => <li key={d}>{d}</li>)}</ul></More>}
-          </div>
-        </div>
+        <h3 className="sub gap-top">What drove the day</h3>
+        <ul className="list">{B.drove.slice(0, 2).map((d) => <li key={d}>{d}</li>)}</ul>
+        {B.drove.length > 2 && <More label={`${B.drove.length - 2} more`}><ul className="list list-cont">{B.drove.slice(2).map((d) => <li key={d}>{d}</li>)}</ul></More>}
       </Section>
 
-      <Section title={<>The market&apos;s <S>mood</S></>} meta={`${scored.length} of ${comps.length} components, each ranked against its own five years, ${B.session} session`} ix="02 · Wander Index">
+      <Section title={<>Your <S>day</S></>} meta="What the session did to your weights · index and market moves, not your own holdings' prices" ix="02 · Portfolio Lens">
+        <FrontDay facts={portfolioFacts()} />
+      </Section>
+
+      <Section title={<>The market&apos;s <S>mood</S></>} meta={`${scored.length} of ${comps.length} components, each ranked against its own five years, ${B.session} session`} ix="03 · Wander Index">
         <div className="two">
           <div>
             <Dial score={scoreRaw} comps={scored.map((c) => ({ name: c.name, score: c.score }))} label={`Wander Index ${score}, ${band}`} />
@@ -104,7 +100,7 @@ export default function MarketsOvernight() {
         </div>
       </Section>
 
-      <Section title={<>Where money <S>moved</S></>} meta={<>FII and DII provisional net flows, cash market<Src k={fiiSrc} /></>} ix="03 · Flow Map">
+      <Section title={<>Where money <S>moved</S></>} meta={<>FII and DII provisional net flows, cash market<Src k={fiiSrc} /></>} ix="04 · Flow Map">
         <div className="pair">
           {[B.flows.day, B.flows.mtd].map((f) => (
             <div key={f.label}>
@@ -118,7 +114,7 @@ export default function MarketsOvernight() {
         <p className="note after-plot">HDFC Sky puts November&apos;s FII buying at $6.43bn, the strongest since September 2024<Src k={["S1"]} />. <Link href="/flows/">Flow Map</Link></p>
       </Section>
 
-      <Section title={<>Sector <S>strength</S></>} meta={<>NSE sectoral indices, {B.session} · one-day change<Src k={["S1", "S2", "S3"]} /></>} ix="04 · India Markets">
+      <Section title={<>Sector <S>strength</S></>} meta={<>NSE sectoral indices, {B.session} · one-day change<Src k={["S1", "S2", "S3"]} /></>} ix="05 · India Markets">
         <div className="two">
           <Diverge phoneRows={8} rows={B.secIndia.map(([label, value, to]) => ({ label, value, to }))} label={`NSE sector changes, ${B.session}`} />
           <More label="Notes on the day" bodyClassName="note">
@@ -131,7 +127,7 @@ export default function MarketsOvernight() {
         </div>
       </Section>
 
-      <Section title={<>Global <S>cues</S></>} meta={<>S&amp;P 500 sectors and cross-asset, {B.session} close<Src k={["S11"]} /></>} ix="05 · Global Cues">
+      <Section title={<>Global <S>cues</S></>} meta={<>S&amp;P 500 sectors and cross-asset, {B.session} close<Src k={["S11"]} /></>} ix="06 · Global Cues">
         <Diverge rows={B.secUS.filter(([n]) => US_TOP_BOTTOM.includes(n)).map(([label, value]) => ({ label, value }))}
           label={`S&P 500 top and bottom three sectors, ${B.session}`} labelWidth={150} />
         <p className="bw-source after-plot">Top three and bottom three sectors; all eleven are in <Link href="/global/">Global Cues</Link></p>
@@ -142,7 +138,7 @@ export default function MarketsOvernight() {
         </div>
       </Section>
 
-      <Section title={<>Coming <S>up</S></>} meta="Next 7 days · times in IST" ix="06 · Macro Watch">
+      <Section title={<>Coming <S>up</S></>} meta="Next 7 days · times in IST" ix="07 · Macro Watch">
         <ul className="tl">
           {B.next.map((e) => (
             <li key={e.w + e.t} className={e.today ? "today" : undefined}><span className="when">{e.w}</span><div className="t">{e.t}</div></li>
@@ -150,7 +146,11 @@ export default function MarketsOvernight() {
         </ul>
       </Section>
 
-      <Section title={<>Still <S>developing</S></>} meta="Stories carried across sessions" ix="07 · Developing">
+      <Section title={<>Events for what you <S>own</S></>} meta="Dated events the brief ties to the types in your mix · IST" ix="08 · Portfolio Lens">
+        <FrontEvents />
+      </Section>
+
+      <Section title={<>Still <S>developing</S></>} meta="Stories carried across sessions" ix="09 · Developing">
         <ol className="st">
           {B.stories.slice(0, 5).map((s) => (
             <li key={s.t}>

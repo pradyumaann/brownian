@@ -1,5 +1,5 @@
 // Shapes passed from the build step (lib/portfolioFacts.ts) to the page. Compact and serialisable; types only.
-import type { FactorId, MoveFact } from "./portfolioMath";
+import type { FactorId, MoveFact, ReturnSeries } from "./portfolioMath";
 
 /** One driver of a type: a real series from the history store. `unit` "bp" is a yield change in basis points. */
 export interface DriverFact {
@@ -27,3 +27,12 @@ export interface TypeFact extends MoveFact {
   derived: string | null;
 }
 export interface PortfolioFacts { asOf: string; types: TypeFact[] }
+
+/** The year-long daily changes (lib/portfolioSeries.ts): sent to /portfolio only, never in PortfolioFacts. */
+export interface PortfolioSeries extends ReturnSeries {
+  asOf: string;
+  /** Types that have a series but a missing day inside the window, so they are left out like silver and debt. */
+  gaps: string[];
+  /** Source tags of each type in `types` (its drivers' tags). */
+  src: Record<string, string[]>;
+}

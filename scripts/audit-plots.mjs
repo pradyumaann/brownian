@@ -12,8 +12,13 @@ const ROUTES = ["/", "/portfolio/", "/wander/", "/flows/", "/india/", "/global/"
 const SEEDS = {
   mix: { port3: { v: 1, w: { index: 30, fin: 15, mid: 10, it: 10, gold: 10, silver: 5, debt: 20 } } },
   migrate: { held2: ["index", "fin", "gold", "debt"] },
+  left: { port3: { v: 1, w: { silver: 50, debt: 50 } } },
+  over: { port3: { v: 1, w: { index: 60, fin: 60, it: 30 } } },
+  noev: { port3: { v: 1, w: { gold: 50, mid: 30 } } },
+  watch: { port3: { v: 1, w: { index: 40, it: 30, consumer: 30 } }, watch2: ["Eicher Motors", "Infosys", "NVDA (Nvidia)", "Alkem Labs", "Walmart"] },
 };
-const SEEDED = [["/portfolio/", "mix"], ["/", "mix"], ["/portfolio/", "migrate"]];
+const SEEDED = [["/portfolio/", "mix"], ["/", "mix"], ["/portfolio/", "migrate"],
+  ["/portfolio/", "left"], ["/portfolio/", "over"], ["/portfolio/", "noev"], ["/portfolio/", "watch"]];
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".txt": "text/plain" };
 const server = createServer(async (req, res) => {
   let p = decodeURIComponent(new URL(req.url, "http://x").pathname);
@@ -33,7 +38,7 @@ for (const theme of ["night", "paper"]) {
     for (const [route, seed] of [...ROUTES.map((x) => [x, null]), ...SEEDED]) {
       await page.goto(base + route, { waitUntil: "networkidle" });
       if (seed) {
-        await page.evaluate((s) => { localStorage.removeItem("ii:port3"); localStorage.removeItem("ii:held2"); for (const [k, v] of Object.entries(s)) localStorage.setItem("ii:" + k, JSON.stringify(v)); }, SEEDS[seed]);
+        await page.evaluate((s) => { localStorage.removeItem("ii:port3"); localStorage.removeItem("ii:held2"); localStorage.removeItem("ii:watch2"); for (const [k, v] of Object.entries(s)) localStorage.setItem("ii:" + k, JSON.stringify(v)); }, SEEDS[seed]);
         await page.reload({ waitUntil: "networkidle" });
       }
       await page.waitForTimeout(250);
