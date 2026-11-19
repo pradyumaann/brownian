@@ -66,7 +66,7 @@ for (const theme of ["night", "paper"]) {
       // Folds (components/Fold.tsx): folded by default; the body is hidden and out of the tab order; a click opens it.
       // `/`: Money movement, Coming up, Still developing; `/portfolio/`: How it is worked out, What the news means for each type. Section order is checked too.
       if ((r === "/" || r === "/portfolio/") && !seed) {
-        const want = r === "/" ? ["money-movement", "coming-up", "still-developing"] : ["how-it-is-worked-out", "what-the-news-means", "events-for-what-you-own"];
+        const want = r === "/" ? ["money-movement", "coming-up", "still-developing"] : ["how-it-is-worked-out", "what-the-news-means", "events-for-what-you-own", "your-mix"];
         const st = await page.evaluate((ids) => ids.map((id) => {
           const f = document.getElementById(id), b = f?.querySelector(".fold-btn"), p = f?.querySelector(".fold-panel");
           return { id, found: !!f, open: b?.getAttribute("aria-expanded"), h: p ? Math.round(p.getBoundingClientRect().height) : -1, vis: p ? getComputedStyle(p).visibility : "", inert: !!f?.querySelector(".fold-inner")?.inert,

@@ -21,9 +21,10 @@ export function PortfolioLens({ facts, series, vars }: { facts: PortfolioFacts; 
   const notes = B.holdings.filter((h) => h.id !== "wallet" && ids.includes(h.id)).length;
   return (
     <>
-      <Section title={<>Your <S>mix</S></>} meta="A weight for each holding type, in 5% steps · stays on this device" ix="01">
+      <Fold id="your-mix" title={<>Your <S>mix</S></>} ix="01"
+        summary="A weight for each holding type, in 5% steps · stays on this device. The weights are inside.">
         <Mix port={port} facts={facts.types} />
-      </Section>
+      </Fold>
 
       <Section title={<>Your <S>day</S></>} meta="What the session did to your weights · index and market moves, not your own holdings' prices" ix="02">
         <Day w={port.w} facts={facts.types} asOf={facts.asOf} mode={port.mode} />

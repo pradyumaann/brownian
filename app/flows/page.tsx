@@ -11,6 +11,7 @@ import { FlowLines } from "@/components/charts/FlowLines";
 import { MiniBars } from "@/components/charts/Mini";
 import { MoneyFlow } from "@/components/charts/MoneyFlow";
 import { Terrain } from "@/components/charts/Terrain";
+import { Fold } from "@/components/Fold";
 import { More } from "@/components/More";
 import { strandShape, terrainShape } from "@/lib/sectorFlows";
 import { crore, pct } from "@/lib/format";
@@ -131,7 +132,9 @@ export default function Flows() {
         </div>
       </Section>
 
-      <Section title={<>Where money came from, and <S>went</S></>} meta={<>Rotation map · {B.session}<Src k={["S3", "S11", "S12"]} /></>} ix="07">
+      <Fold id="rotation" title={<>Where money came from, and <S>went</S></>} ix="07"
+        summary={`${B.rotation.length} lanes of money moving out of and into assets, by relative performance on the day`}>
+        <p className="bw-meta">Rotation map · {B.session}<Src k={["S3", "S11", "S12"]} /></p>
         <div className="rot">
           {B.rotation.map((r) => (
             <div key={r.lane} className="rrow">
@@ -143,9 +146,10 @@ export default function Flows() {
           ))}
         </div>
         <p className="bw-meta">Out of (▼) and into (▲) by relative performance on the day, not traced money.</p>
-      </Section>
+      </Fold>
 
-      <Section title={<>Sector moves, India and the <S>US</S></>} meta="NSE sectoral indices and S&P 500 sectors, one-day change" ix="08">
+      <Fold id="sector-moves" title={<>Sector moves, India and the <S>US</S></>} ix="08"
+        summary="NSE sectoral indices and S&P 500 sectors, one-day change">
         <div className="pair">
           <div>
             <p className="cap">India<Src k={["S1", "S2", "S3"]} /></p>
@@ -156,12 +160,13 @@ export default function Flows() {
             <Diverge phoneRows={6} rows={B.secUS.map(([label, value]) => ({ label, value }))} label={`S&P 500 sector changes, ${B.session}`} />
           </div>
         </div>
-      </Section>
+      </Fold>
 
-      <Section title={<>Trend, pause or <S>spike</S>?</>} meta="Trend context for the day's biggest sector moves" ix="09">
+      <Fold id="trend-pause-spike" title={<>Trend, pause or <S>spike</S>?</>} ix="09"
+        summary={`${B.trend.length} sectors: trend context for the day's biggest sector moves`}>
         <DataTable stack head={[["Sector"], ["Thu", "r"], ["Context"], ["Read"], ["What it means"]]}
           rows={B.trend.map((r) => [<b key="s">{r[0]}</b>, <Change key="c" v={r[1]} />, r[2], <Chip key="ch" tone={r[4]}>{r[3]}</Chip>, r[5]])} />
-      </Section>
+      </Fold>
     </>
   );
 }

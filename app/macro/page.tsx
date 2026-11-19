@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { B } from "@/data";
 import { Chip } from "@/components/Chip";
+import { Fold } from "@/components/Fold";
 import { EventRail } from "@/components/EventRail";
 import { DataTable } from "@/components/DataTable";
 import { S, Section, ViewHead } from "@/components/Section";
@@ -67,21 +68,24 @@ export default function Macro() {
         </ul>
         <p className="bw-meta">The dollar index and gold are also in the brief&apos;s cross-asset list<Src k={["S11"]} />. This ranking is context only: it does not change the Macro pressure score, which is worked out from the seven indicators in the brief (the dollar index is one of them; gold is not). Interpretation, not a forecast.</p>
         <p className="bw-meta after-plot">Yahoo Finance and NSDL closes, {dmy(field.from)} to {dmy(field.to)}; levels are ranked among the window&apos;s daily closes, flows among its weeks or months, and a week or month still open is marked to date. They can differ from the brief&apos;s provisional figures in the table below (USD/INR {fxBrief?.[2]} in the brief<Src k={fxBrief?.[8] ? [fxBrief[8]] : []} />; Dollar index {dxyBrief?.[1]} in the brief<Src k={["S11"]} />).</p>
-
-        <h3 className="sub rb-head">Releases: latest against forecast and the previous print<Src k={["W8", "W11", "W13", "W15", "S11"]} /></h3>
-        <ReleaseMetrics rows={B.releases} />
-        <p className="bw-meta after-plot">The words for India are the brief&apos;s reading: Interpretation, not a forecast.</p>
-
-        <More label="All 13 indicators, with what's next" className="ind-more">
-          <DataTable stack head={[["Indicator"], ["Latest", "r"], ["Previous"], ["Detail"], ["Next"], ["How to read it"], ["Region"]]}
-            rows={B.indicators.map((r) => [
-              <b key="n">{indName(r[1])}<Src k={r[8] ? [r[8]] : []} /></b>,
-              na(r[2]), na(r[3]), na(r[4]), na(r[5]), r[6], <Chip key="r">{r[0]}</Chip>,
-            ])} />
-        </More>
       </Section>
 
-      <Section title={<>Dates that can move your <S>portfolio</S></>} meta="Calendar · IST · ● today" ix="02">
+      <Fold id="releases" title={<>Releases: latest against forecast and the <S>previous print</S></>} ix="02"
+        summary={`${B.releases.length} releases, each against its forecast and the previous print, with the brief's reading`}>
+        <p className="bw-meta">Sources<Src k={["W8", "W11", "W13", "W15", "S11"]} /></p>
+          <ReleaseMetrics rows={B.releases} />
+          <p className="bw-meta after-plot">The words for India are the brief&apos;s reading: Interpretation, not a forecast.</p>
+
+          <More label="All 13 indicators, with what's next" className="ind-more">
+            <DataTable stack head={[["Indicator"], ["Latest", "r"], ["Previous"], ["Detail"], ["Next"], ["How to read it"], ["Region"]]}
+              rows={B.indicators.map((r) => [
+                <b key="n">{indName(r[1])}<Src k={r[8] ? [r[8]] : []} /></b>,
+                na(r[2]), na(r[3]), na(r[4]), na(r[5]), r[6], <Chip key="r">{r[0]}</Chip>,
+              ])} />
+          </More>
+      </Fold>
+
+      <Section title={<>Dates that can move your <S>portfolio</S></>} meta="Calendar · IST · ● today" ix="03">
         <EventRail events={B.events} briefDate={B.briefDate} />
         <p className="bw-meta">Dates from the brief and web calendars<Src k={["W1", "W13", "W15", "W16", "W17", "W19"]} />.</p>
       </Section>
