@@ -85,10 +85,11 @@ export default function Macro() {
           </More>
       </Fold>
 
-      <Section title={<>Dates that can move your <S>portfolio</S></>} meta="Calendar · IST · ● today" ix="03">
+      <Fold id="dates" title={<>Dates that can move your <S>portfolio</S></>} ix="03"
+        summary={`${B.events.length} dated events from the brief and web calendars · IST`}>
         <EventRail events={B.events} briefDate={B.briefDate} />
         <p className="bw-meta">Dates from the brief and web calendars<Src k={["W1", "W13", "W15", "W16", "W17", "W19"]} />.</p>
-      </Section>
+      </Fold>
     </>
   );
 }
