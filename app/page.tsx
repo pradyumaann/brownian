@@ -68,7 +68,20 @@ export default function MarketsOvernight() {
         <SessionMove types={types} asOf={facts.asOf} />
       </Section>
 
-      <Section title={<>The market&apos;s <S>mood</S></>} meta={`${scored.length} of ${comps.length} components, each ranked against its own five years, ${B.session} session`} ix="02 · Wander Index">
+      <Section title={<>What happened, and why it <S>matters</S></>} meta={`${B.session} session and overnight, in plain English`} ix="02 · Markets, Overnight">
+        <div className="takes">
+          {B.takeaways.map((t) => (
+            <article key={t.h} className="take">
+              <Chip tone={t.chip[1]}>{t.chip[0]}</Chip>
+              <h3>{t.h}</h3>
+              <More label="The detail" className="take-more"><p><Rich r={t.p} /><Src k={t.src} /></p></More>
+              <p className="why">{t.why}</p>
+            </article>
+          ))}
+        </div>
+      </Section>
+
+      <Section title={<>The market&apos;s <S>mood</S></>} meta={`${scored.length} of ${comps.length} components, each ranked against its own five years, ${B.session} session`} ix="03 · Wander Index">
         <div className="two">
           <div>
             <Dial score={scoreRaw} comps={scored.map((c) => ({ name: c.name, score: c.score }))} label={`Wander Index ${score}, ${band}`} />
@@ -91,23 +104,12 @@ export default function MarketsOvernight() {
         </div>
       </Section>
 
-      <Section title={<>What happened, and why it <S>matters</S></>} meta={`${B.session} session and overnight, in plain English`} ix="03 · Markets, Overnight">
-        <div className="takes">
-          {B.takeaways.map((t) => (
-            <article key={t.h} className="take">
-              <Chip tone={t.chip[1]}>{t.chip[0]}</Chip>
-              <h3>{t.h}</h3>
-              <More label="The detail" className="take-more"><p><Rich r={t.p} /><Src k={t.src} /></p></More>
-              <p className="why">{t.why}</p>
-            </article>
-          ))}
-        </div>
-        <h3 className="sub gap-top">What drove the day</h3>
+      <Section title={<>What drove the <S>day</S></>} meta={`${B.session} session and overnight`} ix="04 · Markets, Overnight">
         <ul className="list">{B.drove.slice(0, 2).map((d) => <li key={d}>{d}</li>)}</ul>
         {B.drove.length > 2 && <More label={`${B.drove.length - 2} more`}><ul className="list list-cont">{B.drove.slice(2).map((d) => <li key={d}>{d}</li>)}</ul></More>}
       </Section>
 
-      <Fold id="money-movement" title={<>Money <S>movement</S></>} ix="04 · Flow Map, India, Global"
+      <Fold id="money-movement" title={<>Money <S>movement</S></>} ix="05 · Flow Map, India, Global"
         summary={`Flows, ${B.secIndia.length} NSE sectors and US sectors, ${B.session} session`}>
         <FoldPart id="flow-map" title={<>Where money <S>moved</S></>} ix="Flow Map" meta={<>FII and DII provisional net flows, cash market<Src k={fiiSrc} /></>}>
           <div className="pair">
@@ -148,7 +150,7 @@ export default function MarketsOvernight() {
         </FoldPart>
       </Fold>
 
-      <Fold id="coming-up" title={<>Coming <S>up</S></>} ix="05 · Macro Watch"
+      <Fold id="coming-up" title={<>Coming <S>up</S></>} ix="06 · Macro Watch"
         summary={`${B.next.length} ${B.next.length === 1 ? "event" : "events"} in the next 7 days · times in IST`}>
         <ul className="tl">
           {B.next.map((e) => (
@@ -157,7 +159,7 @@ export default function MarketsOvernight() {
         </ul>
       </Fold>
 
-      <Fold id="still-developing" title={<>Still <S>developing</S></>} ix="06 · Developing"
+      <Fold id="still-developing" title={<>Still <S>developing</S></>} ix="07 · Developing"
         summary={`${shown.length} ${shown.length === 1 ? "story" : "stories"} carried across sessions${newStories ? `, ${newStories} new` : ""}`}>
         <ol className="st">
           {shown.map((s) => (

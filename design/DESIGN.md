@@ -67,7 +67,7 @@ Bars start at zero. Log axes say "log". At most 3 annotations per figure, on lea
 2. A `.t-display-l` title with a 2–3 sentence tagged lede.
 3. Hero row: five KPIs divided by hairlines (19 Nov 2026): GIFT Nifty, Wander Index and Macro pressure (two separate cells, each with its own label, number, segmented meter and caption), FII, USD/INR. Five columns on wide screens; on phones GIFT Nifty takes the first row and the rest sit in pairs.
 4. 01 Blended session move (Portfolio Lens card, pattern below), ending in the page's one primary button.
-5. 02 The market's mood (Wander Index: dial + component table + "Interpretation, not a forecast."), before What happened. Never folded.
+5. 03 The market's mood (Wander Index: dial + component table + "Interpretation, not a forecast."), after What happened (02) and before What drove the day (04). Never folded.
 6. 03 What happened, and why it matters.
 7. 04 Money movement: one fold holding Where money moved (Flow Map), Sector strength (India Markets) and Global cues, each a sub-heading with its own context line and tags. Closed on every screen size.
 8. 05 Coming up (Macro Watch, every row): a fold with a count.

@@ -86,7 +86,7 @@ for (const theme of ["night", "paper"]) {
         }
         const order = await page.evaluate(() => [...document.querySelectorAll("main h2")].map((h) => h.textContent.trim()));
         const before = (a, b) => order.findIndex((t) => t.startsWith(a)) < order.findIndex((t) => t.startsWith(b)) && order.findIndex((t) => t.startsWith(a)) >= 0;
-        if (r === "/" && !before("The market", "What happened")) errors.push("order: The market's mood must come before What happened");
+        if (r === "/" && !(before("What happened", "The market") && before("The market", "What drove"))) errors.push("order: What happened, then the market mood, then What drove the day");
         if (r === "/" && !(order.findIndex((t) => t.startsWith("What happened")) < order.findIndex((t) => t.startsWith("Money")))) errors.push("order: Money movement must come after What happened");
         if (r === "/portfolio/" && !before("What you", "Is my stock")) errors.push("order: What you're exposed to must come before Is my stock in the news?");
         if (r === "/") {
