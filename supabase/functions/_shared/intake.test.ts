@@ -39,9 +39,23 @@ const post = (body: unknown, o: { key?: string; query?: string; method?: string 
   });
 const good = () => structuredClone(brief) as unknown as Record<string, any>;
 
-test("only POST is accepted", async () => {
+test("other methods are refused", async () => {
   const w = fakeWorld();
-  assert.equal((await handleIntake(post({}, { method: "GET" }), env(), w.fetchFn)).status, 405);
+  assert.equal((await handleIntake(post({}, { method: "PUT" }), env(), w.fetchFn)).status, 405);
+});
+
+test("GET without the key is refused, and with it serves the guide", async () => {
+  const w = fakeWorld();
+  const anon = new Request("https://fn.example/intake", { method: "GET" });
+  assert.equal((await handleIntake(anon, env(), w.fetchFn)).status, 401);
+  const res = await handleIntake(post({}, { method: "GET" }), env(), w.fetchFn);
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get("content-type")!, /text\/plain/);
+  const text = await res.text();
+  assert.match(text, /Hard rules/);
+  assert.match(text, /export interface Brief/);
+  assert.equal(w.rows.size, 0);
+  assert.ok(!text.includes(KEY));
 });
 
 test("a missing or wrong key is refused and nothing is stored", async () => {

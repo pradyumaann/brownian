@@ -14,6 +14,7 @@
 
 import { MAX_BYTES, validateBrief, type Report } from "./validate.ts";
 import { mergeDaily } from "./merge.ts";
+import { SPEC } from "./spec.ts";
 
 export interface Env {
   INTAKE_KEY: string;
@@ -45,12 +46,15 @@ async function upstream(res: Response) {
 const slim = (r: Report) => ({ errors: r.errors, warnings: r.warnings });
 
 export async function handleIntake(req: Request, env: Env, fetchFn: FetchFn = fetch): Promise<Response> {
-  if (req.method !== "POST") return json(405, { ok: false, error: "Use POST." });
   if (!env.INTAKE_KEY || !env.SUPABASE_URL || !env.SERVICE_KEY) return json(500, { ok: false, error: "The endpoint is not configured." });
 
   const auth = req.headers.get("authorization") ?? "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   if (!token || !safeEqual(token, env.INTAKE_KEY)) return json(401, { ok: false, error: "Unauthorised." });
+
+  // GET (with the key) serves the guide the routine follows: rules, shape, glossary ids and an example.
+  if (req.method === "GET") return new Response(SPEC, { status: 200, headers: { "content-type": "text/plain; charset=utf-8" } });
+  if (req.method !== "POST") return json(405, { ok: false, error: "Use POST to send a record, GET to read the guide." });
 
   const text = await req.text();
   if (text.length > MAX_BYTES * 2) return json(413, { ok: false, error: "Record is too large." });

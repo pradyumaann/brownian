@@ -9,7 +9,7 @@
     "check": "npm run lint:copy && node scripts/check.mjs",
     "lint:copy": "node scripts/lint-copy.mjs",
     "test:portfolio": "node --test lib/portfolioMath.test.ts lib/resultDates.test.ts",
-    "test:backend": "node --test supabase/functions/_shared/validate.test.ts supabase/functions/_shared/intake.test.ts supabase/functions/_shared/merge.test.ts",
+    "test:backend": "node scripts/make-spec.mjs --check && node --test supabase/functions/_shared/validate.test.ts supabase/functions/_shared/intake.test.ts supabase/functions/_shared/merge.test.ts",
     "check:plots": "node scripts/audit-plots.mjs",
     "history": "node scripts/history/update.mjs",
     "history:verify": "node scripts/history/verify.mjs",

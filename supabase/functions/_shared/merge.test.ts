@@ -121,3 +121,12 @@ test("through the endpoint: a daily record is stored merged and published", asyn
   assert.deepEqual(stored.payload, JSON.parse(JSON.stringify(brief)));
   assert.equal(stored.status, "published");
 });
+
+test("the guide names every glossary id and every holding type, and its example is the daily shape", async () => {
+  const { SPEC } = await import("./spec.ts");
+  for (const id of Object.keys(TEMPLATE.gloss)) assert.ok(SPEC.includes("`" + id + "`"), "glossary id " + id);
+  for (const t of TEMPLATE.holdingTypes) assert.ok(SPEC.includes("`" + t.id + "`"), "holding id " + t.id);
+  const example = JSON.parse(SPEC.split("```json\n")[1].split("\n```")[0]);
+  assert.ok(example.glossToday && example.holdings.every((h: any) => !("n" in h)));
+  for (const k of ["gloss", "aliases", "method", "defaultHold", "defaultWatch"]) assert.ok(!(k in example), k + " must not be in the example");
+});
