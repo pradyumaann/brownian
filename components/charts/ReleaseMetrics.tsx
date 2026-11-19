@@ -13,7 +13,7 @@ const NA = <span className="bw-na">n/a</span>;
 export function ReleaseMetrics({ rows }: { rows: Release[] }) {
   return (
     <DataTable stack label="Releases: latest against forecast and the previous print"
-      head={[["Release"], ["Latest", "r"], ["Forecast", "r"], ["Previous", "r"], ["Gap vs forecast", "r"], ["Due or note"], ["Reading"]]}
+      head={[["Release"], ["Latest", "r"], ["Forecast", "r"], ["Previous", "r"], ["Versus forecast", "r"], ["Status"], ["Reading"]]}
       rows={rows.map((r) => {
         const due = r.latest == null ? (r.due ? `Due ${r.due}` : r.note ?? "") : "";
         const prev = r.priorLabel === "previous" ? "Previous" : r.priorLabel;

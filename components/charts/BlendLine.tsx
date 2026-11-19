@@ -88,7 +88,7 @@ export function BlendLine({ dates, mix, nifty, name }: {
   return (
     <div className="bw-plot" ref={ref}>
       <div className="tl-key" aria-hidden="true">
-        <span><i className="bl-key-up" /><i className="bl-key-dn" />{name} · above or below 100</span>
+        <span><i className="bl-key-up" /><i className="bl-key-dn" />{name} · starts at 100</span>
         <span><i className="bl-key-tick" />Daily change</span>
         {nifty && <span><i className="tl-key-over" />Nifty 50</span>}
       </div>

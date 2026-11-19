@@ -31,7 +31,7 @@ const NOTE: Record<Mode, string> = {
   example: "Weights you set stay on this device.",
   migrated: "Carried over from your earlier picks as equal weights. Change any weight to save it on this device.",
   saved: "Saved on this device only. Nothing is sent anywhere.",
-  none: "You own nothing yet, as set on this device. No example mix and no figures are shown; setting a weight saves it and ends this.",
+  none: "You own nothing yet, as set on this device. No example mix and no figures are shown. Setting a weight saves your mix.",
 };
 
 /** Your mix: a weight per holding type in 5% steps, the total and what is left Unallocated. */

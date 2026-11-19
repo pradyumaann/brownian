@@ -29,12 +29,12 @@ export default function India() {
         <div>
           <h3 className="sub">All sectors<Src k={["S1", "S2", "S3"]} /></h3>
           <Diverge phoneRows={8} rows={B.secIndia.map(([label, value, to]) => ({ label, value, to }))} label={`NSE sectoral indices, % change, ${B.session}`} />
-          <p className="bw-meta">Faint extension: sources give a range. {B.secIndiaNa.join(" and ")}: n/a.</p>
+          <p className="bw-meta">Where sources disagree, the bar shows a range.{B.secIndiaNa.length > 0 && <> {B.secIndiaNa.join(" and ")}: n/a.</>}</p>
         </div>
       </div>
 
-      <Section title={<>Why each sector <S>moved</S></>} meta="Leaders and laggards, with the catalyst where the sources give one" ix="01">
-        <DataTable stack head={[["Sector"], ["Thu", "r"], ["Why"], ["View"]]}
+      <Section title={<>Why each sector <S>moved</S></>} meta="Leaders and laggards, with the catalyst where one was reported" ix="01">
+        <DataTable stack head={[["Sector"], ["Change", "r"], ["Why"], ["View"]]}
           rows={B.secan.map((r) => [<b key="s">{r[0]}</b>, <Change key="c" v={r[1]} />, r[2], r[3]])} />
       </Section>
 
@@ -44,20 +44,18 @@ export default function India() {
             m[4] ? <Chip key="t" tone="info">News</Chip> : m[2] === "mixed" ? <Chip key="t" tone="mixed">Unverified</Chip> : <Chip key="t">No clear catalyst</Chip>])} />
       </Section>
 
-      <Section title={<>Commodities and the <S>rupee</S></>} meta="MCX intraday 18:35 IST unless noted · INR forex, provisional close" ix="03">
+      <Section title={<>Commodities and the <S>rupee</S></>} meta="MCX prices as noted in each row · INR forex, provisional close" ix="03">
         <div className="pair">
           <div>
             <h3 className="sub">MCX<Src k={["S9", "S19"]} /></h3>
             <DataTable stack head={[["Contract"], ["Level", "r"], ["Change", "r"], ["Note"]]}
               rows={B.mcx.map((r) => [r[0], r[1], <Change key="c" v={r[2]} />, r[3]])} />
-            <p className="bw-meta">Not available today: natural gas, copper, Nifty BeES, Bank BeES, gold and silver ETFs.</p>
-            <p className="note after-plot">Bullion driver: the dollar hit a 19-month high and December Fed hike bets firmed after hot US CPI. COMEX gold then fell 2.88% overnight, so MCX bullion is likely to open lower<Src k={["S10", "S11"]} />.</p>
           </div>
           <div>
             <h3 className="sub">The rupee<Src k={["S6", "S11"]} /></h3>
             <DataTable stack head={[["Pair"], ["Level", "r"], ["Change", "r"], ["Note"]]}
               rows={B.fx.map((r) => [r[0], r[1], <Change key="c" v={r[2]} />, r[3]])} />
-            <p className="bw-meta">USD/INR up means a weaker rupee. Not available today: EUR/INR, GBP/INR, JPY/INR, CNY/INR.</p>
+            <p className="bw-meta">USD/INR up means a weaker rupee.</p>
             <ul className="list after-plot">{B.fxDrivers.map((d) => <li key={d}>{d}</li>)}</ul>
           </div>
         </div>

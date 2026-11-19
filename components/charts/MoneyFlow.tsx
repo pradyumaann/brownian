@@ -128,7 +128,7 @@ export function MoneyFlow({ sold, bought, net, month, label }: { sold: FlowItem[
       </div>
       <p className="mf-key">
         <span><i className="mf-key-bar" aria-hidden="true" />Left: sectors net sold, height is the amount</span>
-        <span><i className="mf-key-band" aria-hidden="true" />Bands: how much each sector net bought, thickness is the amount (not which sold sector paid for it)</span>
+        <span><i className="mf-key-band" aria-hidden="true" />Bands show how much was net bought in each sector, not which sold sector funded it</span>
       </p>
     </div>
   );

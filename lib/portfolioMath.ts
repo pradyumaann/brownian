@@ -171,7 +171,7 @@ export function concentration(w: Weights): Concentration {
   const eqTxt = Math.abs(eq - Math.round(eq)) < 0.05 ? String(Math.round(eq)) : eq.toFixed(1);
   const words = items.length === 1
     ? "All of the allocated weight sits in one type (Herfindahl 1.00)."
-    : `Herfindahl ${hhi.toFixed(2)}: the same spread as ${eqTxt} equal-sized type${eqTxt === "1" ? "" : "s"} (it runs from ${(1 / HOLDING_IDS.length).toFixed(2)} for all ${HOLDING_IDS.length} types equal to 1.00 for one type).`;
+    : `Herfindahl ${hhi.toFixed(2)}: the same spread as ${eqTxt} equal-sized type${eqTxt === "1" ? "" : "s"} (from ${(1 / HOLDING_IDS.length).toFixed(2)} when all ${HOLDING_IDS.length} types are equal to 1.00 when everything is in one type).`;
   return {
     count: items.length, largest: { id: items[0].id, share: items[0].s * 100 },
     topTwo: items.length > 1 ? (items[0].s + items[1].s) * 100 : 100, hhi, equivalent: eq, words,

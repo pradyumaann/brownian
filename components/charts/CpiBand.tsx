@@ -8,14 +8,14 @@ export function CpiBand({ sep, oct, food }: { sep: number; oct: number; food: nu
   const x = (v: number) => l + (v / 10) * (W - l - r);
   // [value, label, mark class, label above?, readout name]
   const marks: [number, string, string, boolean, string][] = [
-    [sep, `Sep ${sep}%`, "bw-comp", false, "September CPI"],
-    [oct, `Oct ${oct}%`, "bw-now", true, "October CPI"],
-    [food, `Food ${food}%`, "bw-comp", true, "October food inflation"],
+    [sep, `Prior ${sep}%`, "bw-comp", false, "Previous CPI"],
+    [oct, `Now ${oct}%`, "bw-now", true, "Latest CPI"],
+    [food, `Food ${food}%`, "bw-comp", true, "Latest food inflation"],
   ];
   return (
     <div className="bw-plot" ref={ref}>
       <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img"
-        aria-label={`India CPI: September ${sep}%, October ${oct}%, food ${food}%, against the RBI band of 2 to 6% and its 4% target`}>
+        aria-label={`India CPI: previous ${sep}%, latest ${oct}%, food ${food}%, against the RBI band of 2 to 6% and its 4% target`}>
         <rect x={x(2)} y={y0 - 20} width={x(6) - x(2)} height={40} className="cpi-band" />
         <text x={(x(2) + x(6)) / 2} y={y0 - 28} textAnchor="middle" className="bw-tick">RBI tolerance band 2–6%</text>
         <line x1={x(6)} x2={x(6)} y1={y0 - 20} y2={y0 + 20} className="bw-tickline is-edge" />

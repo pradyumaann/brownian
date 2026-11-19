@@ -45,18 +45,18 @@ export function EventRail({ events, briefDate, extra }: {
         <li key={`break-${i}`} className="rail-n is-break" style={{ "--gap": "18px", "--i": i } as React.CSSProperties}>
           <span className="rail-t bw-mono" />
           <i className="rail-dot" aria-hidden="true" />
-          <div className="rail-b"><span className="rail-brk">Scale compressed after {LINEAR_DAYS} days</span></div>
+          <div className="rail-b"><span className="rail-brk">Spacing is compressed beyond {LINEAR_DAYS} days</span></div>
         </li>,
       );
     }
   });
   return (
     <>
-      <Rail className="rail-ev" label="Dated events, in order, as days from the brief">{items}</Rail>
+      <Rail className="rail-ev" label="Dated events in order, by days from today">{items}</Rail>
       {undated.length > 0 && (
         <div className="rail-undated">
           <h3 className="sub">No exact date</h3>
-          <p className="bw-meta">Sources give no firm day, so these are not placed on the line.</p>
+          <p className="bw-meta">No firm date has been announced, so these are not placed on the timeline.</p>
           <ul className="tl">
             {undated.map((e) => (
               <li key={e.w + e.t}>

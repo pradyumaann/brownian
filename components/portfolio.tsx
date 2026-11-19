@@ -31,7 +31,7 @@ export function ImpactNotes({ ids, vars, mode }: { ids: string[]; vars: MoodVars
     <>
       {example && <p className="bw-meta"><Chip>Example</Chip> These notes are for the example mix.</p>}
       {mode === "none" ? (
-        <NoneNote line="For a mix, this section gives the brief's notes on what happened to each of its holding types and what to watch. Nothing is owned, so only the household-costs note follows." />
+        <NoneNote line="For a mix, this section gives notes on what happened to each of its holding types and what to watch. Nothing is owned, so only the household-costs note follows." />
       ) : list.length ? <div className="impact">{list.map(note)}</div> : (
         <p className="empty">Give a holding type a weight above to see how today&apos;s news affects it.</p>
       )}
@@ -41,7 +41,7 @@ export function ImpactNotes({ ids, vars, mode }: { ids: string[]; vars: MoodVars
           <div className="impact">{note(wallet)}</div>
         </>
       )}
-      <p className="bw-disclaimer">Interpretation of today&apos;s brief, not a forecast and not advice.</p>
+      <p className="bw-disclaimer">Interpretation of today&apos;s news, not a forecast and not advice.</p>
     </>
   );
 }
@@ -94,7 +94,7 @@ export function Watchlist() {
     if (!r.raw) return setMsg({ text: "Type a stock name or ticker first." });
     setMsg(r.sug?.length
       ? { text: `No exact match for “${r.raw}”. Did you mean`, add: r.sug, anyway: r.raw }
-      : { text: `“${r.raw}” isn't in today's brief or results calendars.`, anyway: r.raw });
+      : { text: `“${r.raw}” isn't in today's news or results calendars.`, anyway: r.raw });
   };
 
   return (
@@ -126,9 +126,9 @@ export function Watchlist() {
             return (
               <li key={n} className="wrow">
                 <span className="nm">{n}{examples && <> <Chip>Example</Chip></>}</span>
-                <span className="mv">{d ? <WatchMove d={d} /> : <Chip>{rd.kind === "none" ? "Not in brief" : "Calendar only"}</Chip>}</span>
+                <span className="mv">{d ? <WatchMove d={d} /> : <Chip>{rd.kind === "none" ? "Not in news" : "Calendar only"}</Chip>}</span>
                 <span className="note">
-                  {d ? <>{d[2]} <span className="faint">· {d[3]}</span></> : rd.kind !== "none" ? <>Named only in today&apos;s results calendars; the brief has no other note on it.</> : <>Not mentioned in today&apos;s brief or results calendars. Its sector is on the <Link href="/flows/">Money Moves</Link>.</>}
+                  {d ? <>{d[2]} <span className="faint">· {d[3]}</span></> : rd.kind !== "none" ? <>Appears only in this week&apos;s results calendars; there is no other news on it today.</> : <>Not in today&apos;s news or results calendars. Its sector is on the <Link href="/flows/">Money Moves</Link>.</>}
                   <span className={`rd${rd.kind === "none" ? " none" : ""}`}>{rd.text}{srcs.length > 0 && <Src k={srcs} />}</span>
                 </span>
                 <button type="button" className="x" onClick={() => remove(i)} aria-label={`Remove ${n}`}>

@@ -34,7 +34,7 @@ export default function Global() {
             <DataTable stack head={[["Measure"], ["Level", "r"], ["Change", "r"], ["For India"]]}
               rows={B.macro.map(([m, v, d, head]) => [macroName(m), v, <Change key="c" v={d} />, head ? <Chip key="h" tone="loss">Headwind</Chip> : <span key="h" className="faint">n/a</span>])} />
           </div>
-          <p className="note"><b>View: modest risk-off.</b> {B.macroView}</p>
+          <p className="note"><b>Our read:</b> {B.macroView}</p>
         </div>
       </Section>
 
@@ -53,12 +53,10 @@ export default function Global() {
             <h3 className="sub">After hours<Src k={["S11", "S12"]} /></h3>
             <DataTable stack head={[["Ticker"], ["After hours", "r"], ["Reason"]]}
               rows={B.usah.map((r) => [<b key="t">{r[0]}</b>, <Change key="c" v={r[1]} tone={r[2]} />, r[3]])} />
-            <p className="bw-meta">No mega-cap after-hours move above ±1.5% was reported.</p>
           </div>
           <div>
-            <h3 className="sub">Nvidia leadership change<Src k={["S11", "S12"]} /></h3>
+            <h3 className="sub">Story of the day<Src k={["S11", "S12"]} /></h3>
             <ul className="list">{B.nvidia.map((n) => <li key={n}>{n}</li>)}</ul>
-            <p className="note after-plot"><b>India angle:</b> the rotation away from AI megacaps has so far helped “old-economy” markets like India.</p>
           </div>
         </div>
       </Section>
