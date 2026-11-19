@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export const GROUPS: [string, string][][] = [
-  [["/", "Markets, Overnight"], ["/portfolio/", "Portfolio Lens"], ["/wander/", "Wander Index"], ["/flows/", "Flow Map"], ["/macro/", "Macro Watch"]],
+  [["/", "Markets, Overnight"], ["/portfolio/", "Portfolio Lens"], ["/wander/", "Wander Index"], ["/flows/", "Money Moves"], ["/macro/", "Macro Watch"]],
   [["/india/", "India Markets"], ["/global/", "Global Cues"]],
   [["/earnings/", "Earnings Radar"], ["/developing/", "Developing"], ["/learn/", "Jargon Buster"]],
 ];

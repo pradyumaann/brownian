@@ -592,43 +592,40 @@ ul.list.list-cont { border-top: 0; }
   .bw-table.st tr { gap: 2px var(--space-3); }
 }
 
-/* ---- Where foreign money went (components/charts/Strands.tsx): a woven flow map. Hundreds of hairlines, each a
-   fixed ₹ amount, fall from the sectors sold to the sectors bought. On Night they screen onto the black page so
-   their overlaps glow; on Paper they are dark and multiply into the light page, with the same structure. -------- */
-.fm { padding: var(--space-2) 0; }
-.fm svg { touch-action: manipulation; }
-.fm-thread { fill: none; stroke: currentColor; stroke-width: .5px; opacity: .3; mix-blend-mode: screen; }
-.fm-threads { filter: drop-shadow(0 0 1.5px color-mix(in srgb, var(--flow-s3) 30%, transparent)); }
-.fm-pair, .fm-src, .fm-dst, .fm-sq { transition: opacity .2s ease; outline: none; }
-.fm-bar { fill: currentColor; }
-.fm-sq { fill: currentColor; }
-.fm-leader { fill: none; stroke: var(--plot-muted); stroke-width: var(--stroke-hair); }
-.fm-slab { font-size: 11px; }
-.fm-sval { font: 400 10px var(--font-mono); fill: var(--plot-muted); }
-.fm-dlab { font-size: 12px; }
-.fm .has-focus .fm-pair { opacity: .05; }
-.fm .has-focus .fm-pair.is-focus { opacity: 1; }
-.fm .has-focus .fm-pair.is-focus .fm-thread { opacity: .7; }
-.fm .has-focus .fm-src:not(.is-focus), .fm .has-focus .fm-dst:not(.is-focus) { opacity: .35; }
-.fm .has-focus .fm-sq:not(.is-focus) { opacity: .3; }
-.fm-src:focus-visible .fm-bar, .fm-dst:focus-visible .fm-dlab { outline: none; stroke: var(--focus); stroke-width: 1.5px; }
-.fm-dst:focus-visible .fm-dlab { stroke: none; fill: var(--plot-dawn); }
-.fm-key { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-6); margin-top: var(--space-3); font: 400 11px/1.5 var(--font-mono); color: var(--ink-muted); }
-.fm-key span { display: inline-flex; align-items: center; gap: var(--space-2); }
-.fm-key i { display: inline-block; flex: none; background: var(--flow-s3); }
-.fm-key-line { width: 22px; height: 1px; }
-.fm-key-bar { width: 14px; height: 6px; }
-.fm-key-sq { width: 7px; height: 7px; }
-:root[data-theme="paper"] .fm-thread { mix-blend-mode: multiply; opacity: .4; }
-:root[data-theme="paper"] .fm-threads { filter: none; }
+
+/* ---- Where foreign money went (components/charts/MoneyFlow.tsx): a simple horizontal flow. One bar of the sectors sold
+   on the left, a band to each sector bought on the right, thickness the amount. Night: lit bands with a soft glow.
+   Paper: flat, muted fills with no glow. Colours are tokens only. -------------------------------------------------- */
+.mf { padding: var(--space-2) 0; }
+.mf svg { display: block; touch-action: manipulation; }
+.mf-band { fill: currentColor; fill-opacity: .26; stroke: currentColor; stroke-opacity: .55; stroke-width: .8px; transition: fill-opacity .2s ease, stroke-opacity .2s ease; }
+.mf-node, .mf-snode { fill: currentColor; }
+.mf-dst .mf-node, .mf-src .mf-snode, .mf-dst .mf-band { filter: drop-shadow(0 0 3px currentColor); }
+.mf-dst, .mf-src { outline: none; transition: opacity .2s ease; cursor: default; }
+.mf-leader { fill: none; stroke: var(--plot-muted); stroke-width: var(--stroke-hair); }
+.mf-lab { font-size: 12px; }
+.mf .has-focus .mf-dst:not(.is-focus) { opacity: .3; }
+.mf .has-focus .mf-dst.is-focus .mf-band { fill-opacity: .5; stroke-opacity: .9; }
+.mf .has-focus .mf-src { opacity: .55; }
+.mf-dst:focus-visible .mf-node { stroke: var(--focus); stroke-width: 2px; }
+.mf-src:focus-visible .mf-snode { stroke: var(--focus); stroke-width: 2px; }
+.mf-dst:focus-visible .mf-lab { fill: var(--plot-dawn); }
+.mf-key { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-6); margin-top: var(--space-3); font: 400 11px/1.5 var(--font-mono); color: var(--ink-muted); }
+.mf-key span { display: inline-flex; align-items: center; gap: var(--space-2); }
+.mf-key i { display: inline-block; flex: none; background: var(--flow-s3); }
+.mf-key-bar { width: 6px; height: 14px; }
+.mf-key-band { width: 18px; height: 8px; opacity: .5; }
+:root[data-theme="paper"] .mf-dst .mf-band, :root[data-theme="paper"] .mf-dst .mf-node, :root[data-theme="paper"] .mf-src .mf-snode { filter: none; }
+:root[data-theme="paper"] .mf-band { fill-opacity: .3; stroke-opacity: .4; }
 @media (prefers-color-scheme: light) {
-  :root:not([data-theme="night"]) .fm-thread { mix-blend-mode: multiply; opacity: .4; }
-  :root:not([data-theme="night"]) .fm-threads { filter: none; }
+  :root:not([data-theme="night"]) .mf-dst .mf-band, :root:not([data-theme="night"]) .mf-dst .mf-node, :root:not([data-theme="night"]) .mf-src .mf-snode { filter: none; }
+  :root:not([data-theme="night"]) .mf-band { fill-opacity: .3; stroke-opacity: .4; }
 }
-@media (max-width: 620px) { .fm-key { font-size: 10px; } .fm-thread { stroke-width: .6px; opacity: .4; } }
+@media (max-width: 620px) { .mf-key { font-size: 10px; } .mf-lab { font-size: 11px; } }
+@keyframes mf-wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
 @media (prefers-reduced-motion: no-preference) {
-  .rise .fm-thread { stroke-dasharray: 1; animation: bw-draw 1.8s cubic-bezier(.3,.6,.2,1) var(--d, 0s) backwards; }
-  .rise .fm-sq, .rise .fm-dst text { animation: bw-fade .6s ease-out 1.4s backwards; }
+  .rise .mf-band { animation: mf-wipe 1.1s cubic-bezier(.3,.6,.2,1) var(--d, 0s) backwards; }
+  .rise .mf-dst text, .rise .mf-dst .mf-node { animation: bw-fade .6s ease-out .9s backwards; }
 }
 
 /* ---- Two years of sector flows (components/charts/Terrain.tsx): neon bars on the floor of an oblique terrain.
@@ -731,6 +728,12 @@ ul.list.list-cont { border-top: 0; }
 .cfacts > div { display: flex; justify-content: space-between; gap: var(--space-4); padding: var(--space-2) 0; border-bottom: 1px solid var(--hairline); font-size: 14px; }
 .cfacts dt { color: var(--ink-muted); }
 .cfacts dd { margin: 0; text-align: right; }
+.mfacts { margin-top: var(--space-3); }
+.mfsrc { margin: var(--space-3) 0 var(--space-4); }
+.mfacts .dts { display: block; margin-top: 2px; font-size: 12px; color: var(--ink-faint); max-width: 46ch; }
+.mfacts dd { font-size: 14px; white-space: nowrap; }
+.mfacts .mval { margin-left: var(--space-2); color: var(--ink); }
+@media (max-width: 620px) { .mfacts dd { white-space: normal; } }
 .how-types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--space-8); border-top: 1px solid var(--hairline-strong); margin: var(--space-4) 0; }
 .how-t { padding: var(--space-4) 0; border-bottom: 1px solid var(--hairline); min-width: 0; }
 .how-t h4 { font: 500 15px/1.4 var(--font-sans); margin: 0 0 var(--space-2); display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-2); }

@@ -1,7 +1,7 @@
 // Run with: npm run test:portfolio  (node --test, Node 24 strips the types)
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { blend, blendSeries, changeOver, concentration, FACTOR_OF, FACTORS, HOLDING_IDS, levelsOf, NONE_RECORD, PROXY_IDS, readPort3, sanitise, savedRecord, SHORT, maxDrawdown, volatility, worstDay, equalWeights, exposure, fmtBp, fmtPct, normalise, stepWeight, weightedRank, type MoveFact } from "./portfolioMath.ts";
+import { blend, blendSeries, changeOver, concentration, FACTOR_OF, FACTORS, HOLDING_IDS, levelsOf, NONE_RECORD, PROXY_IDS, readPort3, sanitise, savedRecord, SHORT, maxDrawdown, volatility, worstDay, equalWeights, exposure, fmtBp, fmtPct, normalise, stepWeight, weightedRank, correlation, beta, pairwise, extremePairs, fmtR, type MoveFact } from "./portfolioMath.ts";
 
 const facts: MoveFact[] = [
   { id: "index", n: "Index", d1: 1 }, { id: "fin", n: "Fin", d1: 2 }, { id: "mid", n: "Mid", d1: -1 },
@@ -254,4 +254,76 @@ test("saving any weight leaves none mode: the saved record never carries none", 
   assert.equal("none" in rec, false);
   assert.deepEqual(readPort3(JSON.parse(JSON.stringify(rec))), { w: { flexi: 5 }, mode: "saved" });
   assert.deepEqual(readPort3(savedRecord({})), { w: {}, mode: "saved" });
+});
+
+// ---- Co-movement facts ------------------------------------------------------------------------------------------------
+const wave = (n: number, f: (i: number) => number): number[] => Array.from({ length: n }, (_, i) => f(i));
+const base = wave(100, (i) => Math.sin(i * 0.7) * 1.5 + Math.cos(i * 0.31));
+
+test("correlation: identical series 1, scaled 1, negated -1", () => {
+  near(correlation(base, base)!.r, 1);
+  near(correlation(base.map((v) => v * 3 + 0.2), base)!.r, 1);
+  near(correlation(base.map((v) => -v), base)!.r, -1);
+  assert.equal(correlation(base, base)!.n, 100);
+});
+
+test("correlation: known small case", () => {
+  // x = 1..5, y = 2,1,4,3,5: r = 0.8
+  near(correlation([1, 2, 3, 4, 5], [2, 1, 4, 3, 5], 2)!.r, 0.8);
+});
+
+test("correlation: zero variance, short series and no overlap give null, never a number", () => {
+  assert.equal(correlation(wave(100, () => 0.5), base), null);
+  assert.equal(correlation(base, wave(100, () => 0)), null);
+  assert.equal(correlation(base.slice(0, 59), base.slice(0, 59)), null);
+  assert.ok(correlation(base.slice(0, 60), base.slice(0, 60)));
+  assert.equal(correlation(Array.from({ length: 100 }, (_, i) => (i % 2 ? null : 1)), Array.from({ length: 100 }, (_, i) => (i % 2 ? 1 : null))), null);
+  assert.equal(correlation([], []), null);
+});
+
+test("correlation: a day missing in either series is skipped, not filled", () => {
+  const a: (number | null)[] = [...base], b: (number | null)[] = [...base];
+  a[10] = null; b[20] = null; a[0] = null;
+  const c = correlation(a, b)!;
+  assert.equal(c.n, 97);
+  near(c.r, 1);
+});
+
+test("beta: twice the market is 2, inverse half is -0.5, a flat market or a short series is null", () => {
+  near(beta(base.map((v) => 2 * v), base)!.b, 2);
+  near(beta(base.map((v) => -0.5 * v + 1), base)!.b, -0.5);
+  assert.equal(beta(base, wave(100, () => 1)), null);
+  assert.equal(beta(base.slice(0, 10), base.slice(0, 10)), null);
+  near(beta(wave(100, () => 0), base)!.b, 0);
+});
+
+test("pairwise: only types with weight and a series; one type gives no pairs; the extremes are named", () => {
+  const types = { index: base, fin: base.map((v) => v * 1.2), gold: base.map((v) => -v) };
+  assert.deepEqual(pairwise({ index: 50 }, types), { types: 1, pairs: [] });
+  assert.equal(extremePairs([]), null);
+  const p = pairwise({ index: 40, fin: 30, gold: 20, silver: 10 }, types);
+  assert.equal(p.types, 3);
+  assert.equal(p.pairs.length, 3);
+  const e = extremePairs(p.pairs)!;
+  near(e.high.r, 1);
+  near(e.low.r, -1);
+  assert.deepEqual([e.high.a, e.high.b], ["index", "fin"]);
+  const one = extremePairs(pairwise({ index: 50, fin: 50 }, types).pairs)!;
+  assert.deepEqual(one.high, one.low);
+  assert.equal(pairwise({ index: 50, fin: 50 }, { index: base, fin: wave(100, () => 0.1) }).pairs.length, 0);
+});
+
+test("fmtR uses a true minus and two decimals", () => {
+  assert.equal(fmtR(0.874), "0.87");
+  assert.equal(fmtR(-0.121), "−0.12");
+  assert.equal(fmtR(0), "0.00");
+});
+
+test("the mix's correlation and beta to the market come from the blended daily changes", () => {
+  const inverse = base.map((v) => -v);
+  const flat = blendSeries({ index: 50, gold: 50 }, { index: base, gold: inverse })!;
+  assert.equal(correlation(flat.returns, base), null); // blend cancels to zero variance
+  const bs = blendSeries({ index: 30, gold: 10 }, { index: base, gold: inverse })!;
+  near(correlation(bs.returns, base)!.r, 1);
+  near(beta(bs.returns, base)!.b, 0.5);
 });

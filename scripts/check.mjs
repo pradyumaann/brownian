@@ -64,9 +64,9 @@ for (const theme of ["night", "paper"]) {
       const name = `${theme}-${width}-${r === "/" ? "brief" : r.replaceAll("/", "")}${seed ? "-" + seed : ""}`;
       await page.screenshot({ path: join(SHOTS, name + ".png"), fullPage: true });
       // Folds (components/Fold.tsx): folded by default; the body is hidden and out of the tab order; a click opens it.
-      // `/`: Money movement, Coming up, Still developing; `/portfolio/`: How it is worked out. Section order is checked too.
+      // `/`: Money movement, Coming up, Still developing; `/portfolio/`: How it is worked out, What the news means for each type. Section order is checked too.
       if ((r === "/" || r === "/portfolio/") && !seed) {
-        const want = r === "/" ? ["money-movement", "coming-up", "still-developing"] : ["how-it-is-worked-out"];
+        const want = r === "/" ? ["money-movement", "coming-up", "still-developing"] : ["how-it-is-worked-out", "what-the-news-means"];
         const st = await page.evaluate((ids) => ids.map((id) => {
           const f = document.getElementById(id), b = f?.querySelector(".fold-btn"), p = f?.querySelector(".fold-panel");
           return { id, found: !!f, open: b?.getAttribute("aria-expanded"), h: p ? Math.round(p.getBoundingClientRect().height) : -1, vis: p ? getComputedStyle(p).visibility : "", inert: !!f?.querySelector(".fold-inner")?.inert,
@@ -96,10 +96,10 @@ for (const theme of ["night", "paper"]) {
       }
       // Phase 2 text expectations on the seeded Portfolio Lens passes.
       const EXPECT = { left: ["None of the types in your mix has a year-long series"], noev: ["No dated events in the brief are tagged to the types in your mix."],
-        watch: ["Results due Fri 13 Nov, per today's brief", "No result date in today's brief", "Reported", "Reports Tue 17 Nov"], mix: ["Interpretation, not a forecast."],
+        watch: ["Results due Fri 13 Nov, per today's brief", "No result date in today's brief", "Reported", "Reports Tue 17 Nov"], mix: ["Interpretation, not a forecast.", "Correlation with Nifty 50", "Beta to Nifty 50"],
         none: ["Portfolio Lens reads the day's index and market moves"], flexi: ["proxy: Nifty 500, not the fund's own returns"] };
       // Text that must not appear: in "none" mode the example mix and its figures are hidden.
-      const ABSENT = { none: ["the example mix", "Blended one-day move", "Tagged to"] };
+      const ABSENT = { none: ["the example mix", "Blended one-day move", "Tagged to", "Correlation with Nifty 50"] };
       if (seed && r === "/portfolio/") {
         const body = await page.evaluate(() => document.body.innerText);
         for (const t of EXPECT[seed] ?? []) if (!body.includes(t)) errors.push(`missing text: ${t}`);

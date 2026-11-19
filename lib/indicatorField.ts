@@ -1,5 +1,5 @@
 // Server-only: the "Indicators to watch" field on Macro Watch. For each indicator the history store actually holds
-// (USD/INR, the US 10-year yield and Brent from Yahoo Finance, D5; FPI net equity flows from NSDL, D4), every week
+// (USD/INR, the US 10-year yield, Brent, the dollar index and gold from Yahoo Finance, D5; FPI net equity flows from NSDL, D4), every week
 // and every month of the five years up to the session is ranked against the same five years: the share of the
 // window's readings at or below it (0–100). Ranks need no axis break, so the columns start at zero on one shared
 // scale. Nothing is filled in: a week or month with no reading is a null and draws no column.
@@ -8,7 +8,7 @@ import { percentile } from "./stats";
 
 export interface FieldBin { end: string; v: number; rank: number; toDate: boolean }
 export interface FieldRow {
-  id: string; name: string; short: string; kind: "inr" | "pct" | "usd" | "crore"; how: string; src: string[];
+  id: string; name: string; short: string; kind: "inr" | "pct" | "usd" | "idx" | "crore"; how: string; src: string[];
   /** Weekly and monthly bins over the window; levels take the last close in the bin, flows the sum. */
   weeks: (FieldBin | null)[]; months: (FieldBin | null)[];
   /** Latest reading on or before the session: its date and value, the change on the previous reading, its rank. */
@@ -86,6 +86,9 @@ export function indicatorField(upTo: string): { from: string; to: string; rows: 
       fpiRow,
       level("us10y", "US 10-year Treasury yield", "US 10Y", "pct", "yield, %"),
       level("brent", "Brent crude", "Brent", "usd", "US dollars a barrel"),
+      // Added 19 Nov 2026: the two series the store already holds that the brief's own macro list also prints (S11).
+      level("dxy", "Dollar index", "Dollar index", "idx", "index level; a higher rank is a stronger dollar"),
+      level("gold", "Gold futures (COMEX)", "Gold", "usd", "US dollars an ounce, COMEX futures"),
     ],
   };
 }

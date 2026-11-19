@@ -1,4 +1,5 @@
 "use client";
+import { B } from "@/data";
 import type { MoodVars } from "@/lib/bands";
 import type { PortfolioFacts, PortfolioSeries } from "@/lib/portfolioTypes";
 import { ImpactNotes, Watchlist } from "../portfolio";
@@ -17,6 +18,7 @@ import { Year } from "./Year";
 export function PortfolioLens({ facts, series, vars }: { facts: PortfolioFacts; series: PortfolioSeries; vars: MoodVars }) {
   const port = usePort();
   const ids = Object.keys(port.w);
+  const notes = B.holdings.filter((h) => h.id !== "wallet" && ids.includes(h.id)).length;
   return (
     <>
       <Section title={<>Your <S>mix</S></>} meta="A weight for each holding type, in 5% steps · stays on this device" ix="01">
@@ -28,7 +30,7 @@ export function PortfolioLens({ facts, series, vars }: { facts: PortfolioFacts; 
       </Section>
 
       <Section title={<>What you&apos;re <S>exposed to</S></>} meta="Your weights grouped by what drives them" ix="03">
-        <Exposure w={port.w} mode={port.mode} />
+        <Exposure w={port.w} mode={port.mode} series={series} />
       </Section>
 
       <Section title={<>Is my stock in the <S>news</S>?</>} meta="Watchlist · every company in the brief, plus this week's results calendars. Example rows are marked until you add your own." ix="04">
@@ -48,9 +50,12 @@ export function PortfolioLens({ facts, series, vars }: { facts: PortfolioFacts; 
         <How facts={facts.types} series={series} />
       </Fold>
 
-      <Section title={<>What the news means for <S>each type</S></>} meta="Impact of today's brief on the types in your mix" ix="08">
+      <Fold id="what-the-news-means" title={<>What the news means for <S>each type</S></>} ix="08"
+        summary={port.mode === "none"
+          ? "No mix, so no type notes; the household-costs note is inside."
+          : `${notes} ${notes === 1 ? "note" : "notes"} for the types in your mix, plus the household-costs note. Impact of today's brief.`}>
         <ImpactNotes ids={ids} vars={vars} mode={port.mode} />
-      </Section>
+      </Fold>
     </>
   );
 }

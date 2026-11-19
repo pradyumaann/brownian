@@ -109,9 +109,9 @@ export default function MarketsOvernight() {
         {B.drove.length > 2 && <More label={`${B.drove.length - 2} more`}><ul className="list list-cont">{B.drove.slice(2).map((d) => <li key={d}>{d}</li>)}</ul></More>}
       </Section>
 
-      <Fold id="money-movement" title={<>Money <S>movement</S></>} ix="05 · Flow Map, India, Global"
+      <Fold id="money-movement" title={<>Money <S>movement</S></>} ix="05 · Money Moves, India, Global"
         summary={`Flows, ${B.secIndia.length} NSE sectors and US sectors, ${B.session} session`}>
-        <FoldPart id="flow-map" title={<>Where money <S>moved</S></>} ix="Flow Map" meta={<>FII and DII provisional net flows, cash market<Src k={fiiSrc} /></>}>
+        <FoldPart id="flow-map" title={<>Where money <S>moved</S></>} ix="Money Moves" meta={<>FII and DII provisional net flows, cash market<Src k={fiiSrc} /></>}>
           <div className="pair">
             {[B.flows.day, B.flows.mtd].map((f) => (
               <div key={f.label}>
@@ -122,7 +122,7 @@ export default function MarketsOvernight() {
               </div>
             ))}
           </div>
-          <p className="note after-plot">HDFC Sky puts November&apos;s FII buying at $6.43bn, the strongest since September 2024<Src k={["S1"]} />. <Link href="/flows/">Flow Map</Link></p>
+          <p className="note after-plot">HDFC Sky puts November&apos;s FII buying at $6.43bn, the strongest since September 2024<Src k={["S1"]} />. <Link href="/flows/">Money Moves</Link></p>
         </FoldPart>
 
         <FoldPart id="sector-strength" title={<>Sector <S>strength</S></>} ix="India Markets" meta={<>NSE sectoral indices, {B.session} · one-day change<Src k={["S1", "S2", "S3"]} /></>}>

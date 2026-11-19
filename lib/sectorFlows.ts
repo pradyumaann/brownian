@@ -1,4 +1,4 @@
-// FPI equity flows by sector (NSDL fortnightly), shaped for the flow map and the terrain. Server-side.
+// FPI equity flows by sector (NSDL fortnightly), shaped for the Money Moves flow chart and the terrain. Server-side.
 import { history } from "./history";
 
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -25,7 +25,7 @@ export function lastMonth() {
   return { label: `${MON[Number(ym.slice(5)) - 1]} ${ym.slice(0, 4)}`, list, total: list.reduce((s, x) => s + x.net, 0) };
 }
 
-/** Flow-map shape: every sector FPIs net sold (largest first) and every sector they net bought, each as a positive
+/** Money Moves flow shape: every sector FPIs net sold (largest first) and every sector they net bought, each as a positive
  *  amount, plus the month's net. The chart groups the smaller sectors itself, to suit the width it is drawn at. */
 export function strandShape() {
   const m = lastMonth();

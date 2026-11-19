@@ -274,3 +274,65 @@ export function worstDay(returns: (number | null)[], dates: string[]): { value: 
   }
   return best;
 }
+
+// ---- Co-movement facts (Exposure section) -----------------------------------------------------------------------------
+// Computed on the daily % changes already sent for "Your mix over the year", over the days on which both series have a
+// change. A day where either is missing is skipped; nothing is filled in. Facts about the window, not a forecast.
+
+/** Fewest paired daily changes for a correlation or beta to be shown (about a quarter of a 250-session window). */
+export const MIN_PAIRS = 60;
+
+function paired(a: (number | null)[], b: (number | null)[]): [number[], number[]] {
+  const x: number[] = [], y: number[] = [];
+  const n = Math.min(a.length, b.length);
+  for (let i = 0; i < n; i++) { const p = a[i], q = b[i]; if (p != null && q != null && Number.isFinite(p) && Number.isFinite(q)) { x.push(p); y.push(q); } }
+  return [x, y];
+}
+const stats = (x: number[], y: number[]) => {
+  const n = x.length, mx = x.reduce((s, v) => s + v, 0) / n, my = y.reduce((s, v) => s + v, 0) / n;
+  let sxx = 0, syy = 0, sxy = 0;
+  for (let i = 0; i < n; i++) { sxx += (x[i] - mx) ** 2; syy += (y[i] - my) ** 2; sxy += (x[i] - mx) * (y[i] - my); }
+  return { n, sxx, syy, sxy };
+};
+
+/** Pearson correlation (−1 to 1) of two daily-change series over the days both have a change, with the number of days used.
+ *  Null when fewer than `minPairs` days are paired or either series does not vary (zero variance). */
+export function correlation(a: (number | null)[], b: (number | null)[], minPairs = MIN_PAIRS): { r: number; n: number } | null {
+  const [x, y] = paired(a, b);
+  if (x.length < Math.max(2, minPairs)) return null;
+  const s = stats(x, y);
+  if (!(s.sxx > 1e-12) || !(s.syy > 1e-12)) return null;
+  return { r: Math.max(-1, Math.min(1, s.sxy / Math.sqrt(s.sxx * s.syy))), n: s.n };
+}
+
+/** Beta of `a` to `b`: covariance(a, b) ÷ variance(b), over the days both have a change. Null under `minPairs` days or when `b` does not vary. */
+export function beta(a: (number | null)[], b: (number | null)[], minPairs = MIN_PAIRS): { b: number; n: number } | null {
+  const [x, y] = paired(a, b);
+  if (x.length < Math.max(2, minPairs)) return null;
+  const s = stats(y, x);
+  if (!(s.sxx > 1e-12)) return null;
+  return { b: s.sxy / s.sxx, n: s.n };
+}
+
+export interface PairFact { a: string; b: string; r: number; n: number }
+/** Correlation of every pair of the weighted types that have a series. `types` counts those; pairs with too little data are left out. */
+export function pairwise(w: Weights, types: Record<string, (number | null)[]>): { types: number; pairs: PairFact[] } {
+  const nm = normalise(w);
+  const ids = HOLDING_IDS.filter((id) => nm.shares[id] > 0 && types[id]);
+  const pairs: PairFact[] = [];
+  for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
+    const c = correlation(types[ids[i]], types[ids[j]]);
+    if (c) pairs.push({ a: ids[i], b: ids[j], r: c.r, n: c.n });
+  }
+  return { types: ids.length, pairs };
+}
+
+/** The most and least correlated pair (null when there is none; with one pair, `high` and `low` are the same pair). */
+export function extremePairs(pairs: PairFact[]): { high: PairFact; low: PairFact } | null {
+  if (!pairs.length) return null;
+  const s = [...pairs].sort((p, q) => q.r - p.r || (p.a + p.b).localeCompare(q.a + q.b));
+  return { high: s[0], low: s[s.length - 1] };
+}
+
+/** A correlation printed with a true minus and two decimals: 0.87, −0.12. */
+export const fmtR = (r: number) => (r < 0 ? MINUS : "") + Math.abs(r).toFixed(2);

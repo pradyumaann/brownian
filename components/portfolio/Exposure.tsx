@@ -1,14 +1,17 @@
 "use client";
 import { concentration, exposure, normalise, SHORT, type Mode, type Weights } from "@/lib/portfolioMath";
+import type { PortfolioSeries } from "@/lib/portfolioTypes";
+import { MixMetrics } from "./MixMetrics";
 import { NoneNote } from "./NoneNote";
 
 /** What the mix is exposed to: the share in each factor and concentration as facts. */
-export function Exposure({ w, mode }: { w: Weights; mode: Mode }) {
+export function Exposure({ w, mode, series }: { w: Weights; mode: Mode; series: PortfolioSeries }) {
   if (mode === "none") return <NoneNote line="For a mix, this section groups the weights by what drives them and states how concentrated they are. Nothing is owned, so nothing is shown." />;
   const ex = exposure(w), c = concentration(w), nm = normalise(w);
   if (!ex.length) return <p className="empty">No weight is set yet. Once a holding type has a weight, the factors it is exposed to are listed here.</p>;
   const top = Math.max(...ex.map((x) => x.share));
   return (
+    <>
     <div className="two">
       <div>
         <h3 className="sub">By factor</h3>
@@ -37,5 +40,7 @@ export function Exposure({ w, mode }: { w: Weights; mode: Mode }) {
         <p className="bw-disclaimer after-plot">Interpretation, not a forecast. These are facts about the spread of your weights; they say nothing about how the mix will behave.</p>
       </div>
     </div>
+    <MixMetrics w={w} series={series} />
+    </>
   );
 }

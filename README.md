@@ -58,7 +58,7 @@ npm run history:verify   # coverage, consistency, NSE vs Yahoo cross-check, impl
 | Markets, Overnight | `/` | The day in under a minute: Wander Index, macro pressure, your holdings, six key numbers, takeaways, the next 7 days |
 | Portfolio Lens | `/portfolio` | Impact of today's news on the user's holding types, plus a watchlist |
 | Wander Index | `/wander` | 0–100 sentiment index from 7 components with visible formulas and research, kept separate from macro pressure |
-| Flow Map | `/flows` | FII/DII flows and sector rotation |
+| Money Moves | `/flows` | FII/DII flows and sector rotation |
 | India Markets | `/india` | Indices, sectors, movers, MCX, rupee, after-hours |
 | Global Cues | `/global` | World indices, cross-asset macro, US sectors, after-hours |
 | Macro Watch | `/macro` | Economic indicators and the event calendar |

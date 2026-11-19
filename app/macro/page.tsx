@@ -57,7 +57,7 @@ export default function Macro() {
       </div>
 
       <Section title={<>Indicators to <S>watch</S></>} meta="Where each reading sits in its own five years, the releases against forecast, and what's next" ix="01">
-        <h3 className="sub">Four market indicators against their own five years<Src k={["D5", "D4"]} /></h3>
+        <h3 className="sub">Six indicators against their own five years<Src k={["D5", "D4"]} /></h3>
         <IndicatorField rows={field.rows} from={field.from} to={field.to} />
         <ul className="ifield-key">
           {field.rows.map((r) => {
@@ -72,6 +72,7 @@ export default function Macro() {
             );
           })}
         </ul>
+        <p className="bw-meta">The dollar index and gold are also in the brief&apos;s cross-asset list<Src k={["S11"]} />. This ranking is context only: it does not change the Macro pressure score, which is worked out from the seven indicators in the brief (the dollar index is one of them; gold is not). Interpretation, not a forecast.</p>
         <p className="bw-meta after-plot">Yahoo Finance and NSDL closes, {dmy(field.from)} to {dmy(field.to)}; levels are ranked among the window&apos;s daily closes, flows among its weeks or months, and a week or month still open is marked to date. They can differ from the brief&apos;s provisional figures in the table below (USD/INR {fxBrief?.[2]} in the brief<Src k={fxBrief?.[8] ? [fxBrief[8]] : []} />).</p>
 
         <h3 className="sub rb-head">Releases: latest against forecast and the previous print<Src k={["W8", "W11", "W13", "W15", "S11"]} /></h3>

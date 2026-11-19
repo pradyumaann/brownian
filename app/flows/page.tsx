@@ -9,7 +9,7 @@ import { Term } from "@/components/Term";
 import { Diverge } from "@/components/charts/Diverge";
 import { FlowLines } from "@/components/charts/FlowLines";
 import { MiniBars } from "@/components/charts/Mini";
-import { Strands } from "@/components/charts/Strands";
+import { MoneyFlow } from "@/components/charts/MoneyFlow";
 import { Terrain } from "@/components/charts/Terrain";
 import { More } from "@/components/More";
 import { strandShape, terrainShape } from "@/lib/sectorFlows";
@@ -18,7 +18,7 @@ import { flowContext, fpiDaily } from "@/lib/flows";
 import { asOf } from "@/lib/mood";
 import { PAPERS } from "@/lib/papers";
 
-export const metadata: Metadata = { title: "Flow Map" };
+export const metadata: Metadata = { title: "Money Moves" };
 
 export default function Flows() {
   const { day, mtd, src } = B.flows;
@@ -44,7 +44,7 @@ export default function Flows() {
   const themes = B.themesIn.map((t) => ({ ...t, avg: t.s.reduce((a, s) => a + s[1], 0) / t.s.length }));
   return (
     <>
-      <ViewHead title={<>Where money <S>moved</S></>} feature="Flow Map"
+      <ViewHead title={<>Money <S>Moves</S></>} feature="Money Moves"
         lede="Who is buying and selling Indian shares, and where money is rotating between sectors." />
 
       <Section title={<>Who&apos;s buying, who&apos;s <S>selling</S></>} meta={<><Term id="fii">FII vs DII</Term> · ₹ crore, cash market, provisional<Src k={src} /></>} ix="01">
@@ -105,9 +105,9 @@ export default function Flows() {
       </Section>
 
       <Section title={<>Where foreign money <S>went</S></>} meta={<>FPI net equity investment by sector, {st.label}, NSDL fortnightly data<Src k={["D4"]} /></>} ix="04">
-        <Strands sold={st.sold} bought={st.bought} net={st.total} month={st.label}
-          label={`FPI equity flows by sector in ${st.label}. Net sold: ${st.sold.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}. Net bought: ${st.bought.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}. ${st.total < 0 ? `Net outflow ${crore(-st.total, false)}.` : `Net new money ${crore(st.total, false)}.`}`} />
-        <p className="bw-meta after-plot">Net for the month: {crore(st.total)}. NSDL reports only each sector&apos;s net, so each sector&apos;s selling is shared out over the destinations in proportion to their size: an allocation, not traced trades from one sector to another.</p>
+        <MoneyFlow sold={st.sold} bought={st.bought} net={st.total} month={st.label}
+          label={`FPI equity flows by sector in ${st.label}. Drawn left to right: sectors net sold, then a band to each destination. Net sold: ${st.sold.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}. Net bought: ${st.bought.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}. ${st.total < 0 ? `Net outflow ${crore(-st.total, false)}.` : `Net new money ${crore(st.total, false)}.`}`} />
+        <p className="bw-meta after-plot">Net for the month: {crore(st.total)}. NSDL reports only each sector&apos;s net, so the bands show how much each destination received, not which sold sector paid for which: not traced trades. Interpretation, not a forecast.</p>
       </Section>
 
       <Section title={<>Two years of sector <S>flows</S></>} meta={<>Net FPI equity flow by sector and fortnight, {tr.labels[0]} to {tr.labels.at(-1)}, the {tr.sectors.length} sectors with the largest flows<Src k={["D4"]} /></>} ix="05">
