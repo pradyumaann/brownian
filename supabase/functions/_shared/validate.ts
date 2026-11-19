@@ -170,7 +170,8 @@ export function validateBrief(input: unknown): Report {
   arr("defaultHold").forEach((id, i) => { if (!holdingIds.has(id)) err(`defaultHold[${i}]`, `"${id}" is not a holding id.`); });
   const stocks = obj("stocks");
   arr("defaultWatch").forEach((n, i) => { if (!isStr(n) || !(n in stocks)) warn(`defaultWatch[${i}]`, `"${n}" has no entry in stocks.`); });
-  Object.entries(obj("aliases")).forEach(([k, v]) => { if (!isStr(v) || !(v in stocks)) err(`aliases.${k}`, `Alias points to "${v}", which is not in stocks.`); });
+  // Aliases are fixed (template) while stocks vary by day, so a name with no entry today is a warning, not an error.
+  Object.entries(obj("aliases")).forEach(([k, v]) => { if (!isStr(v)) err(`aliases.${k}`, "Alias must point to a stock name."); else if (!(v in stocks)) warn(`aliases.${k}`, `Alias points to "${v}", which has no entry in stocks today.`); });
 
   // glossary entries: [term, definition, today, short]
   Object.entries(gloss).forEach(([k, g]) => {

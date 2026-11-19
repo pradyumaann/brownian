@@ -56,3 +56,15 @@ Body: the Brief record as JSON (shape: data/types.ts)
 Secrets (Supabase function secrets, never in the repo): `INTAKE_KEY` (the routine's key), `VERCEL_DEPLOY_HOOK` (optional). `SUPABASE_URL` and the service key are provided by Supabase to the function; the service key is never in Vercel or the repo.
 
 Deploy (needs a Supabase login): `npx supabase login`, then `npx supabase functions deploy intake --project-ref pdnzxjxqpnaaqqzqtizx`, then `npx supabase secrets set INTAKE_KEY=<random value> --project-ref pdnzxjxqpnaaqqzqtizx`.
+
+## The daily record and the template
+
+The routine does not send a whole `Brief`. It sends the **daily record**: everything in `data/types.ts` except the fixed parts, with two small differences.
+
+| Fixed (template, `supabase/functions/_shared/template.ts`) | Daily record carries instead |
+|---|---|
+| `gloss` (term, definition, short text) | `glossToday`: `{ <glossary id>: "Today: …" }` for the entries that have a line for the day |
+| holding-type names and order | `holdings`: `[{ id, d, h, w, t, src }]`, one per type id |
+| `aliases`, `defaultHold`, `defaultWatch`, `method` | nothing |
+
+`mergeDaily` (`_shared/merge.ts`) adds the fixed parts before validating, ignores (with a warning) any fixed part the routine sends, and drops unknown holding types and glossary ids. A full record (as the 13 Nov brief) is still accepted. The template is edited by hand, in this repo, when a glossary term or holding type is added; a term used in the text but missing from the template makes the day held. `scripts/make-template.mjs` records how it was first derived. The daily record is about three quarters of the full record: the fixed parts are mostly the glossary.

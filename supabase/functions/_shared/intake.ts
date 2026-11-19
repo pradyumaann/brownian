@@ -13,6 +13,7 @@
 // Only a valid, non-staging record can replace a published one; a held or staging record never does.
 
 import { MAX_BYTES, validateBrief, type Report } from "./validate.ts";
+import { mergeDaily } from "./merge.ts";
 
 export interface Env {
   INTAKE_KEY: string;
@@ -53,11 +54,14 @@ export async function handleIntake(req: Request, env: Env, fetchFn: FetchFn = fe
 
   const text = await req.text();
   if (text.length > MAX_BYTES * 2) return json(413, { ok: false, error: "Record is too large." });
-  let record: unknown;
-  try { record = JSON.parse(text); } catch { return json(400, { ok: false, error: "Body is not valid JSON." }); }
+  let sent: unknown;
+  try { sent = JSON.parse(text); } catch { return json(400, { ok: false, error: "Body is not valid JSON." }); }
+  // What the routine sends is the daily record; the fixed parts (glossary text, holding-type names, aliases, method) are added here.
+  const { record, notes } = mergeDaily(sent);
 
   const mode = new URL(req.url).searchParams.get("mode") === "staging" ? "staging" : "publish";
   const report = validateBrief(record);
+  report.warnings.push(...notes);
   const date = typeof (record as { date?: unknown } | null)?.date === "string" ? (record as { date: string }).date : "";
   const hasDate = /^\d{4}-\d{2}-\d{2}$/.test(date) && !report.errors.some((e) => e.path === "date");
 
