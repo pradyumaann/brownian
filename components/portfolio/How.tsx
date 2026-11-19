@@ -2,7 +2,6 @@
 import { FACTORS, FACTOR_OF, fmtBp, fmtPct, SHORT } from "@/lib/portfolioMath";
 import type { DriverFact, PortfolioSeries, TypeFact } from "@/lib/portfolioTypes";
 import { Change } from "../Change";
-import { More } from "../More";
 import { Src } from "../Src";
 import { dateOf } from "./Day";
 
@@ -26,7 +25,7 @@ export function How({ facts, series }: { facts: TypeFact[]; series: PortfolioSer
   const noYear = facts.filter((f) => !(f.id in series.types));
   const proxies = facts.filter((f) => f.proxy);
   return (
-    <More label="The formula, drivers and what is n/a" className="how">
+    <div className="how">
       <div className="note">
         <p><b>Blended move</b> = Σ (share of your mix × the type&apos;s one-day move), over the types that have a move. If your weights add to more than 100%, each is scaled down to 100% first. Unallocated weight adds nothing.</p>
         <p><b>A type&apos;s move</b> = the equal-weighted average of its drivers&apos; one-day changes, except gold (below). A type with a missing driver has no move; nothing is filled in. Moves are NSE-session changes; overseas series use the last close on or before each NSE day.</p>
@@ -46,6 +45,6 @@ export function How({ facts, series }: { facts: TypeFact[]; series: PortfolioSer
         ))}
       </div>
       <p className="note"><b>n/a today:</b> {na.map((f, i) => <span key={f.id}>{i ? " · " : ""}{SHORT[f.id]}</span>)}. They are named when they carry weight and are never replaced by a guess.</p>
-    </More>
+    </div>
   );
 }

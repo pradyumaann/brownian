@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { B } from "@/data";
 import { Chip } from "@/components/Chip";
-import { DayRail } from "@/components/DayRail";
+import { Fold } from "@/components/Fold";
 import { EventRail } from "@/components/EventRail";
 import { DataTable } from "@/components/DataTable";
 import { S, Section, ViewHead } from "@/components/Section";
@@ -23,6 +23,7 @@ const field = indicatorField(B.sessionDate);
 const FIELD_ROW: Record<string, string> = { usdinr: "USD/INR", fpi: "FII net flows", us10y: "10Y Treasury", brent: "Brent" };
 const fieldTone = (id: string): Tone | undefined => B.indicators.find((r) => r[1].startsWith(FIELD_ROW[id]))?.[7];
 const fxBrief = B.indicators.find((r) => r[1] === "USD/INR");
+const dxyBrief = B.macro.find((r) => r[0] === "Dollar index");
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const dmy = (d: string) => `${Number(d.slice(8))} ${MON[Number(d.slice(5, 7)) - 1]} ${d.slice(0, 4)}`;
 
@@ -42,22 +43,15 @@ export default function Macro() {
       <ViewHead title={<>The macro <S>backdrop</S></>} feature="Macro Watch"
         lede="Economic indicators, and the dates that can move your portfolio. Times in IST." />
 
-      <div className="pair">
-        <div>
-          <h3 className="sub">CPI crossed the 6% upper limit<Src k={["W8", "W10"]} /></h3>
-          <CpiBand sep={sep} oct={oct} food={food} />
-          <p className="note after-plot">October CPI came in at <b>{oct}%</b>, up from {sep}% in September and above the {forecast}% forecast. It is the first breach of the RBI&apos;s 6% upper limit since October 2024. Food inflation hit {food}%.</p>
-          <p className="note after-plot">Why it matters: with inflation above the band, the RBI is more likely to keep raising rates at its 2–4 Dec meeting. That pressures bond-fund NAVs and rate-sensitive stocks, and can lift new FD rates.</p>
-        </div>
-        <div>
-          <h3 className="sub">US October PPI and four Fed speakers<Src k={["W13", "W14"]} /></h3>
-          <DayRail rows={B.ppi} briefTime={B.prepared} />
-          <p className="note after-plot">A hotter-than-forecast PPI would firm up the December Fed hike, push US yields higher and add pressure on the rupee and FII flows.</p>
-        </div>
+      <div className="solo">
+        <h3 className="sub">CPI crossed the 6% upper limit<Src k={["W8", "W10"]} /></h3>
+        <CpiBand sep={sep} oct={oct} food={food} />
+        <p className="note after-plot">October CPI came in at <b>{oct}%</b>, up from {sep}% in September and above the {forecast}% forecast. It is the first breach of the RBI&apos;s 6% upper limit since October 2024. Food inflation hit {food}%.</p>
+        <p className="note after-plot">Why it matters: with inflation above the band, the RBI is more likely to keep raising rates at its 2–4 Dec meeting. That pressures bond-fund NAVs and rate-sensitive stocks, and can lift new FD rates.</p>
       </div>
 
       <Section title={<>Indicators to <S>watch</S></>} meta="Where each reading sits in its own five years, the releases against forecast, and what's next" ix="01">
-        <h3 className="sub">Four market indicators against their own five years<Src k={["D5", "D4"]} /></h3>
+        <h3 className="sub">Six indicators against their own five years<Src k={["D5", "D4"]} /></h3>
         <IndicatorField rows={field.rows} from={field.from} to={field.to} />
         <ul className="ifield-key">
           {field.rows.map((r) => {
@@ -72,25 +66,30 @@ export default function Macro() {
             );
           })}
         </ul>
-        <p className="bw-meta after-plot">Yahoo Finance and NSDL closes, {dmy(field.from)} to {dmy(field.to)}; levels are ranked among the window&apos;s daily closes, flows among its weeks or months, and a week or month still open is marked to date. They can differ from the brief&apos;s provisional figures in the table below (USD/INR {fxBrief?.[2]} in the brief<Src k={fxBrief?.[8] ? [fxBrief[8]] : []} />).</p>
-
-        <h3 className="sub rb-head">Releases: latest against forecast and the previous print<Src k={["W8", "W11", "W13", "W15", "S11"]} /></h3>
-        <ReleaseMetrics rows={B.releases} />
-        <p className="bw-meta after-plot">The words for India are the brief&apos;s reading: Interpretation, not a forecast.</p>
-
-        <More label="All 13 indicators, with what's next" className="ind-more">
-          <DataTable stack head={[["Indicator"], ["Latest", "r"], ["Previous"], ["Detail"], ["Next"], ["How to read it"], ["Region"]]}
-            rows={B.indicators.map((r) => [
-              <b key="n">{indName(r[1])}<Src k={r[8] ? [r[8]] : []} /></b>,
-              na(r[2]), na(r[3]), na(r[4]), na(r[5]), r[6], <Chip key="r">{r[0]}</Chip>,
-            ])} />
-        </More>
+        <p className="bw-meta">The dollar index and gold are also in the brief&apos;s cross-asset list<Src k={["S11"]} />. This ranking is context only: it does not change the Macro pressure score, which is worked out from the seven indicators in the brief (the dollar index is one of them; gold is not). Interpretation, not a forecast.</p>
+        <p className="bw-meta after-plot">Yahoo Finance and NSDL closes, {dmy(field.from)} to {dmy(field.to)}; levels are ranked among the window&apos;s daily closes, flows among its weeks or months, and a week or month still open is marked to date. They can differ from the brief&apos;s provisional figures in the table below (USD/INR {fxBrief?.[2]} in the brief<Src k={fxBrief?.[8] ? [fxBrief[8]] : []} />; Dollar index {dxyBrief?.[1]} in the brief<Src k={["S11"]} />).</p>
       </Section>
 
-      <Section title={<>Dates that can move your <S>portfolio</S></>} meta="Calendar · IST · ● today" ix="02">
+      <Fold id="releases" title={<>Releases: latest against forecast and the <S>previous print</S></>} ix="02"
+        summary={`${B.releases.length} releases, each against its forecast and the previous print, with the brief's reading`}>
+        <p className="bw-meta">Sources<Src k={["W8", "W11", "W13", "W15", "S11"]} /></p>
+          <ReleaseMetrics rows={B.releases} />
+          <p className="bw-meta after-plot">The words for India are the brief&apos;s reading: Interpretation, not a forecast.</p>
+
+          <More label="All 13 indicators, with what's next" className="ind-more">
+            <DataTable stack head={[["Indicator"], ["Latest", "r"], ["Previous"], ["Detail"], ["Next"], ["How to read it"], ["Region"]]}
+              rows={B.indicators.map((r) => [
+                <b key="n">{indName(r[1])}<Src k={r[8] ? [r[8]] : []} /></b>,
+                na(r[2]), na(r[3]), na(r[4]), na(r[5]), r[6], <Chip key="r">{r[0]}</Chip>,
+              ])} />
+          </More>
+      </Fold>
+
+      <Fold id="dates" title={<>Dates that can move your <S>portfolio</S></>} ix="03"
+        summary={`${B.events.length} dated events from the brief and web calendars · IST`}>
         <EventRail events={B.events} briefDate={B.briefDate} />
         <p className="bw-meta">Dates from the brief and web calendars<Src k={["W1", "W13", "W15", "W16", "W17", "W19"]} />.</p>
-      </Section>
+      </Fold>
     </>
   );
 }

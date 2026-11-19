@@ -9,8 +9,9 @@ import { Term } from "@/components/Term";
 import { Diverge } from "@/components/charts/Diverge";
 import { FlowLines } from "@/components/charts/FlowLines";
 import { MiniBars } from "@/components/charts/Mini";
-import { Strands } from "@/components/charts/Strands";
+import { MoneyFlow } from "@/components/charts/MoneyFlow";
 import { Terrain } from "@/components/charts/Terrain";
+import { Fold } from "@/components/Fold";
 import { More } from "@/components/More";
 import { strandShape, terrainShape } from "@/lib/sectorFlows";
 import { crore, pct } from "@/lib/format";
@@ -18,7 +19,7 @@ import { flowContext, fpiDaily } from "@/lib/flows";
 import { asOf } from "@/lib/mood";
 import { PAPERS } from "@/lib/papers";
 
-export const metadata: Metadata = { title: "Flow Map" };
+export const metadata: Metadata = { title: "Money Moves" };
 
 export default function Flows() {
   const { day, mtd, src } = B.flows;
@@ -44,7 +45,7 @@ export default function Flows() {
   const themes = B.themesIn.map((t) => ({ ...t, avg: t.s.reduce((a, s) => a + s[1], 0) / t.s.length }));
   return (
     <>
-      <ViewHead title={<>Where money <S>moved</S></>} feature="Flow Map"
+      <ViewHead title={<>Money <S>Moves</S></>} feature="Money Moves"
         lede="Who is buying and selling Indian shares, and where money is rotating between sectors." />
 
       <Section title={<>Who&apos;s buying, who&apos;s <S>selling</S></>} meta={<><Term id="fii">FII vs DII</Term> · ₹ crore, cash market, provisional<Src k={src} /></>} ix="01">
@@ -105,9 +106,9 @@ export default function Flows() {
       </Section>
 
       <Section title={<>Where foreign money <S>went</S></>} meta={<>FPI net equity investment by sector, {st.label}, NSDL fortnightly data<Src k={["D4"]} /></>} ix="04">
-        <Strands sold={st.sold} bought={st.bought} net={st.total} month={st.label}
-          label={`FPI equity flows by sector in ${st.label}. Net sold: ${st.sold.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}. Net bought: ${st.bought.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}. ${st.total < 0 ? `Net outflow ${crore(-st.total, false)}.` : `Net new money ${crore(st.total, false)}.`}`} />
-        <p className="bw-meta after-plot">Net for the month: {crore(st.total)}. NSDL reports only each sector&apos;s net, so each sector&apos;s selling is shared out over the destinations in proportion to their size: an allocation, not traced trades from one sector to another.</p>
+        <MoneyFlow sold={st.sold} bought={st.bought} net={st.total} month={st.label}
+          label={`FPI equity flows by sector in ${st.label}. Drawn left to right: sectors net sold, then a band to each destination. Net sold: ${st.sold.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}. Net bought: ${st.bought.map((n) => `${n.label} ${crore(n.value, false)}`).join(", ")}. ${st.total < 0 ? `Net outflow ${crore(-st.total, false)}.` : `Net new money ${crore(st.total, false)}.`}`} />
+        <p className="bw-meta after-plot">Net for the month: {crore(st.total)}. NSDL reports only each sector&apos;s net, so the bands show how much each destination received, not which sold sector paid for which: not traced trades. Interpretation, not a forecast.</p>
       </Section>
 
       <Section title={<>Two years of sector <S>flows</S></>} meta={<>Net FPI equity flow by sector and fortnight, {tr.labels[0]} to {tr.labels.at(-1)}, the {tr.sectors.length} sectors with the largest flows<Src k={["D4"]} /></>} ix="05">
@@ -131,7 +132,9 @@ export default function Flows() {
         </div>
       </Section>
 
-      <Section title={<>Where money came from, and <S>went</S></>} meta={<>Rotation map · {B.session}<Src k={["S3", "S11", "S12"]} /></>} ix="07">
+      <Fold id="rotation" title={<>Where money came from, and <S>went</S></>} ix="07"
+        summary={`${B.rotation.length} lanes of money moving out of and into assets, by relative performance on the day`}>
+        <p className="bw-meta">Rotation map · {B.session}<Src k={["S3", "S11", "S12"]} /></p>
         <div className="rot">
           {B.rotation.map((r) => (
             <div key={r.lane} className="rrow">
@@ -143,9 +146,10 @@ export default function Flows() {
           ))}
         </div>
         <p className="bw-meta">Out of (▼) and into (▲) by relative performance on the day, not traced money.</p>
-      </Section>
+      </Fold>
 
-      <Section title={<>Sector moves, India and the <S>US</S></>} meta="NSE sectoral indices and S&P 500 sectors, one-day change" ix="08">
+      <Fold id="sector-moves" title={<>Sector moves, India and the <S>US</S></>} ix="08"
+        summary="NSE sectoral indices and S&P 500 sectors, one-day change">
         <div className="pair">
           <div>
             <p className="cap">India<Src k={["S1", "S2", "S3"]} /></p>
@@ -156,12 +160,13 @@ export default function Flows() {
             <Diverge phoneRows={6} rows={B.secUS.map(([label, value]) => ({ label, value }))} label={`S&P 500 sector changes, ${B.session}`} />
           </div>
         </div>
-      </Section>
+      </Fold>
 
-      <Section title={<>Trend, pause or <S>spike</S>?</>} meta="Trend context for the day's biggest sector moves" ix="09">
+      <Fold id="trend-pause-spike" title={<>Trend, pause or <S>spike</S>?</>} ix="09"
+        summary={`${B.trend.length} sectors: trend context for the day's biggest sector moves`}>
         <DataTable stack head={[["Sector"], ["Thu", "r"], ["Context"], ["Read"], ["What it means"]]}
           rows={B.trend.map((r) => [<b key="s">{r[0]}</b>, <Change key="c" v={r[1]} />, r[2], <Chip key="ch" tone={r[4]}>{r[3]}</Chip>, r[5]])} />
-      </Section>
+      </Fold>
     </>
   );
 }

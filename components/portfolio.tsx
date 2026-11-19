@@ -128,7 +128,7 @@ export function Watchlist() {
                 <span className="nm">{n}{examples && <> <Chip>Example</Chip></>}</span>
                 <span className="mv">{d ? <WatchMove d={d} /> : <Chip>{rd.kind === "none" ? "Not in brief" : "Calendar only"}</Chip>}</span>
                 <span className="note">
-                  {d ? <>{d[2]} <span className="faint">· {d[3]}</span></> : rd.kind !== "none" ? <>Named only in today&apos;s results calendars; the brief has no other note on it.</> : <>Not mentioned in today&apos;s brief or results calendars. Its sector is on the <Link href="/flows/">Flow Map</Link>.</>}
+                  {d ? <>{d[2]} <span className="faint">· {d[3]}</span></> : rd.kind !== "none" ? <>Named only in today&apos;s results calendars; the brief has no other note on it.</> : <>Not mentioned in today&apos;s brief or results calendars. Its sector is on the <Link href="/flows/">Money Moves</Link>.</>}
                   <span className={`rd${rd.kind === "none" ? " none" : ""}`}>{rd.text}{srcs.length > 0 && <Src k={srcs} />}</span>
                 </span>
                 <button type="button" className="x" onClick={() => remove(i)} aria-label={`Remove ${n}`}>

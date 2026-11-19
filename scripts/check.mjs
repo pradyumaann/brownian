@@ -63,13 +63,47 @@ for (const theme of ["night", "paper"]) {
       const { sw, vw } = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, vw: window.innerWidth }));
       const name = `${theme}-${width}-${r === "/" ? "brief" : r.replaceAll("/", "")}${seed ? "-" + seed : ""}`;
       await page.screenshot({ path: join(SHOTS, name + ".png"), fullPage: true });
+      // Folds (components/Fold.tsx): folded by default; the body is hidden and out of the tab order; a click opens it.
+      // `/`: Money movement, Coming up, Still developing; `/portfolio/`: How it is worked out, What the news means for each type. Section order is checked too.
+      if ((r === "/" || r === "/portfolio/") && !seed) {
+        const want = r === "/" ? ["money-movement", "coming-up", "still-developing"] : ["how-it-is-worked-out", "what-the-news-means", "events-for-what-you-own", "your-mix"];
+        const st = await page.evaluate((ids) => ids.map((id) => {
+          const f = document.getElementById(id), b = f?.querySelector(".fold-btn"), p = f?.querySelector(".fold-panel");
+          return { id, found: !!f, open: b?.getAttribute("aria-expanded"), h: p ? Math.round(p.getBoundingClientRect().height) : -1, vis: p ? getComputedStyle(p).visibility : "", inert: !!f?.querySelector(".fold-inner")?.inert,
+            ctl: b?.getAttribute("aria-controls") === p?.id, summary: (f?.querySelector(".bw-meta span")?.textContent ?? "").trim().length > 0 };
+        }), want);
+        for (const s of st) {
+          if (!s.found) { errors.push(`fold #${s.id} missing`); continue; }
+          if (s.open !== "false" || s.h !== 0 || s.vis !== "hidden" || !s.inert) errors.push(`fold #${s.id} is not folded by default (${JSON.stringify(s)})`);
+          if (!s.ctl || !s.summary) errors.push(`fold #${s.id}: aria-controls or the one-line summary is missing`);
+        }
+        for (const id of want) {
+          await page.locator(`#${id} .fold-btn`).click();
+          await page.waitForTimeout(80);
+          const o = await page.evaluate((i) => { const f = document.getElementById(i); return { exp: f.querySelector(".fold-btn").getAttribute("aria-expanded"), h: f.querySelector(".fold-panel").getBoundingClientRect().height, inert: f.querySelector(".fold-inner").inert, sw: document.documentElement.scrollWidth, vw: innerWidth }; }, id);
+          if (o.exp !== "true" || o.h < 40 || o.inert) errors.push(`fold #${id} did not open on click (${JSON.stringify(o)})`);
+          if (o.sw > o.vw) errors.push(`fold #${id} open causes sideways scroll ${o.sw}/${o.vw}`);
+        }
+        const order = await page.evaluate(() => [...document.querySelectorAll("main h2")].map((h) => h.textContent.trim()));
+        const before = (a, b) => order.findIndex((t) => t.startsWith(a)) < order.findIndex((t) => t.startsWith(b)) && order.findIndex((t) => t.startsWith(a)) >= 0;
+        if (r === "/" && !(before("What happened", "The market") && before("The market", "What drove"))) errors.push("order: What happened, then the market mood, then What drove the day");
+        if (r === "/" && !(order.findIndex((t) => t.startsWith("What happened")) < order.findIndex((t) => t.startsWith("Money")))) errors.push("order: Money movement must come after What happened");
+        if (r === "/portfolio/" && !before("Moves with", "Is my stock")) errors.push("order: Moves with Nifty 50 must come before Is my stock in the news?");
+        if (r === "/") {
+          const hero = await page.evaluate(() => [...document.querySelectorAll(".hero > div .bw-label")].map((l) => l.textContent.trim()));
+          if (hero.length !== 5 || !hero.includes("Wander Index") || !hero.includes("Macro pressure")) errors.push(`hero should hold 5 cells with Wander Index and Macro pressure apart: ${hero.join(" | ")}`);
+        }
+      }
       // Phase 2 text expectations on the seeded Portfolio Lens passes.
       const EXPECT = { left: ["None of the types in your mix has a year-long series"], noev: ["No dated events in the brief are tagged to the types in your mix."],
-        watch: ["Results due Fri 13 Nov, per today's brief", "No result date in today's brief", "Reported", "Reports Tue 17 Nov"], mix: ["Interpretation, not a forecast."],
+        watch: ["Results due Fri 13 Nov, per today's brief", "No result date in today's brief", "Reported", "Reports Tue 17 Nov"], mix: ["Interpretation, not a forecast.", "Correlation with Nifty 50", "Beta to Nifty 50"],
         none: ["Portfolio Lens reads the day's index and market moves"], flexi: ["proxy: Nifty 500, not the fund's own returns"] };
       // Text that must not appear: in "none" mode the example mix and its figures are hidden.
-      const ABSENT = { none: ["the example mix", "Blended one-day move", "Tagged to"] };
+      const ABSENT = { none: ["the example mix", "Blended one-day move", "Tagged to", "Correlation with Nifty 50"] };
       if (seed && r === "/portfolio/") {
+        // Folds are closed by default and their text is hidden: open them all before reading the page text.
+        await page.evaluate(() => document.querySelectorAll('.fold-btn[aria-expanded="false"]').forEach((b) => b.click()));
+        await page.waitForTimeout(700);
         const body = await page.evaluate(() => document.body.innerText);
         for (const t of EXPECT[seed] ?? []) if (!body.includes(t)) errors.push(`missing text: ${t}`);
         for (const t of ABSENT[seed] ?? []) if (body.includes(t)) errors.push(`unexpected text: ${t}`);

@@ -9,7 +9,7 @@ const ROOT = resolve(".");
 // Files and folders scanned, plus lib/portfolio*.ts (tests excluded).
 // components/portfolio/SessionMove.tsx (the front page's Blended session move card) is named on its own so it stays
 // scanned if the folder list changes; the Set below keeps it from being counted twice.
-const PATHS = ["components/portfolio.tsx", "components/portfolio", "components/portfolio/SessionMove.tsx", "components/EventRail.tsx", "components/charts/BlendLine.tsx", "app/portfolio", "lib/resultDates.ts"];
+const PATHS = ["components/portfolio.tsx", "components/portfolio", "components/portfolio/SessionMove.tsx", "components/EventRail.tsx", "components/Fold.tsx", "components/charts/BlendLine.tsx", "app/portfolio", "lib/resultDates.ts"];
 
 const BANNED = [
   /\bbuy(?:s|ing)?\b/i, /\bsell(?:s|ing)?\b/i, /\bholds?\b/i, /\bshould\b/i, /\brecommend(?:s|ed|ing|ation|ations)?\b/i,
