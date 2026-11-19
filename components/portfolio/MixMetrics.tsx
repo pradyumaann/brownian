@@ -80,7 +80,7 @@ export function MixMetrics({ w, series }: { w: Weights; series: PortfolioSeries 
       <p className="note after-plot">
         Annualised volatility against Nifty 50 is in section 05, Your mix over the year. Gold is approximate (COMEX gold in USD × USD/INR; excludes duties and premiums)<Src k={["D5"]} />; types with no series (silver, debt) have no figure here.
       </p>
-      <p className="bw-disclaimer">Interpretation, not a forecast. These describe how daily changes moved together in this window; they say nothing about the next one.</p>
+      <p className="bw-disclaimer">Interpretation, not a forecast. These describe how daily changes moved together in this window; they say nothing about the next one. US-traded series are paired by date, and their sessions close after India&apos;s, so their figures with Nifty 50 are only partly simultaneous.</p>
     </>
   );
 }

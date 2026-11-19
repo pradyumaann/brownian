@@ -23,6 +23,7 @@ const field = indicatorField(B.sessionDate);
 const FIELD_ROW: Record<string, string> = { usdinr: "USD/INR", fpi: "FII net flows", us10y: "10Y Treasury", brent: "Brent" };
 const fieldTone = (id: string): Tone | undefined => B.indicators.find((r) => r[1].startsWith(FIELD_ROW[id]))?.[7];
 const fxBrief = B.indicators.find((r) => r[1] === "USD/INR");
+const dxyBrief = B.macro.find((r) => r[0] === "Dollar index");
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const dmy = (d: string) => `${Number(d.slice(8))} ${MON[Number(d.slice(5, 7)) - 1]} ${d.slice(0, 4)}`;
 
@@ -73,7 +74,7 @@ export default function Macro() {
           })}
         </ul>
         <p className="bw-meta">The dollar index and gold are also in the brief&apos;s cross-asset list<Src k={["S11"]} />. This ranking is context only: it does not change the Macro pressure score, which is worked out from the seven indicators in the brief (the dollar index is one of them; gold is not). Interpretation, not a forecast.</p>
-        <p className="bw-meta after-plot">Yahoo Finance and NSDL closes, {dmy(field.from)} to {dmy(field.to)}; levels are ranked among the window&apos;s daily closes, flows among its weeks or months, and a week or month still open is marked to date. They can differ from the brief&apos;s provisional figures in the table below (USD/INR {fxBrief?.[2]} in the brief<Src k={fxBrief?.[8] ? [fxBrief[8]] : []} />).</p>
+        <p className="bw-meta after-plot">Yahoo Finance and NSDL closes, {dmy(field.from)} to {dmy(field.to)}; levels are ranked among the window&apos;s daily closes, flows among its weeks or months, and a week or month still open is marked to date. They can differ from the brief&apos;s provisional figures in the table below (USD/INR {fxBrief?.[2]} in the brief<Src k={fxBrief?.[8] ? [fxBrief[8]] : []} />; Dollar index {dxyBrief?.[1]} in the brief<Src k={["S11"]} />).</p>
 
         <h3 className="sub rb-head">Releases: latest against forecast and the previous print<Src k={["W8", "W11", "W13", "W15", "S11"]} /></h3>
         <ReleaseMetrics rows={B.releases} />
