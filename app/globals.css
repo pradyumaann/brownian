@@ -877,3 +877,26 @@ ul.list.list-cont { border-top: 0; }
   .fold-part + .fold-part { margin-top: var(--space-8); padding-top: var(--space-6); }
   .fold-part-h h3 { font-size: 19px; }
 }
+
+/* Moves with Nifty 50: four compact figures in one row (two by two on phones), the per-type table behind a summary. */
+.mm { margin: var(--space-3) 0 var(--space-2); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--hairline-strong); border-bottom: 1px solid var(--hairline); }
+.mm > div { padding: var(--space-3) var(--space-4) var(--space-3) 0; min-width: 0; }
+.mm > div + div { padding-left: var(--space-4); border-left: 1px solid var(--hairline); }
+.mm dt { font-family: var(--font-mono); font-size: 11px; letter-spacing: .02em; color: var(--ink-muted); }
+.mm dd { margin: 0; }
+.mm dd.bw-mono { font-size: 26px; line-height: 1.2; letter-spacing: -.02em; margin-top: var(--space-1); font-variant-numeric: tabular-nums; }
+.mm-c { font-size: 12px; color: var(--ink-faint); margin-top: 2px; }
+.mm-more { margin: var(--space-2) 0 var(--space-3); }
+.mm-more > summary { cursor: pointer; font-size: 13px; color: var(--ink-muted); padding: var(--space-2) 0; }
+.mm-more > summary:hover { color: var(--ink); }
+.mm-more > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mm-src { margin: var(--space-2) 0 var(--space-2); }
+@media (max-width: 620px) {
+  .mm { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mm > div:nth-child(odd) { padding-left: 0; border-left: 0; }
+  .mm > div:nth-child(n+3) { border-top: 1px solid var(--hairline); }
+  .mm dd.bw-mono { font-size: 22px; }
+  .mm dt { min-height: 2.6em; }
+}
+
+.solo { max-width: 52rem; margin-bottom: var(--space-8); }

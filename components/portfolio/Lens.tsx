@@ -41,9 +41,10 @@ export function PortfolioLens({ facts, series, vars }: { facts: PortfolioFacts; 
         <Year w={port.w} series={series} mode={port.mode} />
       </Section>
 
-      <Section title={<>Events for what you <S>own</S></>} meta="Dated events the brief ties to the types in your mix · IST" ix="06">
+      <Fold id="events-for-what-you-own" title={<>Events for what you <S>own</S></>} ix="06"
+        summary={port.mode === "none" ? "No mix, so no events are tagged. Dated events the brief ties to a type are inside." : "Dated events the brief ties to the types in your mix · IST. The list is inside."}>
         <EventsForYou w={port.w} mode={port.mode} />
-      </Section>
+      </Fold>
 
       <Fold id="how-it-is-worked-out" title={<>How it is <S>worked out</S></>} ix="07"
         summary="The blended move is each type's share times its one-day move, from index and market series. Formula, drivers, source tags and what is n/a are inside.">

@@ -49,38 +49,40 @@ export function MixMetrics({ w, series }: { w: Weights; series: PortfolioSeries 
     <>
       <h3 className="sub gap-top">Moves with Nifty 50</h3>
       <p className="bw-meta">
-        Covers {Math.round(bh.covered)}% of your mix, re-weighted to 100% among the covered types
-        {bh.left.length > 0 && <>; {bh.left.map((x) => SHORT[x.id]).join(", ")} left out (n/a)</>}. Window: {window}, weights held constant each day.
+        Covers {Math.round(bh.covered)}% of your mix{bh.left.length > 0 && <>; {bh.left.map((x) => SHORT[x.id]).join(", ")} left out (n/a)</>} · {window}
       </p>
-      <dl className="cfacts mfacts">
+      <dl className="mm">
         <div>
-          <dt>Correlation with Nifty 50<span className="dts">How closely the mix&apos;s daily changes moved with Nifty 50&apos;s, from −1 (opposite) to 1 (the same).</span></dt>
+          <dt>Correlation with Nifty 50</dt>
           <dd className="bw-mono">{corr ? fmtR(corr.r) : na}</dd>
+          <dd className="mm-c">−1 opposite, 1 the same</dd>
         </div>
         <div>
-          <dt>Beta to Nifty 50<span className="dts">The mix&apos;s average daily change for each 1% change in Nifty 50. A beta of 0.80 is 0.8%.</span></dt>
+          <dt>Beta to Nifty 50</dt>
           <dd className="bw-mono">{bet ? num2(bet.b) : na}</dd>
+          <dd className="mm-c">change per 1% in Nifty 50</dd>
         </div>
         <div>
-          <dt>Most correlated pair of types<span className="dts">The two held types whose daily changes moved most closely together.</span></dt>
-          <dd className="bw-mono">{ex ? <>{pairName(ex.high)} <span className="mval">{fmtR(ex.high.r)}</span></> : na}</dd>
+          <dt>Most correlated pair</dt>
+          <dd className="bw-mono">{ex ? fmtR(ex.high.r) : na}</dd>
+          <dd className="mm-c">{ex ? pairName(ex.high) : "types share too few days"}</dd>
         </div>
         <div>
-          <dt>Least correlated pair of types<span className="dts">The two held types whose daily changes moved least closely together.</span></dt>
-          <dd className="bw-mono">{ex ? <>{pairName(ex.low)} <span className="mval">{fmtR(ex.low.r)}</span></> : na}</dd>
+          <dt>Least correlated pair</dt>
+          <dd className="bw-mono">{ex ? fmtR(ex.low.r) : na}</dd>
+          <dd className="mm-c">{ex ? pairName(ex.low) : "types share too few days"}</dd>
         </div>
       </dl>
-      <p className="bw-source mfsrc">
-        Pearson correlation and beta of daily % changes over the days both have a change{corr ? <> ({corr.n} days)</> : null}; Nifty 50 is the market line in section 05<Src k={srcs} />
-      </p>
       {nTypes < 2 && <p className="note">One type with a series carries the weight, so there is no pair to compare.</p>}
-      {nTypes >= 2 && !ex && <p className="note">The held types do not share enough days to compare in pairs: n/a.</p>}
-      <DataTable stack label="Each held type against Nifty 50 over the same window"
-        head={[["Type"], ["Share", "r"], ["Correlation", "r"], ["Beta", "r"], ["Source"]]} rows={rows} />
-      <p className="note after-plot">
-        Annualised volatility against Nifty 50 is in section 05, Your mix over the year. Gold is approximate (COMEX gold in USD × USD/INR; excludes duties and premiums)<Src k={["D5"]} />; types with no series (silver, debt) have no figure here.
+      <details className="mm-more">
+        <summary>Each held type against Nifty 50</summary>
+        <DataTable stack label="Each held type against Nifty 50 over the same window"
+          head={[["Type"], ["Share", "r"], ["Correlation", "r"], ["Beta", "r"], ["Source"]]} rows={rows} />
+      </details>
+      <p className="bw-source mm-src">
+        Pearson correlation and beta of daily % changes{corr ? <> ({corr.n} days)</> : null}; weights held constant, covered types re-weighted to 100%. Volatility is in section 05. Gold is approximate (COMEX gold in USD × USD/INR; excludes duties and premiums)<Src k={["D5"]} />. US-traded series are paired by date and close after India, so their figures are only partly simultaneous<Src k={srcs} />
       </p>
-      <p className="bw-disclaimer">Interpretation, not a forecast. These describe how daily changes moved together in this window; they say nothing about the next one. US-traded series are paired by date, and their sessions close after India&apos;s, so their figures with Nifty 50 are only partly simultaneous.</p>
+      <p className="bw-disclaimer">Interpretation, not a forecast. These describe how daily changes moved together in this window; they say nothing about the next one.</p>
     </>
   );
 }

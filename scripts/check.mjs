@@ -66,7 +66,7 @@ for (const theme of ["night", "paper"]) {
       // Folds (components/Fold.tsx): folded by default; the body is hidden and out of the tab order; a click opens it.
       // `/`: Money movement, Coming up, Still developing; `/portfolio/`: How it is worked out, What the news means for each type. Section order is checked too.
       if ((r === "/" || r === "/portfolio/") && !seed) {
-        const want = r === "/" ? ["money-movement", "coming-up", "still-developing"] : ["how-it-is-worked-out", "what-the-news-means"];
+        const want = r === "/" ? ["money-movement", "coming-up", "still-developing"] : ["how-it-is-worked-out", "what-the-news-means", "events-for-what-you-own"];
         const st = await page.evaluate((ids) => ids.map((id) => {
           const f = document.getElementById(id), b = f?.querySelector(".fold-btn"), p = f?.querySelector(".fold-panel");
           return { id, found: !!f, open: b?.getAttribute("aria-expanded"), h: p ? Math.round(p.getBoundingClientRect().height) : -1, vis: p ? getComputedStyle(p).visibility : "", inert: !!f?.querySelector(".fold-inner")?.inert,
@@ -101,6 +101,9 @@ for (const theme of ["night", "paper"]) {
       // Text that must not appear: in "none" mode the example mix and its figures are hidden.
       const ABSENT = { none: ["the example mix", "Blended one-day move", "Tagged to", "Correlation with Nifty 50"] };
       if (seed && r === "/portfolio/") {
+        // Folds are closed by default and their text is hidden: open them all before reading the page text.
+        await page.evaluate(() => document.querySelectorAll('.fold-btn[aria-expanded="false"]').forEach((b) => b.click()));
+        await page.waitForTimeout(700);
         const body = await page.evaluate(() => document.body.innerText);
         for (const t of EXPECT[seed] ?? []) if (!body.includes(t)) errors.push(`missing text: ${t}`);
         for (const t of ABSENT[seed] ?? []) if (body.includes(t)) errors.push(`unexpected text: ${t}`);

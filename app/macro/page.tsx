@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { B } from "@/data";
 import { Chip } from "@/components/Chip";
-import { DayRail } from "@/components/DayRail";
 import { EventRail } from "@/components/EventRail";
 import { DataTable } from "@/components/DataTable";
 import { S, Section, ViewHead } from "@/components/Section";
@@ -43,18 +42,11 @@ export default function Macro() {
       <ViewHead title={<>The macro <S>backdrop</S></>} feature="Macro Watch"
         lede="Economic indicators, and the dates that can move your portfolio. Times in IST." />
 
-      <div className="pair">
-        <div>
-          <h3 className="sub">CPI crossed the 6% upper limit<Src k={["W8", "W10"]} /></h3>
-          <CpiBand sep={sep} oct={oct} food={food} />
-          <p className="note after-plot">October CPI came in at <b>{oct}%</b>, up from {sep}% in September and above the {forecast}% forecast. It is the first breach of the RBI&apos;s 6% upper limit since October 2024. Food inflation hit {food}%.</p>
-          <p className="note after-plot">Why it matters: with inflation above the band, the RBI is more likely to keep raising rates at its 2–4 Dec meeting. That pressures bond-fund NAVs and rate-sensitive stocks, and can lift new FD rates.</p>
-        </div>
-        <div>
-          <h3 className="sub">US October PPI and four Fed speakers<Src k={["W13", "W14"]} /></h3>
-          <DayRail rows={B.ppi} briefTime={B.prepared} />
-          <p className="note after-plot">A hotter-than-forecast PPI would firm up the December Fed hike, push US yields higher and add pressure on the rupee and FII flows.</p>
-        </div>
+      <div className="solo">
+        <h3 className="sub">CPI crossed the 6% upper limit<Src k={["W8", "W10"]} /></h3>
+        <CpiBand sep={sep} oct={oct} food={food} />
+        <p className="note after-plot">October CPI came in at <b>{oct}%</b>, up from {sep}% in September and above the {forecast}% forecast. It is the first breach of the RBI&apos;s 6% upper limit since October 2024. Food inflation hit {food}%.</p>
+        <p className="note after-plot">Why it matters: with inflation above the band, the RBI is more likely to keep raising rates at its 2–4 Dec meeting. That pressures bond-fund NAVs and rate-sensitive stocks, and can lift new FD rates.</p>
       </div>
 
       <Section title={<>Indicators to <S>watch</S></>} meta="Where each reading sits in its own five years, the releases against forecast, and what's next" ix="01">
