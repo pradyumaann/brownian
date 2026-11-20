@@ -16,6 +16,11 @@ export const brief: Brief = {
     ". Overnight turned ", { term: "riskoff", label: "risk-off" }, ": the US 10-year closed at 5.10% and Brent settled 3.30% higher at $95.82 after attacks on Saudi energy sites",
     { src: ["S11", "S12"] }, ". ", { b: "FII buying is still the anchor" }, ", while ", { term: "fii", label: "DIIs" }, " sold for a 9th straight session", { src: ["S5"] }, ".",
   ],
+  glance: {
+    india: { why: "with financial stocks leading and foreign investors buying", src: ["S1", "S3", "S5"] },
+    world: { why: "US stocks fell and oil jumped after attacks in Saudi Arabia", src: ["S11", "S12"] },
+    next: { src: ["W15"] },
+  },
   kpis: {
     gift: { label: "GIFT Nifty, 02:44 IST", term: "gift", v: "25,279", d: "−20 pts", dNote: "vs Nifty close", src: ["S8"] },
     fii: { label: "FII net, cash, Thu", term: "fii", v: "+₹7,831", unit: " cr", d: "+₹73,566 cr", dNote: "Nov to date", src: ["S5"] },

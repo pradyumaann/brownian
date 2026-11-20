@@ -4,6 +4,7 @@ import { Chip } from "@/components/Chip";
 import { CountUp } from "@/components/CountUp";
 import { SessionMove } from "@/components/portfolio/SessionMove";
 import { Fold, FoldPart } from "@/components/Fold";
+import { Glance } from "@/components/Glance";
 import { More } from "@/components/More";
 import { Rich } from "@/components/Rich";
 import { S, Section } from "@/components/Section";
@@ -38,10 +39,12 @@ export default function MarketsOvernight() {
   const types = facts.types.map(({ id, n, d1, src, proxy }) => ({ id, n, d1, src, proxy }));
   return (
     <>
+      <Glance />
+
       <header className="vh is-brief">
         <h1>Markets, <S>Overnight</S>.</h1>
         <div>
-          <p className="lede"><Rich r={B.lede} /></p>
+          <More label="More detail" className="lede-more"><p className="lede"><Rich r={B.lede} /></p></More>
           <p className="bw-source vh-f">Markets, Overnight · {B.dateShort}</p>
         </div>
       </header>
@@ -52,17 +55,18 @@ export default function MarketsOvernight() {
           <div className="bw-label"><Link href="/wander/">Wander Index</Link></div>
           <div className="v"><CountUp to={score} /></div>
           <SegMeter score={scoreRaw} label={`Wander Index ${score} of 100, ${band}`} />
-          <div className="d"><span className="w">{band} · interpretation, not a forecast</span></div>
+          <div className="d"><span className="w">{band}<span className="ifw"> · interpretation, not a forecast</span></span></div>
         </div>
         <div>
           <div className="bw-label"><Link href="/wander/#macro-pressure">Macro pressure</Link></div>
           <div className="v">{pressureScore}</div>
           <SegMeter score={pressureScore} label={`Macro pressure ${pressureScore} of 100, ${pressureName}`} />
-          <div className="d"><span className="w">{pressureName} · interpretation, not a forecast</span></div>
+          <div className="d"><span className="w">{pressureName}<span className="ifw"> · interpretation, not a forecast</span></span></div>
         </div>
         <KpiCell k={B.kpis.fii} />
         <KpiCell k={B.kpis.usdinr} />
       </div>
+      <p className="bw-disclaimer ifp hero-i">Wander Index and Macro pressure: interpretation, not a forecast.</p>
 
       <Section title={<>Blended session <S>move</S></>} meta={`${B.session} session · index and market moves by holding type, not your own holdings' prices`} ix="01 · Portfolio Lens">
         <SessionMove types={types} asOf={facts.asOf} />
@@ -74,25 +78,26 @@ export default function MarketsOvernight() {
             <article key={t.h} className="take">
               <Chip tone={t.chip[1]}>{t.chip[0]}</Chip>
               <h3>{t.h}</h3>
-              <More label="The detail" className="take-more"><p><Rich r={t.p} /><Src k={t.src} /></p></More>
               <p className="why">{t.why}</p>
+              <More label="Details" className="take-more"><p><Rich r={t.p} /><Src k={t.src} /></p></More>
             </article>
           ))}
         </div>
       </Section>
 
-      <Section title={<>The market&apos;s <S>mood</S></>} meta={`${scored.length} of ${comps.length} components, each ranked against its own five years, ${B.session} session`} ix="03 · Wander Index">
+      <Section title={<>The market&apos;s <S>mood</S></>} meta={`${scored.length} of ${comps.length} components, each ranked against its own five years, ${B.session} session`} ix="03 · Wander Index" interp>
         <div className="two">
           <div>
             <Dial score={scoreRaw} comps={scored.map((c) => ({ name: c.name, score: c.score }))} label={`Wander Index ${score}, ${band}`} />
-            <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Each dot is one component.</p>
+            <p className="bw-disclaimer after-plot"><span className="ifw">Interpretation, not a forecast. </span>Each dot is one component.</p>
           </div>
           <div>
-            <div className="duo">
+            <p className="note ifp wl1">Wander Index {score}, {band}. Macro pressure {pressureScore}, {pressureName}.</p>
+            <div className="duo ifw">
               <div><p className="bw-label">Wander Index</p><div className="score"><span className="n">{score}</span><span className="w">{band}</span></div></div>
               <div><p className="bw-label">Macro pressure</p><div className="score"><span className="n">{pressureScore}</span><span className="w">{pressureName}</span></div></div>
             </div>
-            <More label={`All ${comps.length} components`}><table className="comp-tbl">
+            <More label={`See the ${comps.length} readings`}><table className="comp-tbl">
               <tbody>
                 {comps.map((c) => (
                   <tr key={c.id}><td>{c.name} · {c.value}<Src k={c.src} /></td><td className="v">{c.available ? Math.round(c.score) : <span className="bw-na">n/a</span>}</td></tr>

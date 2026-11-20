@@ -5,6 +5,7 @@ import { createServer } from "node:http";
 import { readFile, mkdir } from "node:fs/promises";
 import { extname, join, resolve } from "node:path";
 import { chromium } from "playwright-core";
+import { glanceProblems } from "../lib/glance.ts";
 
 const ROOT = resolve("out");
 const SHOTS = resolve(process.argv[2] || "check-shots");
@@ -95,7 +96,7 @@ for (const theme of ["night", "paper"]) {
         }
       }
       // Phase 2 text expectations on the seeded Portfolio Lens passes.
-      const EXPECT = { left: ["None of the types in your mix has a year-long series"], noev: ["No dated events in the brief are tagged to the types in your mix."],
+      const EXPECT = { left: ["None of the types in your mix has a year-long series"], noev: ["No dated events are tagged to the types in your mix."],
         watch: ["Results due Fri 13 Nov", "No result date found", "Reported", "Reports Tue 17 Nov"], mix: ["Interpretation, not a forecast.", "Correlation with Nifty 50", "Beta to Nifty 50"],
         none: ["Portfolio Lens reads the day's index and market moves"], flexi: ["proxy: Nifty 500, not the fund's own returns"] };
       // Text that must not appear: in "none" mode the example mix and its figures are hidden.
@@ -119,11 +120,49 @@ for (const theme of ["night", "paper"]) {
         for (const t of [...CARD, ...(FRONT[seed ?? ""] ?? [])]) if (!body.includes(t)) errors.push(`missing text: ${t}`);
         for (const t of ["Your day", "Events for what you own", ...(FRONT_ABSENT[seed] ?? [])]) if (body.includes(t)) errors.push(`unexpected text: ${t}`);
         if (dawn !== 1) errors.push(`${dawn} primary buttons on /, expected 1`);
+        // Today in 3 lines (components/Glance.tsx): first in main, three lines, 25 words a line, 60 a card, no banned wording.
+        const g = await page.evaluate(() => ({ first: document.querySelector("main > :first-child")?.classList.contains("glance"),
+          lines: [...document.querySelectorAll(".glance-l .glance-t")].map((l) => l.textContent.trim()), h: document.documentElement.scrollHeight }));
+        if (!g.first) errors.push("Today in 3 lines is not the first block on /");
+        if (g.lines.length !== 3) errors.push(`Today in 3 lines has ${g.lines.length} lines, expected 3`);
+        for (const pr of glanceProblems(g.lines)) errors.push(`Today in 3 lines: ${pr}`);
+        if (!seed) console.log(`     / page height at ${width}px (${theme}): ${g.h}px`);
+      }
+      // Phone navigation (components/Nav.tsx): under 620px the top nav is hidden and the bottom tab bar shows five tabs of
+      // at least 44px, one marked current; at 1280px the tab bar is hidden. Nothing in the page sits under the bar at the end.
+      if (!seed) {
+        const nav = await page.evaluate(() => {
+          const bar = document.querySelector(".tabbar"), top = document.querySelector(".nav");
+          const tabs = [...document.querySelectorAll(".tabbar .tb")];
+          return { bar: !!bar && getComputedStyle(bar).display !== "none", top: !!top && getComputedStyle(top).display !== "none",
+            n: tabs.length, small: tabs.filter((t) => t.getBoundingClientRect().height < 44 || t.getBoundingClientRect().width < 44).length,
+            cur: tabs.filter((t) => t.hasAttribute("aria-current")).length, barH: bar?.getBoundingClientRect().height ?? 0,
+            pad: parseFloat(getComputedStyle(document.querySelector(".page")).paddingBottom) };
+        });
+        if (width === 400) {
+          if (!nav.bar || nav.top) errors.push(`phone nav: tab bar shown ${nav.bar}, top nav shown ${nav.top}`);
+          if (nav.n !== 5 || nav.small) errors.push(`phone nav: ${nav.n} tabs, ${nav.small} under 44px`);
+          if (nav.cur !== 1) errors.push(`phone nav: ${nav.cur} tabs marked current, expected 1`);
+          if (nav.pad < nav.barH) errors.push(`phone nav: page bottom padding ${nav.pad}px is less than the bar's ${nav.barH}px`);
+        } else if (nav.bar || !nav.top) errors.push(`desktop nav: tab bar shown ${nav.bar}, top nav shown ${nav.top}`);
+      }
+      // The More sheet at 400px: opens from the More tab, lists the five other views, Esc closes it with focus back on More.
+      if (width === 400 && r === "/" && !seed) {
+        const more = page.locator(".tabbar button.tb");
+        await more.click();
+        await page.waitForTimeout(100);
+        const open = await page.evaluate(() => ({ open: !!document.querySelector(".more-sheet")?.open, links: [...document.querySelectorAll(".more-sheet .more-list a")].map((a) => a.textContent.trim()) }));
+        if (!open.open || open.links.join("|") !== "Money Moves|India Markets|Global Cues|Developing|Jargon Buster") errors.push(`More sheet: ${JSON.stringify(open)}`);
+        await page.keyboard.press("Escape");
+        await page.waitForTimeout(100);
+        const shut = await page.evaluate(() => ({ closed: !document.querySelector(".more-sheet")?.open, onMore: document.activeElement === document.querySelector(".tabbar button.tb") }));
+        if (!shut.closed || !shut.onMore) errors.push("Esc did not close the More sheet and return focus to More");
       }
       // Term pop-up at 400px on the front page: opens from the keyboard, sits inside the viewport with no sideways
       // page scroll, and Esc closes it with focus back on the term.
       if (width === 400 && r === "/" && !seed) {
-        const term = page.locator("main [data-term]").first();
+        const term = page.locator("main [data-term]:visible").first();
+        await term.evaluate((el) => el.setAttribute("data-check-term", ""));
         await term.focus();
         await page.keyboard.press("Enter");
         await page.waitForTimeout(250);
@@ -146,7 +185,7 @@ for (const theme of ["night", "paper"]) {
         }
         await page.keyboard.press("Escape");
         await page.waitForTimeout(100);
-        const back = await page.evaluate(() => ({ closed: !document.querySelector(".termpop"), onTerm: document.activeElement === document.querySelector("main [data-term]") }));
+        const back = await page.evaluate(() => ({ closed: !document.querySelector(".termpop"), onTerm: document.activeElement === document.querySelector("[data-check-term]") }));
         if (!back.closed || !back.onTerm) errors.push("Esc did not close the term pop-up and return focus to the term");
       }
       const bad = sw > vw || errors.length;

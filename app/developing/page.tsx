@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { B } from "@/data";
 import { ViewHead, S } from "@/components/Section";
+import { More } from "@/components/More";
 import { Src } from "@/components/Src";
 
 export const metadata: Metadata = { title: "Developing" };
@@ -19,9 +20,11 @@ export default function Developing() {
             </span>
             <div>
               <div className="t">{s.t}</div>
-              <p className="m">{s.p}<Src k={s.src} /></p>
-              <p className="m"><b>Why it matters:</b> {s.m}</p>
-              <p className="m"><b>Watch:</b> {s.w}</p>
+              <p className="m st-why"><b>Why it matters:</b> {s.m}</p>
+              <More label="Details" className="st-more">
+                <p className="m st-p">{s.p}<Src k={s.src} /></p>
+                <p className="m st-watch"><b>Watch:</b> {s.w}</p>
+              </More>
             </div>
             <span className="v" />
           </li>

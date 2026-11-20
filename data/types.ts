@@ -56,6 +56,17 @@ export interface Brief {
   /** NSE cash-session hours (IST) for the day, when they differ from the regular 09:15–15:30 (a special session). */
   hours?: { open: string; close: string };
   lede: Rich;
+  /** "Today in 3 lines" (components/Glance.tsx): the plain-language reasons only, in plain words (no FII, no GIFT Nifty),
+   *  no figures. Every number in the card is templated from other fields (the Nifty 50 row of `india`, `kpis.gift`,
+   *  `next`). Optional: without it the card keeps its figures and drops the reasons. */
+  glance?: {
+    /** Why Indian stocks moved in the last session, as a clause: "led by banks and car makers, with foreign investors buying again". */
+    india: { why: string; src: string[] };
+    /** What global markets did overnight, as a clause: "US and Asian markets fell sharply". */
+    world: { why: string; src: string[] };
+    /** The source of the first `next` row, which line 3 names. */
+    next?: { src: string[] };
+  };
   kpis: { gift: Kpi; fii: Kpi; usdinr: Kpi };
   pressure: Pressure[];
   takeaways: Takeaway[];

@@ -26,7 +26,7 @@ const REQUIRED_ARRAYS = [
   "erLessons", "stories", "sources", "web", "method",
 ];
 const REQUIRED_OBJECTS = ["kpis", "stocks", "aliases", "flows", "cpi", "gloss"];
-const OPTIONAL_KEYS = ["hours"];
+const OPTIONAL_KEYS = ["hours", "glance"];
 
 // Advice, tip and call language (AGENTS.md rule 1). Ordinary news words such as "sell-off" or "RBI target" are fine.
 const BANNED: RegExp[] = [
@@ -112,6 +112,35 @@ export function validateBrief(input: unknown): Report {
   for (const k of ["gift", "fii", "usdinr"]) if (!isObj(obj("kpis")[k])) err(`kpis.${k}`, "Required headline figure is missing.");
   checkTags(obj("flows").src, "flows.src", true);
   arr("takeaways").forEach((t, i) => isObj(t) ? checkTags(t.src, `takeaways[${i}].src`, true) : err(`takeaways[${i}]`, "Must be an object."));
+
+  // "Today in 3 lines" (components/Glance.tsx): plain reasons only, no figures; the app templates the numbers.
+  // Kept in step with GLANCE_BANNED and the word limits in lib/glance.ts (this file stays import-free).
+  if (b.glance === undefined) warn("glance", "No glance reasons: the Today in 3 lines card shows its figures without reasons.");
+  else if (!isObj(b.glance)) err("glance", "glance must be an object.");
+  else {
+    const g = b.glance as Record<string, unknown>;
+    const GLANCE_BANNED = [/\byou should\b/i, /\bnothing to do\b/i, /\bsafe\b/i, /\bexpect(?:s|ed|ing)?\b/i, /\bneeds? attention\b/i,
+      /\b(?:SIPs?|FDs?|fixed deposits?)\b[^.]*\b(?:affected|unaffected|impacted|hit)\b/i, /\bFIIs?\b/, /\bDIIs?\b/, /\bGIFT Nifty\b/i];
+    const LIMIT: Record<string, number> = { india: 14, world: 11 };
+    let cardWords = 0;
+    for (const k of ["india", "world"]) {
+      const part = g[k];
+      if (!isObj(part) || !isStr(part.why) || part.why.trim() === "") { err(`glance.${k}`, "Needs { why, src } with the reason as text."); continue; }
+      checkTags(part.src, `glance.${k}.src`, true);
+      const why = part.why as string;
+      const n = why.trim().split(/\s+/).length;
+      cardWords += n;
+      if (n > LIMIT[k]) err(`glance.${k}.why`, `At most ${LIMIT[k]} words (has ${n}); the full line must stay within 25.`);
+      if (/\d/.test(why)) err(`glance.${k}.why`, "No figures here: the app adds them from the record.");
+      for (const re of GLANCE_BANNED) { const m = why.match(re); if (m) err(`glance.${k}.why`, `Not allowed in the card: "${m[0]}".`); }
+    }
+    // The three lines' fixed words (30) plus the reasons and the first next row (title and when) must fit the card's 60.
+    const ev = arr("next")[0];
+    const evWords = isObj(ev) ? [ev.t, ev.w].filter(isStr).join(" ").trim().split(/\s+/).length : 1;
+    const total = cardWords + 30 + evWords;
+    if (total > 60) err("glance", `The card would run to ${total} words (max 60): shorten the reasons or the first next row.`);
+    if (g.next !== undefined) { if (isObj(g.next)) checkTags(g.next.src, "glance.next.src", true); else err("glance.next", "Needs { src }."); }
+  }
   arr("holdings").forEach((h, i) => isObj(h) ? checkTags(h.src, `holdings[${i}].src`, true) : err(`holdings[${i}]`, "Must be an object."));
   arr("releases").forEach((r, i) => isObj(r) ? checkTags(r.src, `releases[${i}].src`, true) : err(`releases[${i}]`, "Must be an object."));
   arr("stories").forEach((s, i) => isObj(s) ? checkTags(s.src, `stories[${i}].src`, true) : err(`stories[${i}]`, "Must be an object."));

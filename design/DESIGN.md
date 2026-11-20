@@ -64,7 +64,8 @@ Bars start at zero. Log axes say "log". At most 3 annotations per figure, on lea
 ## Brief layout (in order)
 
 1. Brownian header (the device showcase hero, 15 Nov 2026), a window in the page’s own colour on Night and on Paper: the day line in mono (date · brief time · open · close IST, all from the day's record) with the theme switch, the wordmark (Onest 600, −0.045em) and the mono tagline, with the Wander Index's last five sessions as five bars beside it on wider screens (on phones a full-width strip of the same five bars under the tagline, drawn at 480×150 with larger text), coloured by `--mast-1…5` (teal, violet, rose, orange, gold on Night; electric azure, violet, hot pink, neon orange, neon green on Paper), which roll slowly through the bars when motion is allowed, with the text colour (`--mast-ink-1…5`) switching alongside. A grid of plus marks covers the whole header, each shrinking and growing out of step with its neighbours (the bars sit on top of it). There is no descriptor sentence. On phones the wordmark and tagline come first, then the compact bars strip (about 130px) across the full width; the plus-mark field stays behind both. Every other view has a compact bar: wordmark, day line and the theme switch, in the page's colours.
-2. A `.t-display-l` title with a 2–3 sentence tagged lede.
+2. "Today in 3 lines" (20 Nov 2026, `Glance.tsx`), on every screen size: the usual heading, `.bw-meta` and rule, then a ruled, numbered list of three plain sentences (Onest 17px, 16px on phones, `--ink`, at most 72ch, 60ch on phones; the number in faint mono). Each sentence ends with one tag group, not a tag after every figure: the line is one figure-and-reason unit, and the group holds every source of its figures. No box, no colour, no chip; plain words only.
+2a. A `.t-display-l` title with a 2–3 sentence tagged lede (behind "More detail" on phones, where the card above is the quick read).
 3. Hero row: five KPIs divided by hairlines (19 Nov 2026): GIFT Nifty, Wander Index and Macro pressure (two separate cells, each with its own label, number, segmented meter and caption), FII, USD/INR. Five columns on wide screens; on phones GIFT Nifty takes the first row and the rest sit in pairs.
 4. 01 Blended session move (Portfolio Lens card, pattern below), ending in the page's one primary button.
 5. 03 The market's mood (Wander Index: dial + component table + "Interpretation, not a forecast."), after What happened (02) and before What drove the day (04). Never folded.
@@ -73,6 +74,8 @@ Bars start at zero. Log axes say "log". At most 3 annotations per figure, on lea
 8. 05 Coming up (Macro Watch, every row): a fold with a count.
 9. 06 Still developing (StoryList): a fold with a count; "All developing stories" sits inside it.
 10. Footer: "For information only; not investment advice."
+
+**Phone reading (20 Nov 2026), exceptions under 620px only:** the top nav gives way to a fixed bottom tab bar (five tabs, short labels, ≥44px, the current one in `--ink` with a 2px ink marker on the bar's top rule, `--ground` fill and a `--hairline-strong` top border, safe-area padding) and a More sheet that reuses the source sheet's look; "Interpretation, not a forecast." appears once per section in its `.bw-meta` line rather than on each tile; story cards show headline and why-it-matters, the paragraph behind "Details"; the front-page Wander block shows the dial and two plain lines, the readings behind "See the N readings"; body text is 16px (1rem), line-height 1.5, at most 60ch. Desktop is unchanged.
 
 Each section opens with a heading, a `.bw-meta` line (context, tags, and "NN · Feature name" at the right) and a `.bw-rule`. Leave `--space-16` between sections.
 

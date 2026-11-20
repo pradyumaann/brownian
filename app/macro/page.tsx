@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CalSwitch } from "@/components/CalSwitch";
 import { B } from "@/data";
 import { Chip } from "@/components/Chip";
 import { Fold } from "@/components/Fold";
@@ -40,6 +41,7 @@ export default function Macro() {
   const { sep, oct, food, forecast } = B.cpi;
   return (
     <>
+      <CalSwitch here="macro" />
       <ViewHead title={<>The macro <S>backdrop</S></>} feature="Macro Watch"
         lede="Economic indicators, and the dates that can move your portfolio. Times in IST." />
 

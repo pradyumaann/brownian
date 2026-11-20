@@ -132,3 +132,18 @@ test("pipeline wording such as 'the brief' is a warning, not an error", () => {
   const c = good(); c.drove[0] = "A brief rally faded by the close.";
   assert.ok(!validateBrief(c).warnings.some((w) => w.path === "drove[0]"), "an ordinary 'brief rally' is not pipeline wording");
 });
+
+test("Today in 3 lines: reasons only, plain words, within the word limits; missing is a warning", () => {
+  let b = good(); delete b.glance;
+  let r = validateBrief(b);
+  assert.equal(r.ok, true);
+  assert.ok(r.warnings.some((w) => w.path === "glance"));
+  for (const why of ["FIIs bought", "rose 1.1%", "nothing to do today", "your SIPs are not affected", "markets expect a rate cut"]) {
+    b = good(); b.glance.india.why = why;
+    assert.ok(paths(validateBrief(b)).includes("glance.india.why"), why);
+  }
+  b = good(); b.glance.world.why = "one two three four five six seven eight nine ten eleven twelve";
+  assert.ok(paths(validateBrief(b)).includes("glance.world.why"));
+  b = good(); b.glance.india.src = ["S99"];
+  assert.ok(paths(validateBrief(b)).includes("glance.india.src"));
+});
