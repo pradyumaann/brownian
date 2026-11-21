@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const GROUPS: [string, string][][] = [
   [["/", "Markets, Overnight"], ["/portfolio/", "Portfolio Lens"], ["/wander/", "Wander Index"]],
@@ -30,6 +30,31 @@ export function Nav() {
   const current = PHONE_TABS.find((t) => t.views.some(([href]) => href === path)) ?? PHONE_TABS[0];
   // Each tab returns to the view last open in it, for this browser session.
   const [last, setLast] = useState<Record<string, string>>({});
+  // Between about 620 and 1150px the wide nav is wider than the screen: show the current view and fade the edge that hides more.
+  const wide = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const n = wide.current;
+    if (!n) return;
+    const hint = () => {
+      n.style.setProperty("--nav-l", n.scrollLeft > 2 ? "32px" : "0px");
+      n.style.setProperty("--nav-r", n.scrollLeft + n.clientWidth < n.scrollWidth - 2 ? "32px" : "0px");
+    };
+    // Run again once the web font has loaded: the tabs are wider then, and the first measurement is too small.
+    const place = () => {
+      const a = n.querySelector<HTMLElement>('[aria-current="page"]');
+      if (a) {
+        const r = a.getBoundingClientRect(), nr = n.getBoundingClientRect();
+        if (r.right > nr.right - 32) n.scrollLeft += r.right - nr.right + 40;
+        else if (r.left < nr.left + 32) n.scrollLeft -= nr.left - r.left + 40;
+      }
+      hint();
+    };
+    place();
+    document.fonts?.ready.then(place);
+    n.addEventListener("scroll", hint, { passive: true });
+    window.addEventListener("resize", hint);
+    return () => { n.removeEventListener("scroll", hint); window.removeEventListener("resize", hint); };
+  }, [path]);
   useEffect(() => {
     let saved: Record<string, string> = {};
     try { saved = JSON.parse(sessionStorage.getItem(LAST) ?? "{}") ?? {}; } catch {}
@@ -39,7 +64,7 @@ export function Nav() {
   }, [path, current.label]);
   return (
     <>
-      <nav className="nav nav-wide" aria-label="Views">
+      <nav ref={wide} className="nav nav-wide" aria-label="Views">
         <div className="tabs">
           {GROUPS.map((g, i) => (
             <span key={i} className="tabgroup">

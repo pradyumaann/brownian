@@ -40,7 +40,10 @@ export function TermPop({ vars }: { vars: MoodVars }) {
     const width = Math.min(MAXW, vw - 2 * EDGE);
     p.style.width = `${width}px`;
     const h = p.offsetHeight;
-    const above = first.top - GAP - h >= EDGE;
+    // The slim header stays on screen while scrolling, so a pop-up must not open under it.
+    const bar = document.querySelector<HTMLElement>(".mast[data-away]");
+    const barBottom = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0;
+    const above = first.top - GAP - h >= Math.max(EDGE, barBottom + GAP);
     const top = above ? first.top - GAP - h : last.bottom + GAP;
     const left = Math.min(Math.max(first.left + first.width / 2 - width / 2, EDGE), vw - EDGE - width);
     p.style.top = `${Math.round(top)}px`;

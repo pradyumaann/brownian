@@ -292,9 +292,21 @@
     });
     el('line', { x1: x0, x2: x0, y1: 4, y2: h - 20, 'class': 'bw-base' }, svg);
     text(svg, x0, h - 4, '0', 'bw-tick', 'middle');
+    // A label wider than its column breaks at a space into two lines instead of running off the left edge.
+    var avail = lw - 12 - 4, probe2 = text(svg, 0, -10, '', 'bw-label');
+    function wide(s) { probe2.textContent = s; return probe2.getComputedTextLength ? probe2.getComputedTextLength() : s.length * 6.2; }
+    function lines(s) {
+      if (wide(s) <= avail || s.indexOf(' ') < 0) return [s];
+      var ws = s.split(' '), best = null;
+      for (var k = 1; k < ws.length; k++) { var a = ws.slice(0, k).join(' '), b = ws.slice(k).join(' '), m = Math.max(wide(a), wide(b)); if (!best || m < best.m) best = { a: a, b: b, m: m }; }
+      return [best.a, best.b];
+    }
+    var split = rows.map(function (r) { return lines(r.label); });
+    svg.removeChild(probe2);
     rows.forEach(function (r, i) {
       var y = 10 + i * rh + rh / 2;
-      text(svg, lw - 12, y + 4, r.label, 'bw-label', 'end');
+      if (split[i].length === 1) text(svg, lw - 12, y + 4, r.label, 'bw-label', 'end');
+      else { text(svg, lw - 12, y - 3, split[i][0], 'bw-label', 'end'); text(svg, lw - 12, y + 9, split[i][1], 'bw-label', 'end'); }
       if (r.value == null) { text(svg, w - 8, y + 4, 'n/a', 'bw-tick', 'end'); return; }
       var len = Math.abs(r.value) / max * half, up = r.value >= 0;
       var F = o.format || function (v) { return fmt.pct(v); }, f = F(r.value);

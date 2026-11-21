@@ -69,7 +69,7 @@ main:focus { outline: none; }
 .hero { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--hairline-strong); border-bottom: 1px solid var(--hairline); }
 .hero > div { padding: var(--space-6) var(--space-6) var(--space-6) 0; min-width: 0; }
 .hero > div + div { padding-left: var(--space-6); border-left: 1px solid var(--hairline); }
-.hero .v { font: 600 38px/1 var(--font-sans); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; margin: var(--space-3) 0 var(--space-2); white-space: nowrap; }
+.hero .v { font: 600 38px/1 var(--font-sans); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; margin: var(--space-3) 0 var(--space-2); }
 .hero .v small { font-size: .45em; color: var(--ink-muted); font-weight: 500; letter-spacing: -0.01em; }
 .hero .d { font: 500 13px/1.45 var(--font-mono); }
 .hero .d .w { font-family: var(--font-sans); font-weight: 400; color: var(--ink-muted); }
@@ -219,7 +219,7 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
 .holdrow { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-6); font-size: 14px; }
 .holdrow a { text-decoration: none; }
 .holdrow a:hover { text-decoration: underline; }
-.wl-form { display: grid; gap: var(--space-2); max-width: 640px; }
+.wl-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); max-width: 640px; }
 .wl-row { display: flex; gap: var(--space-2); }
 .wl-row input { flex: 1 1 auto; min-width: 0; height: 40px; font: 400 14px var(--font-sans); padding: 0 var(--space-4); border: 1px solid var(--hairline-strong); border-radius: var(--radius-pill); background: var(--surface); color: var(--ink); caret-color: var(--dawn); }
 .wl-row input::placeholder { color: var(--ink-faint); opacity: 1; }
@@ -479,6 +479,8 @@ ol.st .v { font: 400 13px/1.4 var(--font-mono); text-align: right; white-space: 
 :root {
   --m-bar: 56px; --m-H: 340px; --m-D: calc(var(--m-H) - var(--m-bar));
   --m-cy1: 28px; --m-cy2: 28px; --m-mark-fs: 22px; --m-mark-h: calc(var(--m-mark-fs) * .9); --m-mb: 69px;
+  /* The logo sits left of the slim wordmark: its width (.95em tall, 668:463) plus a .3em gap, in slim pixels. */
+  --m-logo-w: calc(var(--m-mark-fs) * 1.67);
   --m-mini-h: 36px; --m-s-mark: .2; --m-s-bars: .18; --m-mini-w: 86px; --m-tog-w: 132px;
   --m-dl-c0: 21px; --m-dl-cy: var(--m-cy1); --m-dl-x: calc(100cqw - var(--m-mini-w) - var(--m-tog-w) - 32px); --m-dl-self: 1;
   --m-bars-dx: 0px;
@@ -513,7 +515,10 @@ main, .nav a, main :where(a, button, input, select, textarea, summary, [tabindex
 .mast-in > :not(.mast-field) { position: absolute; z-index: 1; margin: 0; }
 .mast-field { opacity: max(0, calc(1 - var(--p) * 2)); }
 .mast-mark { left: 0; bottom: var(--m-mb); font: 600 clamp(64px, 9vw, 112px)/0.9 var(--font-sans); letter-spacing: -0.045em; color: var(--plot-ink); text-decoration: none; white-space: nowrap;
-  transform-origin: 0 100%; transform: translate3d(0, calc(var(--p) * (var(--m-cy1) + var(--m-mark-h) / 2 + var(--m-mb) - var(--m-bar))), 0) scale(var(--ms)); will-change: transform; }
+  transform-origin: 0 100%; transform: translate3d(calc(var(--p) * var(--m-logo-w)), calc(var(--p) * (var(--m-cy1) + var(--m-mark-h) / 2 + var(--m-mb) - var(--m-bar))), 0) scale(var(--ms)); will-change: transform; }
+/* The Brownian mark fades in left of the wordmark as it shrinks (--p 0 to 1); the wordmark moves right by the logo's width so the pair starts at the left edge. */
+.mast-logo { position: absolute; right: calc(100% + .3em); top: 50%; width: calc(.95em * 1.443); height: .95em; transform: translateY(-50%); opacity: var(--p); color: var(--plot-ink); }
+.mast:not([data-away]) .mast-logo { pointer-events: none; }
 /* The wordmark is scaled down to ~20%, so its focus ring is drawn at the inverse scale and stays 2px on screen. */
 .mast-mark:focus-visible { outline-width: calc(2px / var(--ms)); outline-offset: calc(2px / var(--ms)); }
 .mast-tag { left: 0; bottom: 32px; font: 400 15px/1.4 var(--font-mono); color: var(--ink-muted); letter-spacing: .01em; white-space: nowrap; opacity: max(0, calc(1 - var(--p) * 3)); }
@@ -811,7 +816,7 @@ ul.list.list-cont { border-top: 0; }
 .yfacts .nv { font-family: var(--font-mono); font-size: 13px; }
 .yfacts .lbl { display: none; color: var(--ink-muted); font-family: var(--font-sans); }
 @media (max-width: 620px) { .yfacts .lbl { display: inline; } }
-.yfacts .dts { display: block; font-size: 12px; color: var(--ink-muted); }
+.yfacts .dts { display: block; white-space: normal; font-size: 12px; color: var(--ink-muted); }
 /* Events for what you own: neutral relevance chips under an event, and the empty state. */
 .rail-ev + .bw-meta { margin-top: var(--space-6); }
 .ev-for { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); margin-top: var(--space-2); font-size: 12px; color: var(--ink-muted); }
@@ -963,3 +968,17 @@ ul.list.list-cont { border-top: 0; }
 
 /* Wander Index: the small line that says when components sit at opposite extremes. */
 .wsplit { margin: var(--space-1) 0 var(--space-3); }
+
+/* ---- Launch layout fixes (22 Nov 2026) ---- */
+/* The five hero tiles need about 1,230px; below 1200px they sit three across so a figure never runs into the next tile. */
+@media (min-width: 901px) and (max-width: 1199px) {
+  .hero { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .hero > div:nth-child(4) { padding-left: 0; border-left: 0; }
+  .hero > div:nth-child(n+4) { border-top: 1px solid var(--hairline); }
+}
+/* Short labels do not leave one word alone on the last line. */
+.mm dt, .mm-c, .hero .d, .tl .t { text-wrap: balance; }
+/* The wide nav fades the edge that hides more views while it is wider than the screen. */
+.nav-wide { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--nav-l, 0px), #000 calc(100% - var(--nav-r, 0px)), transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 var(--nav-l, 0px), #000 calc(100% - var(--nav-r, 0px)), transparent 100%); }
+/* The year-in-four-facts rows share their width evenly on phones, so a long date line cannot squeeze the label to a sliver. */
+@media (max-width: 620px) { .yfacts .bw-table.st tr { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }

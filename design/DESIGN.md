@@ -74,6 +74,8 @@ Bars start at zero. Log axes say "log". At most 3 annotations per figure, on lea
 9. 06 Still developing (StoryList): a fold; "All developing stories" sits inside it.
 10. Footer: "For information only; not investment advice."
 
+**Brand mark (22 Nov 2026):** the three-strand mark fades in to the left of the wordmark as the full header becomes the slim bar, in the page's text colour, and is absent on Markets, Overnight. The tab icon is the same mark: dark on light browser tabs, light on dark.
+
 **Phone reading (20–21 Nov 2026), under 620px only:** a fixed bottom bar with three tabs, Signal, Drift and Edge (56px, `--ground` fill, `--hairline-strong` top border, safe-area padding, the current tab in `--ink` with a 2px ink marker); the row under the header holds only the current tab's views on one line each with equal gaps between titles and no sideways scroll. "Interpretation, not a forecast." appears once in the front-page Wander section's `.bw-meta` line and once under the hero rather than on those tiles. Story cards show headline and why-it-matters, the paragraph behind "Details". The front-page Wander block shows the dial and a plain score line, the readings behind "See the N readings". At 440px and under, the slim header is 80px with open and close on a second day line.
 
 Each section opens with a heading, a `.bw-meta` line (context, tags, and "NN · Feature name" at the right) and a `.bw-rule`. Leave `--space-16` between sections.
