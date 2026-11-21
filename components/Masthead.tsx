@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef } from "react";
+import { BrandMark } from "./BrandMark";
 import { Freshness } from "./Freshness";
 import { ThemeToggle } from "./ThemeToggle";
 import { useMastProgress } from "./useMastProgress";
@@ -44,7 +45,7 @@ export function Masthead(p: MastProps) {
     <header ref={ref} className="mast" data-away={home ? undefined : ""}>
       <div className="mast-in">
         <Field />
-        <Link href="/" className="mast-mark" tabIndex={home ? -1 : undefined} aria-current={home ? "page" : undefined}>Brownian</Link>
+        <Link href="/" className="mast-mark" tabIndex={home ? -1 : undefined} aria-current={home ? "page" : undefined}><BrandMark className="mast-logo" />Brownian</Link>
         <p className="mast-tag">Markets wander. You don&apos;t have to.</p>
         <div className="mast-dl"><DayLine {...p} /></div>
         <div className="mast-tog"><ThemeToggle /></div>

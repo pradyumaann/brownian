@@ -14,6 +14,7 @@ import { Diverge } from "@/components/charts/Diverge";
 import { Dial } from "@/components/charts/Dial";
 import { SegMeter } from "@/components/charts/Mini";
 import { ledePoints } from "@/lib/ledePoints";
+import { plainValue } from "@/lib/format";
 import { portfolioFacts } from "@/lib/portfolioFacts";
 import { asOfLabel, behindNote, signalSplit, band, comps, pressureHigh, pressureName, pressureScore, quad, score, scoreRaw, scored } from "@/lib/mood";
 import type { Kpi } from "@/data/types";
@@ -22,7 +23,7 @@ function KpiCell({ k, neutral }: { k: Kpi; neutral?: boolean }) {
   return (
     <div>
       <div className="bw-label">{k.term ? <Term id={k.term}>{k.label}</Term> : k.label}</div>
-      <div className="v">{k.v}{k.unit && <small>{k.unit}</small>}<Src k={k.src} /></div>
+      <div className="v"><span className="nw">{plainValue(k.v)}</span>{k.unit && <small>{k.unit}</small>} <span className="nw"><Src k={k.src} /></span></div>
       <div className="d"><Change v={k.d} neutral={neutral} /> <span className="w">{k.dNote}</span></div>
     </div>
   );

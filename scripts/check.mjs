@@ -99,7 +99,7 @@ for (const theme of ["night", "paper"]) {
         }
       }
       // Phase 2 text expectations on the seeded Portfolio Lens passes.
-      const EXPECT = { left: ["None of the types in your mix has a year-long series"], noev: ["No dated events in the brief are tagged to the types in your mix."],
+      const EXPECT = { left: ["None of the types in your mix has a year-long series"], noev: ["No dated events are tagged to the types in your mix."],
         watch: ["Results due Fri 13 Nov", "No result date found", "Reported", "Reports Tue 17 Nov"], mix: ["Interpretation, not a forecast.", "Correlation with Nifty 50", "Beta to Nifty 50"],
         none: ["Portfolio Lens reads the day's index and market moves"], flexi: ["proxy: Nifty 500, not the fund's own returns"] };
       // Text that must not appear: in "none" mode the example mix and its figures are hidden.

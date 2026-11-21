@@ -30,7 +30,7 @@ export function IndicatorField({ rows, from, to }: { rows: FieldRow[]; from: str
   const narrow = W < 760, phone = W < 520;
   const R = rows.length;
   // Layout: a left axis for the rank, the field skewed back to the right, the row labels in a column of their own.
-  const LW = phone ? 112 : narrow ? 150 : 214, left = phone ? 26 : 32, bottom = 24;
+  const LW = phone ? 112 : narrow ? 172 : 214, left = phone ? 26 : 32, bottom = 24;
   const skew = phone ? 8 : narrow ? 14 : 22, pitch = phone ? 70 : narrow ? 78 : 88, Zh = phone ? 62 : narrow ? 70 : 80;
   const top = 14 + Math.round(pitch * 0.3);
   const H = top + Zh + (R - 1) * pitch + bottom;

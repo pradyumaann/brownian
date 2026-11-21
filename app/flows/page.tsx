@@ -112,7 +112,7 @@ export default function Flows() {
           label={`Net FPI equity flows for ${tr.sectors.length} sectors over ${tr.labels.length} fortnights. Totals: ${tr.totals.map((t) => `${t.sector} ${crore(t.net)}`).join(", ")}.`} />
         <p className="bw-meta after-plot">Colour shows size either way, from violet for small flows to white for the largest.</p>
         <More label="Every sector's total" className="after-plot">
-          <DataTable head={[["Sector"], ["Two years", "r"], ["Latest fortnight", "r"]]}
+          <DataTable stack head={[["Sector"], ["Two years", "r"], ["Latest fortnight", "r"]]}
             rows={[...tr.totals].sort((x, y) => y.net - x.net).map((t) => [t.sector, <Change key="n" v={crore(t.net)} />, t.last == null ? <span key="l" className="bw-na">n/a</span> : <Change key="l" v={crore(t.last)} />])} />
         </More>
       </Section>

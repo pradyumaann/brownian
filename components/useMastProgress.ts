@@ -12,7 +12,7 @@ import { useEffect, useLayoutEffect, type RefObject } from "react";
 const num = (s: string) => parseFloat(s) || 0;
 const clamp = (v: number) => Math.min(1, Math.max(0, v));
 
-const MOVERS = ".mast-mark, .mast-dl, .mast-tog, .mast-art, .mast-tag, .mast-field, .mast-hours, .mast-bar text";
+const MOVERS = ".mast-mark, .mast-logo, .mast-dl, .mast-tog, .mast-art, .mast-tag, .mast-field, .mast-hours, .mast-bar text";
 const STEPS = 2; // from, halfway (every fade is done by then), to: each sample restyles the header once
 type Host = HTMLElement & { __g?: Animation[] };
 
