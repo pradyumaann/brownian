@@ -1,0 +1,56 @@
+# Keeps data/history current. Runs before the 07:52 IST brief; the retry covers a delayed or failed first run.
+# Nothing is committed unless the history checks pass. A failed run emails the repo owner.
+name: Refresh market history
+
+on:
+  schedule:
+    - cron: "0 1 * * *"   # 06:30 IST
+    - cron: "45 1 * * *"  # 07:15 IST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: history-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Restore downloaded market files
+        uses: actions/cache@v4
+        with:
+          path: .cache/nse
+          key: history-nse-${{ github.run_id }}
+          restore-keys: history-nse-
+
+      - name: Fetch new data
+        run: node scripts/history/update.mjs --daily
+
+      - name: Check the history store
+        run: node scripts/history/verify.mjs
+
+      - name: Commit new data
+        run: |
+          git add data/history
+          if git diff --cached --quiet; then
+            echo "No new data."
+            exit 0
+          fi
+          last=$(tail -n 1 data/history/calendar.csv | cut -d, -f1)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "History: refresh to ${last}"
+          git pull --rebase origin main
+          git push origin HEAD:main

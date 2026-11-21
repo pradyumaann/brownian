@@ -1,7 +1,7 @@
 // Overseas markets and cross-asset closes from Yahoo Finance's public chart endpoint (daily, 5 years).
 // Dates are each market's own trading date. Used for global spillover, safe-haven demand and global risk appetite.
 // Yahoo's data is for personal use; a licensed feed replaces this before Brownian is public.
-import { get, loadTable, saveTable, log } from "./lib.mjs";
+import { get, loadTable, saveTable, log, todayIST } from "./lib.mjs";
 
 export const WORLD = {
   sp500: "^GSPC", nasdaq: "^IXIC", russell2000: "^RUT", stoxx600: "^STOXX", ftse100: "^FTSE", dax: "^GDAXI",
@@ -18,9 +18,14 @@ export async function importWorld(range = "5y") {
     const res = JSON.parse(buf.toString("utf8")).chart?.result?.[0];
     if (!res?.timestamp) { log(`world: no data for ${sym}`); continue; }
     const off = res.meta.gmtoffset || 0, close = res.indicators.quote[0].close;
+    // A bar from a session still trading is not a close, so it is not stored.
+    const open = res.meta.currentTradingPeriod?.regular, now = Date.now() / 1000;
     res.timestamp.forEach((t, i) => {
       if (close[i] == null) return; // a missing close stays missing
-      rows.push({ date: new Date((t + off) * 1000).toISOString().slice(0, 10), series: id, close: +close[i].toFixed(4) });
+      if (open && now < open.end && t >= open.start) return;
+      const date = new Date((t + off) * 1000).toISOString().slice(0, 10);
+      if (date >= todayIST()) return; // today's bar is not final, including forex bars dated on a weekend
+      rows.push({ date, series: id, close: +close[i].toFixed(4) });
       added++;
     });
   }

@@ -15,7 +15,7 @@ import { Dial } from "@/components/charts/Dial";
 import { SegMeter } from "@/components/charts/Mini";
 import { ledePoints } from "@/lib/ledePoints";
 import { portfolioFacts } from "@/lib/portfolioFacts";
-import { band, comps, pressureHigh, pressureName, pressureScore, quad, score, scoreRaw, scored } from "@/lib/mood";
+import { asOfLabel, behindNote, band, comps, pressureHigh, pressureName, pressureScore, quad, score, scoreRaw, scored } from "@/lib/mood";
 import type { Kpi } from "@/data/types";
 
 function KpiCell({ k, neutral }: { k: Kpi; neutral?: boolean }) {
@@ -64,7 +64,8 @@ export default function MarketsOvernight() {
       </div>
       <p className="bw-disclaimer ifp hero-i">Wander Index and Macro pressure: interpretation, not a forecast.</p>
 
-      <Section title={<>Blended session <S>move</S></>} meta={`${B.session} session · index and market moves by holding type, not your own holdings' prices`} ix="01 · Portfolio Lens">
+      <Section title={<>Blended session <S>move</S></>} meta={`${asOfLabel} session · index and market moves by holding type, not your own holdings' prices`} ix="01 · Portfolio Lens">
+        {behindNote && <p className="bw-meta">{behindNote}</p>}
         <SessionMove types={types} asOf={facts.asOf} />
       </Section>
 
@@ -81,7 +82,8 @@ export default function MarketsOvernight() {
         </div>
       </Section>
 
-      <Section title={<>The market&apos;s <S>mood</S></>} meta={`${scored.length} of ${comps.length} components, each ranked against its own five years, ${B.session} session`} ix="03 · Wander Index" interp>
+      <Section title={<>The market&apos;s <S>mood</S></>} meta={`${scored.length} of ${comps.length} components, each ranked against its own five years, ${asOfLabel} session`} ix="03 · Wander Index" interp>
+        {behindNote && <p className="bw-meta">{behindNote}</p>}
         <div className="two">
           <div>
             <Dial score={scoreRaw} comps={scored.map((c) => ({ name: c.name, score: c.score }))} label={`Wander Index ${score}, ${band}`} />
