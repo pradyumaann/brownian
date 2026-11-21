@@ -3,6 +3,7 @@ import { beta, blendSeries, correlation, extremePairs, fmtR, normalise, pairwise
 import type { PortfolioSeries } from "@/lib/portfolioTypes";
 import { DataTable } from "../DataTable";
 import { Src } from "../Src";
+import { Term } from "../Term";
 import { dateOf } from "./Day";
 import { NoneNote } from "./NoneNote";
 
@@ -50,16 +51,16 @@ export function MixMetrics({ w, series, mode }: { w: Weights; series: PortfolioS
   return (
     <>
       <p className="bw-meta">
-        Covers {Math.round(bh.covered)}% of your mix{bh.left.length > 0 && <>; {bh.left.map((x) => SHORT[x.id]).join(", ")} left out (n/a)</>} · {window}
+        Covers {Math.round(bh.covered)}% of your mix{bh.left.length > 0 && <>; {bh.left.map((x) => SHORT[x.id]).join(", ")} left out (n/a)</>} · {window}<Src k={[...new Set([...srcs, "D5"])].sort()} />
       </p>
       <dl className="mm">
         <div>
-          <dt>Correlation with Nifty 50</dt>
+          <dt><Term id="correlation">Correlation</Term> with Nifty 50</dt>
           <dd className="bw-mono">{corr ? fmtR(corr.r) : na}</dd>
           <dd className="mm-c">−1 opposite, 1 the same</dd>
         </div>
         <div>
-          <dt>Beta to Nifty 50</dt>
+          <dt><Term id="beta">Beta</Term> to Nifty 50</dt>
           <dd className="bw-mono">{bet ? num2(bet.b) : na}</dd>
           <dd className="mm-c">change per 1% in Nifty 50</dd>
         </div>
@@ -79,10 +80,10 @@ export function MixMetrics({ w, series, mode }: { w: Weights; series: PortfolioS
         <summary>Each held type against Nifty 50</summary>
         <DataTable stack label="Each held type against Nifty 50 over the same window"
           head={[["Type"], ["Share", "r"], ["Correlation", "r"], ["Beta", "r"], ["Source"]]} rows={rows} />
+        <p className="bw-source mm-src">
+          Pearson correlation and beta of daily % changes{corr ? <> ({corr.n} days)</> : null}; weights held constant, covered types re-weighted to 100%. Volatility is in Your mix over the year. Gold is approximate (COMEX gold in USD × USD/INR; excludes duties and premiums)<Src k={["D5"]} />. US-traded series are paired by date and close after India, so their figures are only partly simultaneous<Src k={srcs} />
+        </p>
       </details>
-      <p className="bw-source mm-src">
-        Pearson correlation and beta of daily % changes{corr ? <> ({corr.n} days)</> : null}; weights held constant, covered types re-weighted to 100%. Volatility is in section 05. Gold is approximate (COMEX gold in USD × USD/INR; excludes duties and premiums)<Src k={["D5"]} />. US-traded series are paired by date and close after India, so their figures are only partly simultaneous<Src k={srcs} />
-      </p>
       <p className="bw-disclaimer">Interpretation, not a forecast. These describe how daily changes moved together in this window; they say nothing about the next one.</p>
     </>
   );

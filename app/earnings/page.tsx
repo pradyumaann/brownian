@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { CalSwitch } from "@/components/CalSwitch";
 import { B } from "@/data";
 import { Chip } from "@/components/Chip";
 import { DataTable } from "@/components/DataTable";
@@ -12,7 +11,6 @@ export const metadata: Metadata = { title: "Earnings Radar" };
 export default function Earnings() {
   return (
     <>
-      <CalSwitch here="earnings" />
       <ViewHead title={<>Results <S>season</S></>} feature="Earnings Radar"
         lede="Who reports when, what has already reported, and how to read a results day." />
 

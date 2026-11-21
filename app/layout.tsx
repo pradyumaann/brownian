@@ -34,7 +34,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <footer className="foot">
             <div className="foot-top">
               <p className="bw-disclaimer"><b>For information only; not investment advice.</b> “n/a” means the figure could not be verified from the sources checked. The Wander Index, macro-pressure reading and impact notes are a rules-based reading of the sources, not a forecast.</p>
-              <p className="bw-source">Updated {B.dateLabel}, {B.prepared} IST</p>
             </div>
             <details className="srcs">
               <summary>Sources and methodology</summary>

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { CalSwitch } from "@/components/CalSwitch";
 import { B } from "@/data";
 import { Chip } from "@/components/Chip";
 import { Fold } from "@/components/Fold";
@@ -8,7 +7,6 @@ import { DataTable } from "@/components/DataTable";
 import { S, Section, ViewHead } from "@/components/Section";
 import { Src } from "@/components/Src";
 import { Term } from "@/components/Term";
-import { CpiBand } from "@/components/charts/CpiBand";
 import { IndicatorField } from "@/components/charts/IndicatorField";
 import { fieldValue } from "@/lib/fieldValue";
 import { ReleaseMetrics } from "@/components/charts/ReleaseMetrics";
@@ -28,6 +26,17 @@ const dxyBrief = B.macro.find((r) => r[0] === "Dollar index");
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const dmy = (d: string) => `${Number(d.slice(8))} ${MON[Number(d.slice(5, 7)) - 1]} ${d.slice(0, 4)}`;
 
+// India CPI sits in the key as its latest print: the history store holds no CPI series, so it has no rank and no row in the field.
+const cpiRow = B.releases.find((r) => r.region === "India" && r.n.startsWith("CPI inflation"));
+const pct = (v: number | null | undefined) =>
+  v == null ? "n/a" : (v < 0 ? "−" : "") + Math.abs(v).toLocaleString("en-IN", { maximumFractionDigits: 2 }) + "%";
+const cpiContext = [
+  cpiRow?.basis ?? "n/a",
+  `previous ${pct(cpiRow?.prior)}${cpiRow?.prior != null && cpiRow.priorLabel !== "previous" ? ` (${cpiRow.priorLabel})` : ""}`,
+  `forecast ${pct(cpiRow?.forecast)}`,
+  "no five-year history",
+].join(" · ");
+
 const indName = (n: string) =>
   n.startsWith("CPI") ? <Term id="cpi">{n}</Term>
   : n.startsWith("WPI") ? <Term id="wpi">{n}</Term>
@@ -38,18 +47,10 @@ const indName = (n: string) =>
 const na = (v: string) => (v === "n/a" ? <span className="bw-na">n/a</span> : v);
 
 export default function Macro() {
-  const { sep, oct, food, forecast } = B.cpi;
   return (
     <>
-      <CalSwitch here="macro" />
       <ViewHead title={<>The macro <S>backdrop</S></>} feature="Macro Watch"
         lede="Economic indicators, and the dates that can move your portfolio. Times in IST." />
-
-      <div className="solo">
-        <h3 className="sub">India CPI inflation<Src k={["W8", "W10"]} /></h3>
-        <CpiBand sep={sep} oct={oct} food={food} />
-        <p className="note after-plot">Latest CPI inflation is <b>{oct}%</b>, against {sep}% in the previous reading and a {forecast}% forecast. Food inflation is {food}%. The RBI&apos;s tolerance band is 2–6%.</p>
-      </div>
 
       <Section title={<>Indicators to <S>watch</S></>} meta="Where each reading sits in its own five years, the releases against forecast, and what's next" ix="01">
         <h3 className="sub">Indicators against their own five years<Src k={["D5", "D4"]} /></h3>
@@ -66,8 +67,14 @@ export default function Macro() {
               </li>
             );
           })}
+          <li key="india-cpi">
+            <b>India CPI inflation</b>
+            <span className="bw-mono">{cpiRow?.latest == null ? <span className="bw-na">n/a</span> : <>{pct(cpiRow.latest)}<Src k={cpiRow.src} /></>}</span>
+            <span className="m">{cpiContext}{cpiRow && cpiRow.latest == null && <Src k={cpiRow.src} />}</span>
+            {cpiRow && IMPACT[cpiRow.tone] && <Chip tone={cpiRow.tone}>{IMPACT[cpiRow.tone]}</Chip>}
+          </li>
         </ul>
-        <p className="bw-meta">The dollar index and gold are also on Global Cues<Src k={["S11"]} />. This ranking is context only: it does not change the Macro pressure score. Interpretation, not a forecast.</p>
+        <p className="bw-meta">The dollar index and gold are also on Global Cues<Src k={["S11"]} />. India CPI inflation is shown as its latest print, because no five-year series is held, so it is not ranked or charted. This ranking is context only: it does not change the Macro pressure score. Interpretation, not a forecast.</p>
         <p className="bw-meta after-plot">Yahoo Finance and NSDL closes, {dmy(field.from)} to {dmy(field.to)}; levels are ranked among the window&apos;s daily closes, flows among its weeks or months, and a week or month still open is marked to date. They can differ from the provisional figures in the table below (USD/INR {fxBrief?.[2]}<Src k={fxBrief?.[8] ? [fxBrief[8]] : []} />; Dollar index {dxyBrief?.[1]}<Src k={["S11"]} />).</p>
       </Section>
 

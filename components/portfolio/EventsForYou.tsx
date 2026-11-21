@@ -21,7 +21,7 @@ export function EventsForYou({ w, mode }: { w: Weights; mode: Mode }) {
   const tagged = B.events.filter((e) => e.date && mine(e).length)
     .map((e) => (e.chip?.[0] === "High impact" ? { ...e, chip: [e.chip[0], "plain"] as [string, Tone] } : e));
   if (!Object.keys(shares).length) {
-    return <p className="empty">No weight is set yet. Give a holding type a weight above and the dated events tagged to it appear here.</p>;
+    return <p className="empty">No weight is set yet. Give a holding type a weight in <a href="#your-mix">Portfolio weights</a> and the dated events tagged to it appear here.</p>;
   }
   return (
     <>

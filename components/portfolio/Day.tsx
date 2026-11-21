@@ -20,7 +20,7 @@ export function Day({ w, facts, asOf, mode }: { w: Weights; facts: TypeFact[]; a
   const b = blend(w, facts);
   const when = dateOf(asOf);
   if (!b.rows.length) {
-    return <p className="empty">No weight is set yet. Give a holding type a weight above and its move for {when} appears here.</p>;
+    return <p className="empty">No weight is set yet. Give a holding type a weight in <a href="#your-mix">Portfolio weights</a> and its move for {when} appears here.</p>;
   }
   const live = b.rows.filter((r) => r.contrib != null);
   const srcs = [...new Set(live.flatMap((r) => facts.find((f) => f.id === r.id)!.src))].sort();
@@ -37,6 +37,7 @@ export function Day({ w, facts, asOf, mode }: { w: Weights; facts: TypeFact[]; a
           {b.move != null ? <>Covers {Math.round(b.covered)}% of your mix{b.unallocated > 0 && <>; {Math.round(b.unallocated)}% is Unallocated and adds nothing</>}. </> : "No type in your mix has a move for this session. "}
           {b.excluded.length > 0 && <>Not in the blended move: {b.excluded.map((e, i) => <span key={e.id}>{i ? ", " : ""}{SHORT[e.id]} ({Math.round(e.share)}%, n/a)</span>)}. Nothing is estimated for them. </>}
           {proxied.length > 0 && <>{proxied.map((r) => SHORT[r.id]).join(" and ")} {proxied.length > 1 ? "are" : "is"} read through an index (proxy: Nifty 500, not the fund&apos;s own returns).</>}
+          {example && <> <a href="#your-mix">Set your own weights</a>.</>}
         </p>
       </div>
       <Diverge phoneRows={6} labelWidth={118}

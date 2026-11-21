@@ -65,13 +65,13 @@ function Mix({ w, mode, types, when }: { w: Weights; mode: Mode; types: SessionT
   const b = blend(w, types);
   const fact = (id: string) => types.find((f) => f.id === id)!;
   if (!b.rows.length) {
-    return <p className="empty">No weight is set yet. Give a holding type a weight in <Link href="/portfolio/">Portfolio Lens</Link> and its move for {when} appears here.</p>;
+    return <p className="empty">No weight is set yet. Give a holding type a weight in <Link href="/portfolio/#your-mix">Portfolio Lens</Link> and its move for {when} appears here.</p>;
   }
   const srcs = [...new Set(b.rows.filter((r) => r.contrib != null).flatMap((r) => fact(r.id).src))].sort();
   return (
     <>
       {example && (
-        <p className="smv-ex"><Chip>Example</Chip> This is an example mix. <Link href="/portfolio/">Set your own weights in Portfolio Lens</Link>; they stay on this device.</p>
+        <p className="smv-ex"><Chip>Example</Chip> This is an example mix. <Link href="/portfolio/#your-mix">Set your own weights in Portfolio Lens</Link>; they stay on this device.</p>
       )}
       <div className="smv-stat">
         <p className="smv-lbl">Blended one-day move of {whose}, {when}</p>
