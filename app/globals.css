@@ -41,6 +41,9 @@ main:focus { outline: none; }
 .vh h1 { font: 600 64px/0.95 var(--font-sans); letter-spacing: -0.035em; }
 .vh .lede { font: 400 15px/1.6 var(--font-sans); color: var(--ink-muted); max-width: 64ch; }
 .vh .lede b { color: var(--ink); font-weight: 500; }
+.vh .lede-points { margin: 0; padding: 0 0 0 1.25em; list-style: disc outside; }
+.vh .lede-points li + li { margin-top: var(--space-2); }
+.vh .lede-points li::marker { color: var(--ink-faint); }
 .vh-f { margin-top: var(--space-3); }
 
 .sec { padding-top: var(--space-16); }
@@ -684,6 +687,9 @@ ul.list.list-cont { border-top: 0; }
 .rm-impact { font-size: 13px; }
 .rm-impact.tone-mixed { color: var(--ink-muted); }
 @media (max-width: 900px) { .ifield-key { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ifield-key li:nth-child(n) { padding-left: var(--space-3); border-left: 1px solid var(--hairline); border-top: 0; } .ifield-key li:nth-child(odd) { padding-left: 0; border-left: 0; } .ifield-key li:nth-child(n+3) { border-top: 1px solid var(--hairline); } }
+/* A lone last item takes the whole row, so its top rule runs the full width. */
+@media (min-width: 901px) { .ifield-key li:last-child:nth-child(3n+1) { grid-column: 1 / -1; } }
+@media (max-width: 900px) { .ifield-key li:last-child:nth-child(odd) { grid-column: 1 / -1; } }
 @media (max-width: 620px) {
   .rm-ph { display: inline; }
   .rb-head { margin-top: var(--space-10, 40px); }
@@ -902,3 +908,55 @@ ul.list.list-cont { border-top: 0; }
 }
 
 .solo { max-width: 52rem; margin-bottom: var(--space-8); }
+
+/* Phone-only and wide-only pieces: "Interpretation, not a forecast." sits once per section on phones (.ifp in the
+   section meta) instead of on every tile (.ifw), which wider screens keep. */
+.ifp { display: none; }
+.hero-i { margin-top: var(--space-3); }
+
+/* Desktop keeps its reading order although the phone order (why first, detail behind "Details") is the DOM order. */
+.take .why { order: 1; }
+@media (min-width: 621px) {
+  ol.st li > div { display: flex; flex-direction: column; }
+  ol.st .st-more, ol.st .st-more > .more-body { display: contents; }
+  ol.st .st-p { order: 1; } ol.st .st-why { order: 2; } ol.st .st-watch { order: 3; }
+}
+
+/* ---- Phone navigation (components/Nav.tsx): three bottom tabs (Signal, Drift, Edge); the scrolling row holds the current tab's views ---- */
+.nav-phone, .tabbar { display: none; }
+@media (max-width: 620px) {
+  .nav-wide { display: none; }
+  .nav-phone { display: block; margin: 0; overflow-x: visible; -webkit-mask-image: none; mask-image: none; }
+  /* One line per title, equal gaps between titles; the size follows the screen so the four Drift titles always fit. */
+  .nav-phone .tabs { display: flex; justify-content: space-between; min-width: 0; width: 100%; padding-right: 0; }
+  .nav-phone .tab { display: inline-flex; align-items: center; flex: none; min-height: 44px; padding: 0; font-size: clamp(0.625rem, 3vw, 0.8125rem); line-height: 1; white-space: nowrap; }
+  .tabbar { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: var(--ground); border-top: 1px solid var(--hairline-strong); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .tabbar ul { list-style: none; margin: 0 auto; padding: 0 var(--space-2); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .btab { min-height: 56px; display: flex; align-items: center; justify-content: center; position: relative; font: 500 0.875rem/1.1 var(--font-sans); color: var(--ink-muted); text-decoration: none; }
+  .btab[aria-current] { color: var(--ink); }
+  .btab[aria-current]::before { content: ""; position: absolute; top: -1px; left: 28%; right: 28%; height: 2px; background: var(--ink); }
+  .btab:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
+  .page { padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px) + var(--space-8)); }
+
+  /* Less text: the label once per section, plain Wander lines, readable body text. */
+  .ifp { display: inline; }
+  p.ifp { display: block; }
+  .ifw { display: none; }
+  .take h3 { font-size: 1.125rem; }
+}
+
+/* ---- Narrow phones: the day line would run past the screen in the slim bar, so open and close take their own line. ---- */
+@media (max-width: 440px) {
+  :root { --m-bar: 80px; }
+  .mast-day-line { flex-direction: column; gap: 0; }
+}
+
+/* ---- One section gap (21 Nov 2026). Every section starts the same distance below the one before it, and a link to a
+   section lands with its heading clear of the sticky header. ---- */
+:root { --sec-gap: var(--space-16); }
+@media (max-width: 900px) { :root { --sec-gap: var(--space-12); } }
+@media (max-width: 620px) { :root { --sec-gap: var(--space-16); } }
+.sec { padding-top: var(--sec-gap); scroll-margin-top: calc(var(--m-bar) + var(--space-3) - var(--sec-gap)); }
+.lens > .sec > :last-child, .lens > .sec > .lens-sub > :last-child, .lens .fold-body > :last-child { margin-bottom: 0; }
+.lens-sub { margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--hairline); }
+.lens-sub .sub { margin-bottom: 0; }

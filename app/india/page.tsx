@@ -54,7 +54,7 @@ export default function India() {
           <div>
             <h3 className="sub">The rupee<Src k={["S6", "S11"]} /></h3>
             <DataTable stack head={[["Pair"], ["Level", "r"], ["Change", "r"], ["Note"]]}
-              rows={B.fx.map((r) => [r[0], r[1], <Change key="c" v={r[2]} />, r[3]])} />
+              rows={B.fx.map((r) => [r[0], r[1], <Change key="c" v={r[2]} neutral={r[0] === "USD/INR"} />, r[3]])} />
             <p className="bw-meta">USD/INR up means a weaker rupee.</p>
             <ul className="list after-plot">{B.fxDrivers.map((d) => <li key={d}>{d}</li>)}</ul>
           </div>

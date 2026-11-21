@@ -1,12 +1,14 @@
 /** A view section: heading, a meta line (context at left, "NN · Feature" at right) and a rule. */
-export function Section({ title, meta, ix, children, id }: {
+export function Section({ title, meta, ix, children, id, interp }: {
   title: React.ReactNode; meta?: React.ReactNode; ix?: string; children: React.ReactNode; id?: string;
+  /** Phones only: "Interpretation, not a forecast." once in the meta line, in place of the per-tile copies (`.ifw`). */
+  interp?: boolean;
 }) {
   return (
     <section className="sec" id={id}>
       <div className="sh">
         <h2>{title}</h2>
-        <p className="bw-meta"><span>{meta}</span>{ix && <span className="ix">{ix}</span>}</p>
+        <p className="bw-meta"><span>{meta}{interp && <span className="ifp"> · Interpretation, not a forecast.</span>}</span>{ix && <span className="ix">{ix}</span>}</p>
         <hr className="bw-rule" />
       </div>
       {children}

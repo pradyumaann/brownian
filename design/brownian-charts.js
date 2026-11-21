@@ -366,9 +366,12 @@
       box.style.top = Math.max(8, y - bh - 12) + 'px';
     }
     function at(e) { return e.target.closest ? e.target.closest('[data-tip-v]') : null; }
+    // A tap also moves focus; that focus change must not hide or replace the value the tap just showed.
+    var touched = 0;
+    document.addEventListener('pointerdown', function (e) { if (e.pointerType === 'touch') touched = Date.now(); }, true);
     document.addEventListener('pointerover', function (e) { var t = at(e); if (t) show(t, e.clientX, e.clientY); });
     document.addEventListener('pointermove', function (e) { var t = at(e); if (t) show(t, e.clientX, e.clientY); else box.hidden = true; });
-    document.addEventListener('focusin', function (e) { var t = at(e); if (!t) { box.hidden = true; return; } var r = t.getBoundingClientRect(); show(t, r.left + r.width / 2, r.top); });
+    document.addEventListener('focusin', function (e) { if (Date.now() - touched < 700) return; var t = at(e); if (!t) { box.hidden = true; return; } var r = t.getBoundingClientRect(); show(t, r.left + r.width / 2, r.top); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') box.hidden = true; });
   }
 

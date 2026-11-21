@@ -19,7 +19,7 @@ export function Year({ w, series, mode }: { w: Weights; series: PortfolioSeries;
   if (mode === "none") return <NoneNote line="For a mix, this section draws a blend of index moves for its types over the last 250 sessions, beside Nifty 50. Nothing is owned, so no line is drawn." />;
   const bh = blendSeries(w, series.types);
   if (!Object.keys(w).length) {
-    return <p className="empty">No weight is set yet. Give a holding type a weight above and its year of index moves appears here.</p>;
+    return <p className="empty">No weight is set yet. Give a holding type a weight in <a href="#your-mix">Portfolio weights</a> and its year of index moves appears here.</p>;
   }
   if (!bh) {
     const left = Object.keys(w).filter((id) => id in SHORT);

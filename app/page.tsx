@@ -13,16 +13,17 @@ import { Change } from "@/components/Change";
 import { Diverge } from "@/components/charts/Diverge";
 import { Dial } from "@/components/charts/Dial";
 import { SegMeter } from "@/components/charts/Mini";
+import { ledePoints } from "@/lib/ledePoints";
 import { portfolioFacts } from "@/lib/portfolioFacts";
 import { band, comps, pressureHigh, pressureName, pressureScore, quad, score, scoreRaw, scored } from "@/lib/mood";
 import type { Kpi } from "@/data/types";
 
-function KpiCell({ k }: { k: Kpi }) {
+function KpiCell({ k, neutral }: { k: Kpi; neutral?: boolean }) {
   return (
     <div>
       <div className="bw-label">{k.term ? <Term id={k.term}>{k.label}</Term> : k.label}</div>
       <div className="v">{k.v}{k.unit && <small>{k.unit}</small>}<Src k={k.src} /></div>
-      <div className="d"><Change v={k.d} /> <span className="w">{k.dNote}</span></div>
+      <div className="d"><Change v={k.d} neutral={neutral} /> <span className="w">{k.dNote}</span></div>
     </div>
   );
 }
@@ -32,7 +33,6 @@ const US_TOP_BOTTOM = ["Energy", "Utilities", "Technology", "Industrials", "Comm
 export default function MarketsOvernight() {
   const fiiSrc = B.flows.src;
   const shown = B.stories.slice(0, 5);
-  const newStories = shown.filter((x) => x.st === "NEW").length;
   // The card gets only what it draws: each type's move, tags and proxy label.
   const facts = portfolioFacts();
   const types = facts.types.map(({ id, n, d1, src, proxy }) => ({ id, n, d1, src, proxy }));
@@ -41,8 +41,7 @@ export default function MarketsOvernight() {
       <header className="vh is-brief">
         <h1>Markets, <S>Overnight</S>.</h1>
         <div>
-          <p className="lede"><Rich r={B.lede} /></p>
-          <p className="bw-source vh-f">Markets, Overnight · {B.dateShort}</p>
+          <ul className="lede lede-points">{ledePoints(B.lede).map((p, i) => <li key={i}><Rich r={p} /></li>)}</ul>
         </div>
       </header>
 
@@ -52,17 +51,18 @@ export default function MarketsOvernight() {
           <div className="bw-label"><Link href="/wander/">Wander Index</Link></div>
           <div className="v"><CountUp to={score} /></div>
           <SegMeter score={scoreRaw} label={`Wander Index ${score} of 100, ${band}`} />
-          <div className="d"><span className="w">{band} · interpretation, not a forecast</span></div>
+          <div className="d"><span className="w">{band}<span className="ifw"> · interpretation, not a forecast</span></span></div>
         </div>
         <div>
           <div className="bw-label"><Link href="/wander/#macro-pressure">Macro pressure</Link></div>
           <div className="v">{pressureScore}</div>
           <SegMeter score={pressureScore} label={`Macro pressure ${pressureScore} of 100, ${pressureName}`} />
-          <div className="d"><span className="w">{pressureName} · interpretation, not a forecast</span></div>
+          <div className="d"><span className="w">{pressureName}<span className="ifw"> · interpretation, not a forecast</span></span></div>
         </div>
         <KpiCell k={B.kpis.fii} />
-        <KpiCell k={B.kpis.usdinr} />
+        <KpiCell k={B.kpis.usdinr} neutral />
       </div>
+      <p className="bw-disclaimer ifp hero-i">Wander Index and Macro pressure: interpretation, not a forecast.</p>
 
       <Section title={<>Blended session <S>move</S></>} meta={`${B.session} session · index and market moves by holding type, not your own holdings' prices`} ix="01 · Portfolio Lens">
         <SessionMove types={types} asOf={facts.asOf} />
@@ -74,25 +74,26 @@ export default function MarketsOvernight() {
             <article key={t.h} className="take">
               <Chip tone={t.chip[1]}>{t.chip[0]}</Chip>
               <h3>{t.h}</h3>
-              <More label="The detail" className="take-more"><p><Rich r={t.p} /><Src k={t.src} /></p></More>
               <p className="why">{t.why}</p>
+              <More label="Details" className="take-more"><p><Rich r={t.p} /><Src k={t.src} /></p></More>
             </article>
           ))}
         </div>
       </Section>
 
-      <Section title={<>The market&apos;s <S>mood</S></>} meta={`${scored.length} of ${comps.length} components, each ranked against its own five years, ${B.session} session`} ix="03 · Wander Index">
+      <Section title={<>The market&apos;s <S>mood</S></>} meta={`${scored.length} of ${comps.length} components, each ranked against its own five years, ${B.session} session`} ix="03 · Wander Index" interp>
         <div className="two">
           <div>
             <Dial score={scoreRaw} comps={scored.map((c) => ({ name: c.name, score: c.score }))} label={`Wander Index ${score}, ${band}`} />
-            <p className="bw-disclaimer after-plot">Interpretation, not a forecast. Each dot is one component.</p>
+            <p className="bw-disclaimer after-plot"><span className="ifw">Interpretation, not a forecast. </span>Each dot is one component.</p>
           </div>
           <div>
-            <div className="duo">
+            <p className="note ifp wl1">Wander Index {score}, {band}. Macro pressure {pressureScore}, {pressureName}.</p>
+            <div className="duo ifw">
               <div><p className="bw-label">Wander Index</p><div className="score"><span className="n">{score}</span><span className="w">{band}</span></div></div>
               <div><p className="bw-label">Macro pressure</p><div className="score"><span className="n">{pressureScore}</span><span className="w">{pressureName}</span></div></div>
             </div>
-            <More label={`All ${comps.length} components`}><table className="comp-tbl">
+            <More label={`See the ${comps.length} readings`}><table className="comp-tbl">
               <tbody>
                 {comps.map((c) => (
                   <tr key={c.id}><td>{c.name} · {c.value}<Src k={c.src} /></td><td className="v">{c.available ? Math.round(c.score) : <span className="bw-na">n/a</span>}</td></tr>
@@ -110,7 +111,7 @@ export default function MarketsOvernight() {
       </Section>
 
       <Fold id="money-movement" title={<>Money <S>movement</S></>} ix="05 · Money Moves, India, Global"
-        summary={`Flows, ${B.secIndia.length} NSE sectors and US sectors, ${B.session} session`}>
+        summary="Sector rotation in Indian and US financial markets">
         <FoldPart id="flow-map" title={<>Where money <S>moved</S></>} ix="Money Moves" meta={<>FII and DII provisional net flows, cash market<Src k={fiiSrc} /></>}>
           <div className="pair">
             {[B.flows.day, B.flows.mtd].map((f) => (
@@ -148,7 +149,7 @@ export default function MarketsOvernight() {
       </Fold>
 
       <Fold id="coming-up" title={<>Coming <S>up</S></>} ix="06 · Macro Watch"
-        summary={`${B.next.length} ${B.next.length === 1 ? "event" : "events"} in the next 7 days · times in IST`}>
+        summary="The most important events on the calendar">
         <ul className="tl">
           {B.next.map((e) => (
             <li key={e.w + e.t} className={e.today ? "today" : undefined}><span className="when">{e.w}</span><div className="t">{e.t}</div></li>
@@ -157,7 +158,7 @@ export default function MarketsOvernight() {
       </Fold>
 
       <Fold id="still-developing" title={<>Still <S>developing</S></>} ix="07 · Developing"
-        summary={`${shown.length} ${shown.length === 1 ? "story" : "stories"} carried across sessions${newStories ? `, ${newStories} new` : ""}`}>
+        summary="Events that are still unfolding">
         <ol className="st">
           {shown.map((s) => (
             <li key={s.t}>
