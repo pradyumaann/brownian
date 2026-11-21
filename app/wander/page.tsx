@@ -10,7 +10,7 @@ import { Dial } from "@/components/charts/Dial";
 import { SegMeter } from "@/components/charts/Mini";
 import { Quadrant } from "@/components/charts/Quadrant";
 import { TimeLine } from "@/components/charts/TimeLine";
-import { BANDS, METHOD, asOf, band, bandOf, comps, moodSeries, niftyOn, pressure, pressureHigh, pressureName, pressureScore, pressureTone, quad, score, scoreRaw, scored, wanderVsNifty } from "@/lib/mood";
+import { BANDS, METHOD, asOf, signalSplit, band, bandOf, comps, moodSeries, niftyOn, pressure, pressureHigh, pressureName, pressureScore, pressureTone, quad, score, scoreRaw, scored, wanderVsNifty } from "@/lib/mood";
 import { PAPERS } from "@/lib/papers";
 import { ord, TURB_BANDS, turbBand } from "@/lib/bands";
 import { riskOn, riskSeries } from "@/lib/risk";
@@ -60,6 +60,7 @@ export default function Wander() {
             <p className="bw-label">Wander Index · 0 extreme fear, 100 extreme greed</p>
             <div className="score"><span className="n"><CountUp to={score} /></span><span className="w">{band}</span></div>
             <SegMeter score={scoreRaw} label={`Wander Index ${score} of 100, ${band}`} />
+            {signalSplit && <p className="bw-disclaimer wsplit">{signalSplit}</p>}
           </div>
           <div className="pressure-read">
             <p className="bw-label">Macro pressure · 0 low, 100 high<Src k={["S11", "W8", "W11"]} /></p>

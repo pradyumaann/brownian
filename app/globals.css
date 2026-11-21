@@ -960,3 +960,6 @@ ul.list.list-cont { border-top: 0; }
 .lens > .sec > :last-child, .lens > .sec > .lens-sub > :last-child, .lens .fold-body > :last-child { margin-bottom: 0; }
 .lens-sub { margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--hairline); }
 .lens-sub .sub { margin-bottom: 0; }
+
+/* Wander Index: the small line that says when components sit at opposite extremes. */
+.wsplit { margin: var(--space-1) 0 var(--space-3); }

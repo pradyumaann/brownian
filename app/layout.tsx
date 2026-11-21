@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <a className="skip" href="#main">Skip to content</a>
         <div className="page">
-          <Masthead bars={moodSeries.slice(-5).map((p) => ({ date: p.date, score: p.score }))} dateLabel={B.dateLabel} open={hours.open} close={hours.close} />
+          <Masthead bars={moodSeries.slice(-5).map((p) => ({ date: p.date, score: p.whole }))} dateLabel={B.dateLabel} open={hours.open} close={hours.close} />
           <Nav />
           <main id="main" tabIndex={-1}>{children}</main>
           <footer className="foot">

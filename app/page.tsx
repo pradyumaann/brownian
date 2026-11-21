@@ -15,7 +15,7 @@ import { Dial } from "@/components/charts/Dial";
 import { SegMeter } from "@/components/charts/Mini";
 import { ledePoints } from "@/lib/ledePoints";
 import { portfolioFacts } from "@/lib/portfolioFacts";
-import { asOfLabel, behindNote, band, comps, pressureHigh, pressureName, pressureScore, quad, score, scoreRaw, scored } from "@/lib/mood";
+import { asOfLabel, behindNote, signalSplit, band, comps, pressureHigh, pressureName, pressureScore, quad, score, scoreRaw, scored } from "@/lib/mood";
 import type { Kpi } from "@/data/types";
 
 function KpiCell({ k, neutral }: { k: Kpi; neutral?: boolean }) {
@@ -95,6 +95,7 @@ export default function MarketsOvernight() {
               <div><p className="bw-label">Wander Index</p><div className="score"><span className="n">{score}</span><span className="w">{band}</span></div></div>
               <div><p className="bw-label">Macro pressure</p><div className="score"><span className="n">{pressureScore}</span><span className="w">{pressureName}</span></div></div>
             </div>
+            {signalSplit && <p className="bw-disclaimer wsplit">{signalSplit}</p>}
             <More label={`See the ${comps.length} readings`}><table className="comp-tbl">
               <tbody>
                 {comps.map((c) => (

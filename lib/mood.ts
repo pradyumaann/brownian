@@ -149,14 +149,22 @@ export const scored = comps.filter((c) => c.available);
 export const scoreRaw = scored.reduce((a, c) => a + c.score, 0) / scored.length;
 export const score = Math.round(scoreRaw);
 export const band = bandOf(score).name;
+const atBand = (name: string) => scored.filter((c) => bandOf(c.score).name === name).length;
+const extremeGreed = atBand("Extreme greed"), extremeFear = atBand("Extreme fear");
+/** Shown only when at least two components sit at each extreme, which the single average hides. */
+export const signalSplit = extremeGreed >= 2 && extremeFear >= 2
+  ? `Signals disagree: ${extremeGreed} of ${scored.length} at extreme greed, ${extremeFear} at extreme fear.` : null;
 
 /** A day enters the chart once most components score: at least 60% of them (5 of 7 or 8). */
 const MIN_COMPS = Math.ceil(DEFS.length * 0.6);
 /** Daily Wander Index for the chart: days with at least MIN_COMPS scored components. */
 export const moodSeries = days.map((d, i) => {
   const s = computed.map((c) => c.score[i]).filter((x): x is number => x != null);
-  return s.length >= MIN_COMPS ?{ date: d, score: Math.round(s.reduce((a, b) => a + b, 0) / s.length * 10) / 10, n: s.length } : null;
-}).filter((x): x is { date: string; score: number; n: number } => !!x && x.date <= asOf);
+  if (s.length < MIN_COMPS) return null;
+  const mean = s.reduce((a, b) => a + b, 0) / s.length;
+  // `whole` is rounded once from the exact mean, as the headline score is; rounding `score` again could differ by one.
+  return { date: d, score: Math.round(mean * 10) / 10, whole: Math.round(mean), n: s.length };
+}).filter((x): x is { date: string; score: number; whole: number; n: number } => !!x && x.date <= asOf);
 
 /** Nifty 50 closes on each day of a Wander Index series, for the overlay. */
 export const niftyOn = (dates: string[]) => { const ix = new Map(days.map((d, i) => [d, i])); return dates.map((d) => nifty[ix.get(d) ?? -1] ?? null); };
