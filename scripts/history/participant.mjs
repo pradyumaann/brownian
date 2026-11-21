@@ -39,7 +39,9 @@ async function day(d) {
 export async function importParticipantOi(from, to) {
   const rows = await loadTable("participant_oi.csv");
   const have = new Set(rows.map((r) => r.date));
-  const todo = weekdays(from, to).filter((d) => !have.has(d));
+  // Known holidays have no file, so they are not requested again.
+  const closed = new Set((await loadTable("calendar.csv")).filter((r) => r.open === "0").map((r) => r.date));
+  const todo = weekdays(from, to).filter((d) => !have.has(d) && !closed.has(d));
   log(`participant OI: ${todo.length} weekdays to check (cached files and known holidays are reused)`);
   const got = (await pool(todo, 2, day)).filter(Boolean).flat();
   const n = await saveTable("participant_oi.csv", COLS, [...rows, ...got], (r) => `${r.date}|${r.participant}`);

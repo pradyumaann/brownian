@@ -121,6 +121,11 @@ const computed = DEFS.map((d) => {
 /** The day the brief describes: the last session before it was prepared. */
 export const asOf = days.filter((d) => d <= B.sessionDate).at(-1)!;
 const T = days.indexOf(asOf);
+const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+/** The session the history-based readings really describe, as "Thu 19 Nov". */
+export const asOfLabel = (() => { const t = new Date(asOf + "T00:00:00Z"); return `${DOW[t.getUTCDay()]} ${t.getUTCDate()} ${MON[t.getUTCMonth()]}`; })();
+/** Set when the brief describes a later session than the history store holds. */
+export const behindNote = asOf < B.sessionDate ? `Readings as of ${asOfLabel}; ${B.session} is not in yet.` : null;
 
 export interface Comp {
   id: string; name: string; metric: string; term: string; papers: PaperId[]; basis?: string; src: string[]; how: string; dir: 1 | -1;

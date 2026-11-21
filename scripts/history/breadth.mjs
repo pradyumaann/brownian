@@ -30,8 +30,15 @@ async function day(d) {
 }
 
 export async function importBreadth(from, to) {
-  const cal = (await loadTable("calendar.csv")).filter((r) => r.open === "1" && r.date >= from && r.date <= to).map((r) => r.date);
-  log(`breadth: ${cal.length} trading days (cached files are reused)`);
+  const stored = await loadTable("breadth.csv");
+  // Start where the stored rows start: a thinly traded stock's 52-week window can reach back further than 252 sessions.
+  const start = stored.length ? stored.map((r) => r.date).sort()[0] : from;
+  const cal = (await loadTable("calendar.csv")).filter((r) => r.open === "1" && r.date >= start && r.date <= to).map((r) => r.date);
+  const have = new Set(stored.map((r) => r.date));
+  const firstNew = cal.findIndex((d) => !have.has(d));
+  if (firstNew < 0) { log("breadth: up to date"); return; }
+  // Stored days are final, so only new days are written; earlier sessions are read to rebuild each stock's window.
+  log(`breadth: ${cal.length - firstNew} days from ${cal[firstNew]}, reading ${cal.length} sessions (cached files are reused)`);
   const days = await pool(cal, 4, async (d) => ({ d, rows: await day(d) }));
   const missing = days.filter((x) => !x.rows).map((x) => x.d);
   if (missing.length) log(`breadth: no bhavcopy for ${missing.length} trading days: ${missing.slice(0, 5).join(", ")}${missing.length > 5 ? "…" : ""}`);
@@ -66,10 +73,10 @@ export async function importBreadth(from, to) {
     }
     ill.sort((a, b) => a - b);
     const warm = seen >= WINDOW;
+    if (have.has(d)) continue;
     out.push({ date: d, stocks: rows.length, advances: adv, declines: dec, unchanged: unch,
       highs52: warm ? hi : "", lows52: warm ? lo : "", illiq: ill.length ? ill[ill.length >> 1].toPrecision(4) : "" });
   }
-  const keep = (await loadTable("breadth.csv")).filter((r) => r.date < (out[0]?.date ?? "9999"));
-  const n = await saveTable("breadth.csv", COLS, [...keep, ...out], (r) => r.date);
+  const n = await saveTable("breadth.csv", COLS, [...stored, ...out], (r) => r.date);
   log(`breadth: ${out.length} days computed (52-week counts start after ${WINDOW} days), ${n} rows stored`);
 }
