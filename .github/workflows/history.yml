@@ -1,4 +1,4 @@
-# Keeps data/history current. Runs before the 07:52 IST brief; the retry covers a delayed or failed first run.
+# Keeps data/history current. Runs before the 07:52 IST brief; the retry covers a delayed or failed first run, and the evening run picks up the same day's files.
 # Nothing is committed unless the history checks pass. A failed run emails the repo owner.
 name: Refresh market history
 
@@ -6,6 +6,7 @@ on:
   schedule:
     - cron: "0 1 * * *"   # 06:30 IST
     - cron: "45 1 * * *"  # 07:15 IST
+    - cron: "30 13 * * *" # 19:00 IST, after NSE publishes the day's files (catches anything the morning runs missed)
   workflow_dispatch:
 
 permissions:
