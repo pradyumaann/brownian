@@ -11,7 +11,7 @@ const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/** GET a URL. Returns a Buffer, or null on 404 (a holiday or a file that was never published). Retries other failures. */
+/** GET a URL. Returns a Buffer, or null on 404 (a holiday or a file that was never published). Retries other failures (403/429 with a longer wait). */
 export async function get(url, { tries = 4, cache } = {}) {
   if (cache) {
     try { return await readFile(cache); } catch {}
@@ -20,13 +20,14 @@ export async function get(url, { tries = 4, cache } = {}) {
     try {
       const res = await fetch(url, { headers: { "user-agent": UA, accept: "*/*" }, signal: AbortSignal.timeout(45000) });
       if (res.status === 404) return null;
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) { const e = new Error(`HTTP ${res.status}`); e.blocked = res.status === 403 || res.status === 429; throw e; }
       const buf = Buffer.from(await res.arrayBuffer());
       if (cache) { await mkdir(dirname(cache), { recursive: true }); await writeFile(cache, buf); }
       return buf;
     } catch (e) {
       if (i === tries) throw new Error(`${url}: ${e.message}`);
-      await sleep(1500 * i);
+      // NSE sometimes refuses a runner for a while (403/429): wait much longer than for a plain failure.
+      await sleep((e.blocked ? 15000 : 1500) * i);
     }
   }
 }
